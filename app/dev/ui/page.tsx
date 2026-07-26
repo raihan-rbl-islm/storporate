@@ -38,10 +38,12 @@ export default function Page() {
       <div className="mx-auto max-w-6xl space-y-12">
         <header className="space-y-2">
           <p className="font-mono text-sm text-muted-foreground">/dev/ui</p>
-          <h1 className="text-3xl font-semibold tracking-tight">UI foundation</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            UI foundation
+          </h1>
           <p className="max-w-2xl text-muted-foreground">
-            A reference page for the Storporate design primitives and their available
-            variants.
+            A reference page for the Storporate design primitives and their
+            available variants.
           </p>
         </header>
 
@@ -71,7 +73,10 @@ export default function Page() {
                     {variant}
                   </span>
                   {buttonSizes.map((size) => (
-                    <div key={`${variant}-${size}`} className="flex justify-center">
+                    <div
+                      key={`${variant}-${size}`}
+                      className="flex justify-center"
+                    >
                       <Button
                         variant={variant}
                         size={size}
@@ -102,16 +107,20 @@ export default function Page() {
             <CardHeader>
               <CardTitle>Build with confidence</CardTitle>
               <CardDescription>
-                Compose product surfaces from a consistent set of accessible primitives.
+                Compose product surfaces from a consistent set of accessible
+                primitives.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                This content area demonstrates the standard spacing and surface tokens.
+                This content area demonstrates the standard spacing and surface
+                tokens.
               </p>
             </CardContent>
             <CardFooter>
-              <span className="text-sm text-muted-foreground">Reference component</span>
+              <span className="text-sm text-muted-foreground">
+                Reference component
+              </span>
             </CardFooter>
           </Card>
         </section>
@@ -139,7 +148,11 @@ export default function Page() {
                   className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <Input id="search-input" className="pl-9" placeholder="Search" />
+                <Input
+                  id="search-input"
+                  className="pl-9"
+                  placeholder="Search"
+                />
               </div>
             </div>
             <div className="space-y-2">
