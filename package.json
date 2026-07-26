@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:e2e": "playwright test",
+    "test:e2e": "rm -rf .next && playwright test",
     "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
