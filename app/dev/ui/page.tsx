@@ -183,6 +183,7 @@ export default function Page() {
           <Loader2
             className="motion-safe:animate-spin motion-reduce:animate-none"
             aria-hidden="true"
+            data-testid="spinner"
           />
           <span>Loading…</span>
         </div>

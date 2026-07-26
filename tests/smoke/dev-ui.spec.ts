@@ -51,30 +51,27 @@ test("dev-ui: respects prefers-reduced-motion", async ({ page }) => {
   await page.goto("/dev/ui");
 
   // The Loader2 spinner has motion-safe:animate-spin motion-reduce:animate-none.
-  // Tailwind v4 may emit the literal class with a colon, so we use a substring
-  // match to be robust against CSS-optimizer rewrites.
-  const spinner = page.locator('[class*="motion-safe:animate-spin"]').first();
+  // Use a stable testid rather than a Tailwind class glob.
+  const spinner = page.locator('[data-testid="spinner"]').first();
   await expect(spinner).toBeAttached();
 
-  const { animationDuration, animationName } = await spinner.evaluate((el) => {
+  const styles = await spinner.evaluate((el) => {
     const cs = window.getComputedStyle(el);
     return {
       animationDuration: cs.animationDuration,
       animationName: cs.animationName,
     };
   });
-
-  // Under prefers-reduced-motion: reduce, the motion-safe: variant must be a
-  // no-op: either no animation duration is set (0s/none) or the browser
-  // collapses it to ~0ms. The motion-reduce: variant forces animation-name: none.
-  const durationIsZeroLike =
-    animationDuration === "0s" ||
-    animationDuration === "none" ||
-    animationDuration === "0.001ms";
-  const nameIsNone = animationName === "none";
-
+  // Tailwind's motion-reduce:animate-none explicitly sets animation-name to none
   expect(
-    durationIsZeroLike || nameIsNone,
-    `expected reduced-motion to neutralize the spinner animation, got duration="${animationDuration}" name="${animationName}"`,
-  ).toBeTruthy();
+    styles.animationName,
+    "motion-reduce should set animation-name: none",
+  ).toBe("none");
+  // The global kill-switch in globals.css sets animation-duration to 0.001ms (or 0s)
+  const dur = styles.animationDuration;
+  const durMs = dur.endsWith("ms") ? parseFloat(dur) : parseFloat(dur) * 1000;
+  expect(
+    durMs,
+    "reduced-motion should collapse animation-duration near zero",
+  ).toBeLessThan(1);
 });
