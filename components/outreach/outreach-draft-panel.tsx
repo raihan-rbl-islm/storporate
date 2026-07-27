@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import { AlertTriangle, Check, Copy, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { cn } from "@/lib/utils";
 import {
   clearOutreachEventsForCurrentPersona,
@@ -256,18 +257,8 @@ export function OutreachDraftPanel({
         </Button>
       ) : null}
 
-      {isGenerating ? (
-        <p
-          role="status"
-          className="text-muted-foreground text-sm"
-          aria-live="polite"
-        >
-          <Sparkles
-            aria-hidden="true"
-            className="mr-1 inline size-3 animate-pulse"
-          />
-          Generating draft…
-        </p>
+      {state.kind === "generating" ? (
+        <LoadingSpinner label="Generating draft" />
       ) : null}
 
       {state.kind === "slow" ? (

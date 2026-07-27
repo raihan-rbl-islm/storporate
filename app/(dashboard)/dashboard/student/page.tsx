@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Check, AlertTriangle } from "lucide-react";
 
@@ -12,11 +13,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { MatchCard } from "@/components/matches/match-card";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { HeroCallout } from "@/components/hero/hero-callout";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
+import type { StudentFixture } from "@/lib/server/personas/lookup";
 import {
   getCurrentPersona,
   hasOnboarded,
@@ -26,57 +29,15 @@ import {
   toDisplayMatchPercent,
 } from "@/lib/server/matching/student-matches";
 
-export default async function StudentDashboardPage() {
-  const current = await getCurrentPersona();
-  if (!current || current.kind !== "student") redirect("/dashboard");
-  const student = current.row;
-  const matches = rankCorporateMatchesFor(student, await getCorporateFixtures()).slice(0, 3);
-  const ready = hasOnboarded(student);
-  const heroTop =
-    student.heroFlag && matches.length > 0 ? matches[0] : null;
+async function HeroAndMatches({ student }: { student: StudentFixture }) {
+  const matches = rankCorporateMatchesFor(
+    student,
+    await getCorporateFixtures(),
+  ).slice(0, 3);
+  const heroTop = student.heroFlag && matches.length > 0 ? matches[0] : null;
 
   return (
-    <DashboardLayout
-      role="student"
-      title={student.fullName}
-      subtitle={`Student · ${student.studyProgram} · ${student.university}`}
-    >
-      <h2 className="text-3xl font-semibold tracking-tight">
-        {student.fullName}
-      </h2>
-
-      <Card data-testid="student-profile-readiness">
-        <CardHeader>
-          <CardTitle>
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              {ready ? (
-                <Check aria-hidden="true" className="text-muted-foreground size-4" />
-              ) : (
-                <AlertTriangle
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
-              )}
-              {ready ? "Profile ready" : "Finish your profile"}
-            </h2>
-          </CardTitle>
-          <CardDescription>
-            {ready
-              ? "Your profile is match-ready. Refine it anytime."
-              : "Add skills and interests so your matches reflect your goals."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <Link
-            href="/dashboard/profile/edit"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-            prefetch={false}
-          >
-            {ready ? "Edit profile" : "Finish profile"}
-          </Link>
-        </CardContent>
-      </Card>
-
+    <>
       {heroTop ? (
         <HeroCallout
           personaName={student.fullName}
@@ -127,6 +88,65 @@ export default async function StudentDashboardPage() {
           </ul>
         )}
       </section>
+    </>
+  );
+}
+
+export default async function StudentDashboardPage() {
+  const current = await getCurrentPersona();
+  if (!current || current.kind !== "student") redirect("/dashboard");
+  const student = current.row;
+  const ready = hasOnboarded(student);
+
+  return (
+    <DashboardLayout
+      role="student"
+      title={student.fullName}
+      subtitle={`Student · ${student.studyProgram} · ${student.university}`}
+    >
+      <h2 className="text-3xl font-semibold tracking-tight">
+        {student.fullName}
+      </h2>
+
+      <Card data-testid="student-profile-readiness">
+        <CardHeader>
+          <CardTitle>
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              {ready ? (
+                <Check aria-hidden="true" className="text-muted-foreground size-4" />
+              ) : (
+                <AlertTriangle
+                  aria-hidden="true"
+                  className="text-muted-foreground size-4"
+                />
+              )}
+              {ready ? "Profile ready" : "Finish your profile"}
+            </h2>
+          </CardTitle>
+          <CardDescription>
+            {ready
+              ? "Your profile is match-ready. Refine it anytime."
+              : "Add skills and interests so your matches reflect your goals."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <Link
+            href="/dashboard/profile/edit"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+            prefetch={false}
+          >
+            {ready ? "Edit profile" : "Finish profile"}
+          </Link>
+        </CardContent>
+      </Card>
+
+      <Suspense
+        fallback={
+          <LoadingPanel label="Loading top opportunities" rows={3} />
+        }
+      >
+        <HeroAndMatches student={student} />
+      </Suspense>
 
       <div className="flex justify-end">
         <Link

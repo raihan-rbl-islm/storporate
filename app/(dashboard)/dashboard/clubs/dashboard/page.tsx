@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Check, AlertTriangle } from "lucide-react";
 
@@ -12,24 +13,61 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { MatchCard } from "@/components/matches/match-card";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
+import type { ClubFixture } from "@/lib/server/personas/lookup";
 import {
   getCurrentPersona,
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { rankClubMatchesFor } from "@/lib/server/matching/club-matches";
 
-export default async function ClubDashboardPage() {
-  const current = await getCurrentPersona();
-  if (!current || current.kind !== "club") redirect("/dashboard");
-  const club = current.row;
+async function TopSponsors({ club }: { club: ClubFixture }) {
   const matches = rankClubMatchesFor(
     club,
     await getCorporateFixtures(),
   ).slice(0, 3);
+
+  if (matches.length === 0) {
+    return (
+      <EmptyFixtureState
+        title="No corporate sponsors are available"
+        description="Reload the page, or pick a different demo persona."
+        reloadHref="/dashboard/clubs/dashboard"
+      />
+    );
+  }
+
+  return (
+    <ul className="flex flex-col gap-3">
+      {matches.map((m) => (
+        <li key={m.corporate.id}>
+          <MatchCard
+            match={{
+              direction: "club-to-corporate",
+              id: m.corporate.id,
+              title: m.corporate.organizationName,
+              subtitle: `${m.corporate.industry} · ${m.corporate.location}`,
+              score: m.score,
+              topReasons: m.topReasons,
+              rationaleHref: `/dashboard/clubs/matches/${m.corporate.id}`,
+              scoreTestId: "club-match-score",
+            }}
+            emptyReasonFallback="Review the match signals above when shortlisting sponsors."
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default async function ClubDashboardPage() {
+  const current = await getCurrentPersona();
+  if (!current || current.kind !== "club") redirect("/dashboard");
+  const club = current.row;
   const ready = hasOnboarded(club);
 
   return (
@@ -84,33 +122,13 @@ export default async function ClubDashboardPage() {
         >
           Top sponsors
         </h2>
-        {matches.length === 0 ? (
-          <EmptyFixtureState
-            title="No corporate sponsors are available"
-            description="Reload the page, or pick a different demo persona."
-            reloadHref="/dashboard/clubs/dashboard"
-          />
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {matches.map((m) => (
-              <li key={m.corporate.id}>
-                <MatchCard
-                  match={{
-                    direction: "club-to-corporate",
-                    id: m.corporate.id,
-                    title: m.corporate.organizationName,
-                    subtitle: `${m.corporate.industry} · ${m.corporate.location}`,
-                    score: m.score,
-                    topReasons: m.topReasons,
-                    rationaleHref: `/dashboard/clubs/matches/${m.corporate.id}`,
-                    scoreTestId: "club-match-score",
-                  }}
-                  emptyReasonFallback="Review the match signals above when shortlisting sponsors."
-                />
-              </li>
-            ))}
-          </ul>
-        )}
+        <Suspense
+          fallback={
+            <LoadingPanel label="Loading top sponsors" rows={3} />
+          }
+        >
+          <TopSponsors club={club} />
+        </Suspense>
       </section>
 
       <div className="flex justify-end">

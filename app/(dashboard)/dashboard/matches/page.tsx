@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AlertCircle, Building2, Sparkles } from "lucide-react";
 
@@ -11,15 +12,96 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 
 import {
   getCurrentPersona,
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
+import type { StudentFixture } from "@/lib/server/personas/lookup";
 import { rankCorporateMatchesFor } from "@/lib/server/matching/student-matches";
 
 export const dynamic = "force-dynamic";
+
+async function MatchesList({ student }: { student: StudentFixture }) {
+  const matches = rankCorporateMatchesFor(
+    student,
+    await getCorporateFixtures(),
+  );
+
+  if (matches.length === 0) {
+    return <EmptyFixtureState />;
+  }
+
+  return (
+    <ul className="grid gap-6">
+      {matches.map(({ corporate, score, topReasons }) => (
+        <li key={corporate.id}>
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <CardTitle>
+                    <h2 className="flex items-center gap-2 text-lg font-semibold">
+                      <Building2
+                        aria-hidden="true"
+                        className="text-muted-foreground size-4"
+                      />
+                      {corporate.organizationName}
+                    </h2>
+                  </CardTitle>
+                  <CardDescription>
+                    {corporate.industry} · {corporate.location}
+                  </CardDescription>
+                </div>
+                <Badge
+                  variant="default"
+                  data-testid="match-score"
+                  className="shrink-0 self-start whitespace-nowrap"
+                >
+                  <Sparkles
+                    aria-hidden="true"
+                    className="mr-1 size-3"
+                  />
+                  Score {score}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {topReasons.length > 0 ? (
+                <ul className="flex flex-wrap gap-2">
+                  {topReasons.map((reason) => (
+                    <li key={reason}>
+                      <Badge variant="secondary">{reason}</Badge>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  Review the match signals above when shortlisting
+                  organizations.
+                </p>
+              )}
+              <div className="pt-2">
+                <Link
+                  href={`/dashboard/matches/${corporate.id}`}
+                  prefetch={false}
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                  })}
+                >
+                  View rationale
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default async function StudentMatchesPage() {
   const current = await getCurrentPersona();
@@ -28,8 +110,6 @@ export default async function StudentMatchesPage() {
   if (!hasOnboarded(current.row)) redirect("/onboarding");
 
   const student = current.row;
-  const corporates = getCorporateFixtures();
-  const matches = rankCorporateMatchesFor(student, corporates);
 
   return (
     <section
@@ -56,75 +136,11 @@ export default async function StudentMatchesPage() {
         </p>
       </header>
 
-      {matches.length === 0 ? (
-        <EmptyFixtureState />
-      ) : (
-        <ul className="grid gap-6">
-          {matches.map(({ corporate, score, topReasons }) => (
-            <li key={corporate.id}>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <CardTitle>
-                        <h2 className="flex items-center gap-2 text-lg font-semibold">
-                          <Building2
-                            aria-hidden="true"
-                            className="text-muted-foreground size-4"
-                          />
-                          {corporate.organizationName}
-                        </h2>
-                      </CardTitle>
-                      <CardDescription>
-                        {corporate.industry} · {corporate.location}
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant="default"
-                      data-testid="match-score"
-                      className="shrink-0 self-start whitespace-nowrap"
-                    >
-                      <Sparkles
-                        aria-hidden="true"
-                        className="mr-1 size-3"
-                      />
-                      Score {score}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {topReasons.length > 0 ? (
-                    <ul className="flex flex-wrap gap-2">
-                      {topReasons.map((reason) => (
-                        <li key={reason}>
-                          <Badge variant="secondary">{reason}</Badge>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted-foreground text-sm">
-                      Review the match signals above when shortlisting
-                      organizations.
-                    </p>
-                  )}
-                  <div className="pt-2">
-                    <Link
-                      href={`/dashboard/matches/${corporate.id}`}
-                      prefetch={false}
-                      className={buttonVariants({
-                        variant: "outline",
-                        size: "sm",
-                      })}
-                    >
-                      View rationale
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      )}
+      <Suspense
+        fallback={<LoadingPanel label="Loading opportunities" rows={5} />}
+      >
+        <MatchesList student={student} />
+      </Suspense>
     </section>
   );
 }
