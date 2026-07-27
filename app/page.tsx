@@ -1,4 +1,5 @@
 import { HeroFlourish } from "@/components/landing/hero-flourish";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -6,6 +7,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -30,6 +32,26 @@ export default function Home() {
             A guided marketplace where students find roles, university clubs
             find sponsors, and companies find talent — all sorted by
             compatibility scores you can trust as guidance, not a guarantee.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <Link
+              href="/demo"
+              aria-label="Try the Demo, navigates to the demo entry screen"
+              className={buttonVariants({ variant: "default", size: "lg" })}
+            >
+              Try the Demo
+            </Link>
+            <Link
+              href="/demo/google"
+              aria-label="Continue with Google, navigates to the demo entry screen"
+              className={buttonVariants({ variant: "outline", size: "lg" })}
+            >
+              Continue with Google
+            </Link>
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Demo routes open in the next sub-phase — clicking lands on a
+            temporary placeholder.
           </p>
         </div>
       </section>

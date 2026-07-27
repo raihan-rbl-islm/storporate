@@ -80,6 +80,16 @@ test("landing: trust section heading visible", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("landing: demo CTAs stub-link to /demo routes", async ({ page }) => {
+  await page.goto("/");
+  const tryBtn = page.getByRole("link", { name: /try the demo/i }).first();
+  const googleBtn = page
+    .getByRole("link", { name: /continue with google/i })
+    .first();
+  await expect(tryBtn).toHaveAttribute("href", "/demo");
+  await expect(googleBtn).toHaveAttribute("href", "/demo/google");
+});
+
 test("landing: no console errors on load", async ({ page }) => {
   const errors = await captureErrors(page);
   await page.goto("/");
