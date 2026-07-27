@@ -22,6 +22,21 @@ export interface RankedMatch {
   topReasons: readonly string[];
 }
 
+/**
+ * Per-signal scoring breakdown for a single (student, corporate) pair.
+ * `matchedSkills` and `matchedInterests` are display-cased student tokens
+ * in input order, deduplicated. `score` is the raw integer sum
+ * (`matchedSkills.length * SKILL_WEIGHT + matchedInterests.length *
+ * INTEREST_WEIGHT + (hiringIntent ? HIRING_INTENT_BONUS : 0)`); never
+ * rounded, never normalized.
+ */
+export interface MatchBreakdown {
+  readonly score: number;
+  readonly matchedSkills: readonly string[];
+  readonly matchedInterests: readonly string[];
+  readonly hiringIntent: boolean;
+}
+
 const MAX_REASONS = 3;
 const SKILL_WEIGHT = 2;
 const INTEREST_WEIGHT = 3;
@@ -51,6 +66,58 @@ function normalizeList(
 }
 
 /**
+ * Compute the per-signal breakdown for a single (student, corporate) pair.
+ * Used by both `rankCorporateMatchesFor` (list page) and the public
+ * `scoreMatchBreakdown` (rationale detail page) so the two stay in lockstep:
+ * for any pair, `RankedMatch.score === computeBreakdown(...).score`.
+ */
+function computeBreakdown(
+  student: StudentMatchInput,
+  corporate: CorporateFixture,
+  skills: { set: Set<string>; display: Map<string, string> },
+  interests: { set: Set<string>; display: Map<string, string> },
+): MatchBreakdown {
+  const matchedSkills: string[] = [];
+  const matchedInterests: string[] = [];
+
+  const talentNeedsSet = new Set(
+    (corporate.talentNeeds ?? []).map((s) => s.trim().toLowerCase()),
+  );
+  const descriptionLower = (corporate.description ?? "").toLowerCase();
+
+  for (const norm of skills.set) {
+    if (talentNeedsSet.has(norm)) {
+      matchedSkills.push(skills.display.get(norm) ?? norm);
+    }
+  }
+
+  for (const norm of interests.set) {
+    const hit =
+      talentNeedsSet.has(norm) ||
+      (norm.length > 0 && descriptionLower.includes(norm));
+    if (hit) {
+      matchedInterests.push(interests.display.get(norm) ?? norm);
+    }
+  }
+
+  const hiringIntent =
+    corporate.collaborationIntent === "hiring" ||
+    corporate.collaborationIntent === "both";
+
+  let score =
+    matchedSkills.length * SKILL_WEIGHT +
+    matchedInterests.length * INTEREST_WEIGHT;
+  if (hiringIntent) score += HIRING_INTENT_BONUS;
+
+  return {
+    score,
+    matchedSkills,
+    matchedInterests,
+    hiringIntent,
+  };
+}
+
+/**
  * Deterministic Student→Corporate scorer.
  *
  * Scoring rules (per corporate):
@@ -70,69 +137,45 @@ export function rankCorporateMatchesFor(
   const skills = normalizeList(student.skills);
   const interests = normalizeList(student.careerInterests);
 
-  const ranked: RankedMatch[] = [];
-
-  for (const corporate of corporates) {
-    let score = 0;
+  const ranked: RankedMatch[] = corporates.map((corporate) => {
+    const breakdown = computeBreakdown(student, corporate, skills, interests);
     const reasons: string[] = [];
-
-    const talentNeedsSet = new Set(
-      (corporate.talentNeeds ?? []).map((s) => s.trim().toLowerCase()),
-    );
-    const descriptionLower = (corporate.description ?? "").toLowerCase();
-
-    // Skills: +2 per unique normalized skill present in talentNeeds.
-    for (const norm of skills.set) {
-      if (talentNeedsSet.has(norm)) {
-        score += SKILL_WEIGHT;
-        if (reasons.length < MAX_REASONS) {
-          reasons.push(
-            `Matches your skills: ${skills.display.get(norm) ?? norm}`,
-          );
-        }
-      }
+    for (const s of breakdown.matchedSkills) {
+      if (reasons.length >= MAX_REASONS) break;
+      reasons.push(`Matches your skills: ${s}`);
     }
-
-    // Interests: +3 per unique normalized interest in talentNeeds OR in
-    // description.toLowerCase(). Substring match keeps punctuation /
-    // casing tolerant; the normalized interest itself is the unit.
-    const descriptionContains = (norm: string): boolean => {
-      if (norm.length === 0) return false;
-      return descriptionLower.includes(norm);
-    };
-
-    for (const norm of interests.set) {
-      const hit =
-        talentNeedsSet.has(norm) || descriptionContains(norm);
-      if (hit) {
-        score += INTEREST_WEIGHT;
-        if (reasons.length < MAX_REASONS) {
-          reasons.push(
-            `Aligns with your interest in ${
-              interests.display.get(norm) ?? norm
-            }`,
-          );
-        }
-      }
+    for (const i of breakdown.matchedInterests) {
+      if (reasons.length >= MAX_REASONS) break;
+      reasons.push(`Aligns with your interest in ${i}`);
     }
-
-    if (corporate.collaborationIntent === "hiring" ||
-        corporate.collaborationIntent === "both") {
-      score += HIRING_INTENT_BONUS;
-    }
-
-    ranked.push({
+    return {
       corporate,
-      score,
+      score: breakdown.score,
       topReasons: reasons.slice(0, MAX_REASONS),
-    });
-  }
+    };
+  });
 
-  // Sort: score desc; tie → corporate.id asc.
   ranked.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     return a.corporate.id.localeCompare(b.corporate.id);
   });
-
   return ranked;
+}
+
+/**
+ * Public per-pair scorer: returns the same breakdown the list page uses
+ * to rank and badge each match. Consumed by the rationale detail page
+ * (`/dashboard/matches/[corporateId]`) so its score badge and signal
+ * blocks stay in lockstep with the list view.
+ */
+export function scoreMatchBreakdown(
+  student: StudentMatchInput,
+  corporate: CorporateFixture,
+): MatchBreakdown {
+  return computeBreakdown(
+    student,
+    corporate,
+    normalizeList(student.skills),
+    normalizeList(student.careerInterests),
+  );
 }
