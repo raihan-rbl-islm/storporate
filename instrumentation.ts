@@ -1,12 +1,9 @@
 import * as Sentry from "@sentry/nextjs";
 
 /**
- * Server-side Sentry initialization for Next.js.
- *
- * `register` runs once per server runtime. We load the Sentry server or edge
- * config based on which runtime Next.js picked for this process. Edge runtimes
- * also need this hook so that requests handled in middleware/route handlers on
- * the edge are captured.
+ * `@sentry/nextjs` requires the right config to load per runtime. We do not
+ * bundle both into the client because they reference Node-only or
+ * edge-only APIs respectively.
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME === "nodejs") {
@@ -20,9 +17,8 @@ export async function register(): Promise<void> {
 
 /**
  * App Router hook for request-scoped server errors. Without this, errors
- * thrown from server components, route handlers, server actions, and
- * middleware are not forwarded to Sentry even though `register` succeeds.
- *
- * Requires @sentry/nextjs >= 8.28.0. The pinned version (10.x) supports it.
+ * from server components, route handlers, server actions, and middleware
+ * never reach Sentry even when `register` succeeds. Requires
+ * `@sentry/nextjs >= 8.28.0` — pinned version (10.x) supports it.
  */
 export const onRequestError = Sentry.captureRequestError;

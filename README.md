@@ -68,15 +68,25 @@ import { withRateLimit } from "@/lib/ratelimit";
 const r = await withRateLimit({
   identifier: request.headers.get("x-forwarded-for") ?? "anonymous",
 });
-if (!r.success) {
+if (r.status === "limited") {
   return NextResponse.json(
     { error: "rate_limited", retryAfter: r.retryAfter },
     { status: 429, headers: { "Retry-After": String(r.retryAfter) } },
   );
 }
+if (r.status === "degraded") {
+  // Upstash was unreachable; the request is allowed through. Log this
+  // so the on-call can investigate.
+}
 ```
 
-The helper returns a discriminated union: `success: true` for permitted requests (with `degraded: true` when Upstash was unreachable — the request is allowed, the flag is observable), or `success: false` for rejected requests (with `retryAfter` seconds). A misconfiguration (missing env vars) throws — it does not silently fail.
+The helper returns a union on `status`:
+
+- `"ok"` — request is permitted; payload includes `limit`, `remaining`, `reset`.
+- `"limited"` — request is over the limit; payload includes `retryAfter` seconds.
+- `"degraded"` — Upstash was unreachable; the request is allowed through and the operator should investigate.
+
+A misconfiguration (missing env vars) throws — it does not silently fail.
 
 To prove the wiring works locally, hit `GET /api/dev/rate-limit-test` twelve times in quick succession; the first ten return `200`, the last two return `429` with a `Retry-After` header. The route returns `404` when `NODE_ENV === "production"`.
 

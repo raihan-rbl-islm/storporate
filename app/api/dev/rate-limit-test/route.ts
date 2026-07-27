@@ -3,14 +3,12 @@ import { NextResponse } from "next/server";
 import { withRateLimit } from "@/lib/ratelimit";
 
 /**
- * Dev-only route that exercises the reusable rate-limit helper. Uses the
- * helper's default policy (10 requests / 10s, sliding window) so manual
- * excess is trivial to demonstrate.
+ * Dev-only route that exercises the reusable rate-limit helper. Returns
+ * 404 in production so the test route cannot be abused publicly.
  *
- * Identifier source: `x-forwarded-for` when present, otherwise the literal
- * string `"anonymous"`. The reason this fallback is sane for the demo is
- * that in dev, all curl calls from this machine share one bucket — which is
- * exactly what we want when proving "10 succeed, 11+ returns 429."
+ * `x-forwarded-for` is split on commas so only the first (real-client) IP
+ * is used; without that, a multi-hop proxy would let attackers stamp
+ * unique identifiers and bypass the limiter.
  */
 export const dynamic = "force-dynamic";
 
@@ -25,7 +23,7 @@ export async function GET() {
 
   const result = await withRateLimit({ identifier });
 
-  if (!result.success) {
+  if (result.status === "limited") {
     return NextResponse.json(
       {
         error: "rate_limited",
@@ -43,11 +41,17 @@ export async function GET() {
     );
   }
 
+  if (result.status === "ok") {
+    return NextResponse.json({
+      ok: true,
+      limit: result.limit,
+      remaining: result.remaining,
+      reset: result.reset,
+    });
+  }
+
   return NextResponse.json({
     ok: true,
-    limit: result.limit,
-    remaining: result.remaining,
-    reset: result.reset,
-    degraded: "degraded" in result ? result.degraded : undefined,
+    degraded: true,
   });
 }

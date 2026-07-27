@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 
 /**
- * Dev-only route that throws on purpose so we can prove Sentry server-side
- * error capture works end-to-end. In production this returns 404 — there is
- * no other branch, so a misconfigured production build cannot accidentally
- * expose test-only error behavior to the public.
+ * Dev-only route that throws on purpose so Sentry server-side error
+ * capture is provable end-to-end. Returns 404 in production so the test
+ * path cannot be probed publicly.
  *
- * The thrown error is captured by `Sentry.captureRequestError` wired in
- * `instrumentation.ts` (the App Router `onRequestError` hook). We do not
- * call `Sentry.captureException` here on purpose — the goal is to exercise
- * the request-scoped capture path, which is the one Next.js routes use.
+ * Capture is delegated to the `onRequestError` hook in `instrumentation.ts`
+ * — we do not call `Sentry.captureException` here on purpose, because the
+ * goal is to exercise the request-scoped capture path that Next.js routes
+ * use.
  */
 export const dynamic = "force-dynamic";
 
