@@ -5,7 +5,9 @@ import { useEffect, useState, useTransition } from "react";
 import { AlertTriangle, Check, Copy, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ErrorPanel } from "@/components/ui/error-panel";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useDelayedActionGuard } from "@/lib/client/delayed-action-guard";
 import { cn } from "@/lib/utils";
 import {
   clearOutreachEventsForCurrentPersona,
@@ -93,6 +95,12 @@ export function OutreachDraftPanel({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
+  // Wraps the generate Server Action with a "slow" indicator. When the
+  // action takes longer than 3000ms, status flips to "slow" so the UI
+  // can offer a "Hide and start over" path without losing the in-flight
+  // request context.
+  const guard = useDelayedActionGuard();
+
   // If the server-rendered `sent` seed changes (e.g. after revalidation),
   // reconcile local state so the panel reflects the canonical value.
   useEffect(() => {
@@ -101,54 +109,44 @@ export function OutreachDraftPanel({
     }
   }, [initialSentAtIso, state.kind]);
 
-  // Surface a soft-timeout state while the Server Action continues in the
-  // background. Changing state always runs this effect's cleanup, so the
-  // timer cannot fire after a result, clear, or sent-state reconciliation.
-  useEffect(() => {
-    if (state.kind !== "generating") return;
-    const timer = window.setTimeout(() => {
-      setState((current) =>
-        current.kind === "generating" ? { kind: "slow" } : current,
-      );
-    }, 3000);
-    return () => window.clearTimeout(timer);
-  }, [state.kind]);
-
   function onGenerate() {
     setState({ kind: "generating" });
     setCopied(false);
     setSendError(null);
     const fd = new FormData();
     fd.set("corporateId", corporateId);
-    startTransition(async () => {
+    guard.run(async () => {
       const result = await action(fd);
-      setState((current) => {
-        // A user can hide or clear the panel while the action continues.
-        // Only a request that still owns the generating/slow state may
-        // publish its result.
-        if (current.kind !== "generating" && current.kind !== "slow") {
-          return current;
-        }
-        if (result.status === "ok") {
-          return {
-            kind: "ready",
-            subject: result.draft.subject,
-            body: result.draft.body,
-            closing: result.draft.closing,
-            fullText: result.draft.fullText,
-          };
-        }
-        if (result.status === "partial") {
-          return {
-            kind: "partial",
-            subject: result.draft.subject,
-            body: result.draft.body,
-            closing: result.draft.closing,
-            fullText: result.draft.fullText,
-          };
-        }
-        return { kind: "error", reason: result.reason };
+      startTransition(() => {
+        setState((current) => {
+          // A user can hide or clear the panel while the action continues.
+          // Only a request that still owns the generating/slow state may
+          // publish its result.
+          if (current.kind !== "generating" && current.kind !== "slow") {
+            return current;
+          }
+          if (result.status === "ok") {
+            return {
+              kind: "ready",
+              subject: result.draft.subject,
+              body: result.draft.body,
+              closing: result.draft.closing,
+              fullText: result.draft.fullText,
+            };
+          }
+          if (result.status === "partial") {
+            return {
+              kind: "partial",
+              subject: result.draft.subject,
+              body: result.draft.body,
+              closing: result.draft.closing,
+              fullText: result.draft.fullText,
+            };
+          }
+          return { kind: "error", reason: result.reason };
+        });
       });
+      return result;
     });
   }
 
@@ -257,37 +255,28 @@ export function OutreachDraftPanel({
         </Button>
       ) : null}
 
-      {state.kind === "generating" ? (
+      {state.kind === "generating" && guard.status !== "slow" ? (
         <LoadingSpinner label="Generating draft" />
       ) : null}
 
-      {state.kind === "slow" ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className="flex flex-col gap-2 text-sm"
-        >
-          <p className="text-muted-foreground">
-            Still working — you can keep waiting or hide this panel.
-          </p>
-          <div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                // Resets to idle; the in-flight Server Action can't be
-                // cancelled client-side, but the late-result setter is
-                // gated to ignore results once we leave generating/slow.
-                setState({ kind: "idle" });
-                setCopied(false);
-                setSendError(null);
-              }}
-            >
-              Hide and start over
-            </Button>
-          </div>
-        </div>
+      {(state.kind === "generating" && guard.status === "slow") ||
+      state.kind === "slow" ? (
+        <ErrorPanel
+          variant="warning"
+          heading="Still generating"
+          reason="Your draft is taking longer than usual. You can keep waiting or hide this panel."
+          onRetry={() => guard.reset()}
+          retryLabel="Keep waiting"
+          secondaryAction={{
+            label: "Hide and start over",
+            onClick: () => {
+              guard.reset();
+              setState({ kind: "idle" });
+              setCopied(false);
+              setSendError(null);
+            },
+          }}
+        />
       ) : null}
 
       {state.kind === "ready" && !isPending ? (
@@ -369,13 +358,11 @@ export function OutreachDraftPanel({
 
       {state.kind === "partial" && !isPending ? (
         <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-4">
-          <p className="text-sm font-medium" role="status" aria-live="polite">
-            <AlertTriangle
-              aria-hidden="true"
-              className="mr-1 inline size-4 text-amber-600 dark:text-amber-400"
-            />
-            Prepared template — personalized draft was unavailable.
-          </p>
+          <ErrorPanel
+            variant="warning"
+            heading="Prepared template"
+            reason="Personalized draft was unavailable — review before sending."
+          />
           <p className="text-muted-foreground text-xs">
             Review and edit before sending. This is a starting point, not a
             finished personalized draft.
@@ -457,27 +444,15 @@ export function OutreachDraftPanel({
       ) : null}
 
       {state.kind === "error" && !isPending ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className="text-destructive flex flex-col gap-1 text-sm"
-        >
-          <p>
-            <AlertTriangle
-              aria-hidden="true"
-              className="mr-1 inline size-3"
-            />
-            {state.reason}
-          </p>
-          <Button
-            type="button"
-            onClick={onGenerate}
-            variant="outline"
-            size="sm"
-          >
-            Retry
-          </Button>
-        </div>
+        <ErrorPanel
+          heading="Couldn't generate a personalized draft"
+          reason={state.reason}
+          onRetry={() => {
+            guard.reset();
+            setState({ kind: "idle" });
+          }}
+          retryLabel="Try generating again"
+        />
       ) : null}
 
       {confirmOpen ? (

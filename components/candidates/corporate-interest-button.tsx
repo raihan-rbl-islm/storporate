@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { AlertTriangle, Check } from "lucide-react";
+import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ErrorPanel } from "@/components/ui/error-panel";
 import { cn } from "@/lib/utils";
+import { useDelayedActionGuard } from "@/lib/client/delayed-action-guard";
 import {
   submitCorporateInterest,
   type CorporateInterestResult,
@@ -35,6 +37,8 @@ export function CorporateInterestButton({
     initialStatus === "recorded" ? { kind: "applied" } : { kind: "idle" },
   );
 
+  const guard = useDelayedActionGuard();
+
   function onClick() {
     if (
       state.kind === "applied" ||
@@ -49,8 +53,10 @@ export function CorporateInterestButton({
     formData.set("candidateKind", candidateKind);
     formData.set("candidateId", candidateId);
     startTransition(async () => {
-      const result: CorporateInterestResult =
-        await submitCorporateInterest(formData);
+      const result: CorporateInterestResult | undefined = await guard.run(
+        async () => submitCorporateInterest(formData),
+      );
+      if (!result) return;
       if (result.status === "recorded") setState({ kind: "applied" });
       else if (result.status === "duplicate") setState({ kind: "duplicate" });
       else setState({ kind: "error", reason: result.reason });
@@ -91,11 +97,25 @@ export function CorporateInterestButton({
           "Express interest"
         )}
       </Button>
-      {state.kind === "error" ? (
-        <p role="status" className="text-destructive text-xs">
-          <AlertTriangle aria-hidden="true" className="mr-1 inline size-3" />
-          {state.reason}
+      {state.kind === "pending" && guard.status === "slow" ? (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-muted-foreground text-xs"
+        >
+          Still submitting — you can keep waiting.
         </p>
+      ) : null}
+      {state.kind === "error" ? (
+        <ErrorPanel
+          heading="Couldn't submit your interest"
+          reason={state.reason}
+          onRetry={() => {
+            guard.reset();
+            setState({ kind: "idle" });
+          }}
+          retryLabel="Try submitting again"
+        />
       ) : null}
     </div>
   );
