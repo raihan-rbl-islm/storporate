@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Check, AlertTriangle } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
   Card,
   CardContent,
@@ -28,15 +29,14 @@ export default async function StudentDashboardPage() {
   const ready = hasOnboarded(student);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {student.fullName}
-        </h1>
-        <p className="text-muted-foreground text-base">
-          Student · {student.studyProgram} · {student.university}
-        </p>
-      </header>
+    <DashboardLayout
+      role="student"
+      title={student.fullName}
+      subtitle={`Student · ${student.studyProgram} · ${student.university}`}
+    >
+      <h2 className="text-3xl font-semibold tracking-tight">
+        {student.fullName}
+      </h2>
 
       <Card data-testid="student-profile-readiness">
         <CardHeader>
@@ -120,6 +120,6 @@ export default async function StudentDashboardPage() {
       </div>
 
       <Disclaimer />
-    </div>
+    </DashboardLayout>
   );
 }

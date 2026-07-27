@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Check, AlertTriangle } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
   Card,
   CardContent,
@@ -31,15 +32,14 @@ export default async function ClubDashboardPage() {
   const ready = hasOnboarded(club);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {club.clubName}
-        </h1>
-        <p className="text-muted-foreground text-base">
-          Club · {club.university} · {club.location}
-        </p>
-      </header>
+    <DashboardLayout
+      role="club"
+      title={club.clubName}
+      subtitle={`Club · ${club.university} · ${club.location}`}
+    >
+      <h2 className="text-3xl font-semibold tracking-tight">
+        {club.clubName}
+      </h2>
 
       <Card data-testid="club-profile-readiness">
         <CardHeader>
@@ -123,6 +123,6 @@ export default async function ClubDashboardPage() {
       </div>
 
       <Disclaimer />
-    </div>
+    </DashboardLayout>
   );
 }

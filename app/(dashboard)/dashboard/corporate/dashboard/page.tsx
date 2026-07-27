@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Check, AlertTriangle } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
   Card,
   CardContent,
@@ -48,15 +49,14 @@ export default async function CorporateDashboardPage() {
     intent === "sponsorship" || intent === "both" || intent === "unknown";
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {corporate.organizationName}
-        </h1>
-        <p className="text-muted-foreground text-base">
-          Corporate · {corporate.industry}
-        </p>
-      </header>
+    <DashboardLayout
+      role="corporate"
+      title={corporate.organizationName}
+      subtitle={`Corporate · ${corporate.industry}`}
+    >
+      <h2 className="text-3xl font-semibold tracking-tight">
+        {corporate.organizationName}
+      </h2>
 
       <Card data-testid="corporate-profile-readiness">
         <CardHeader>
@@ -198,6 +198,6 @@ export default async function CorporateDashboardPage() {
       ) : null}
 
       <Disclaimer />
-    </div>
+    </DashboardLayout>
   );
 }
