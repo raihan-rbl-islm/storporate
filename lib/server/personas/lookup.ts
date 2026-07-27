@@ -5,6 +5,7 @@ import { students, clubs, corporates } from "@/lib/server/db/schema";
 import {
   HERO_PERSONAS,
   PERSONA_FIXTURE,
+  type ClubFixture,
   type CorporateFixture,
   type PersonaRole,
   type StudentFixture,
@@ -229,4 +230,20 @@ export function getCorporateFixtures(): readonly CorporateFixture[] {
  */
 export function getStudentFixtures(): readonly StudentFixture[] {
   return PERSONA_FIXTURE.students.slice();
+}
+
+/**
+ * All club fixtures in fixture order. Pure in-memory — does NOT query
+ * the DB. Used by the Corporate→Club matcher
+ * (lib/server/matching/corporate-club-matches.ts), which is deterministic
+ * over fixtures and takes the active corporate row as the query input,
+ * not from this fixture list.
+ *
+ * Returns a shallow array copy. `PERSONA_FIXTURE.clubs` is declared as
+ * a mutable `ClubFixture[]` in `data/personas.ts`, so `.slice()` returns
+ * a fresh array and prevents callers from reordering or removing entries
+ * from the fixture-owned array through this reference.
+ */
+export function getClubFixtures(): readonly ClubFixture[] {
+  return PERSONA_FIXTURE.clubs.slice();
 }
