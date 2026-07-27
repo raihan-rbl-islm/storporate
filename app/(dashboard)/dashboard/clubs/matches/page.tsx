@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Building2, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 
 import {
   getCurrentPersona,
@@ -117,6 +119,18 @@ export default async function ClubMatchesPage() {
                       Review the match signals above when shortlisting sponsors.
                     </p>
                   )}
+                  <div className="pt-2">
+                    <Link
+                      href={`/dashboard/clubs/matches/${corporate.id}`}
+                      prefetch={false}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
+                    >
+                      View rationale
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             </li>
