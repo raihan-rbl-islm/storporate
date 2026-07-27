@@ -38,6 +38,48 @@ The infrastructure tables (currently only `health_check`, used to verify pgvecto
 
 The Drizzle schema lives in `lib/server/db/schema.ts`. Migrations are managed via `drizzle-kit push` (state-tracked, not file-tracked) — re-running `db:push` after a no-op schema change must print `No changes detected`. The single server-side entry point is `lib/server/db/index.ts` and is marked `import "server-only"` so it can never be bundled into the client.
 
+## Error monitoring (Phase 0 Checkpoint 5)
+
+Sentry captures browser errors, server-side request errors, and unhandled promise rejections. Configuration lives in:
+
+- `sentry.server.config.ts` — Node.js server runtime init.
+- `sentry.edge.config.ts` — Edge runtime init.
+- `instrumentation.ts` — registers the right config per `NEXT_RUNTIME`; exports `onRequestError = Sentry.captureRequestError` so route handlers, server actions, server components, and middleware errors reach Sentry.
+- `instrumentation-client.ts` — browser-side init; uncaught exceptions and unhandled rejections are captured by the SDK defaults.
+- `next.config.ts` — wrapped with `withSentryConfig` so production builds upload source maps.
+
+Required env vars in `.env.local`: `NEXT_PUBLIC_SENTRY_DSN`, plus `SENTRY_AUTH_TOKEN` (production source-map upload only — empty locally is fine). Vercel must hold the same two values in all environments.
+
+To prove the wiring works locally, `GET /api/dev/sentry-test` throws an error that appears in the Sentry project's Issues feed within a minute or so. The route returns `404` when `NODE_ENV === "production"`.
+
+## Rate limiting (Phase 0 Checkpoint 5)
+
+A single reusable server-only helper lives at `lib/ratelimit.ts`. It uses `@upstash/ratelimit` against an Upstash Redis database. Every later feature API route should call this rather than touching Upstash directly.
+
+**Default policy:** 10 requests per 10 seconds, sliding window. Tunable per call site.
+
+**Required env vars in `.env.local`:** `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`. Vercel must hold the same two values.
+
+**Usage:**
+
+```ts
+import { withRateLimit } from "@/lib/ratelimit";
+
+const r = await withRateLimit({
+  identifier: request.headers.get("x-forwarded-for") ?? "anonymous",
+});
+if (!r.success) {
+  return NextResponse.json(
+    { error: "rate_limited", retryAfter: r.retryAfter },
+    { status: 429, headers: { "Retry-After": String(r.retryAfter) } },
+  );
+}
+```
+
+The helper returns a discriminated union: `success: true` for permitted requests (with `degraded: true` when Upstash was unreachable — the request is allowed, the flag is observable), or `success: false` for rejected requests (with `retryAfter` seconds). A misconfiguration (missing env vars) throws — it does not silently fail.
+
+To prove the wiring works locally, hit `GET /api/dev/rate-limit-test` twelve times in quick succession; the first ten return `200`, the last two return `429` with a `Retry-After` header. The route returns `404` when `NODE_ENV === "production"`.
+
 ## Environment variables
 
 Every configuration value the app needs lives in `.env.example` (tracked) — copy it to `.env.local` (ignored) and fill in real values for local development. Production secrets live in the Vercel project under Settings → Environment Variables (Production scope), marked Sensitive so the value is write-only.
