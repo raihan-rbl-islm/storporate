@@ -65,13 +65,24 @@ export default async function DashboardPage() {
       </p>
 
       <nav aria-label="Dashboard sections" className="flex flex-col gap-3">
-        <Link
-          href="/dashboard/matches"
-          prefetch={false}
-          className="text-foreground text-base underline-offset-4 hover:underline"
-        >
-          Ranked matches
-        </Link>
+        {roleCookie === "student" ? (
+          <Link
+            href="/dashboard/matches"
+            prefetch={false}
+            className="text-foreground text-base underline-offset-4 hover:underline"
+          >
+            Ranked matches
+          </Link>
+        ) : null}
+        {roleCookie === "club" ? (
+          <Link
+            href="/dashboard/clubs/matches"
+            prefetch={false}
+            className="text-foreground text-base underline-offset-4 hover:underline"
+          >
+            Sponsorship matches
+          </Link>
+        ) : null}
         <Link
           href="/dashboard/profile"
           prefetch={false}
