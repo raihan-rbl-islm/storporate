@@ -162,3 +162,30 @@ export const studentApplications = pgTable(
     ).on(t.studentId, t.corporateId),
   }),
 );
+
+// ----------------------------------------------------------------------
+// Phase 4: club sponsorship interest (a club expresses interest in a
+// specific corporate sponsor). One row per (club, corporate) pair, enforced
+// at the DB level so a duplicate insert becomes a Postgres 23505 — caught
+// and translated to a friendly "duplicate" status in the Server Action.
+//
+// `clubId` / `corporateId` mirror the persona table `id` columns (text,
+// not serial) so the FK semantics match the rest of the schema even though
+// we don't declare formal FKs (personas are fixtures; the canonical id
+// comes from the cookie session).
+export const clubSponsorshipInterests = pgTable(
+  "club_sponsorship_interests",
+  {
+    id: serial("id").primaryKey(),
+    clubId: text("club_id").notNull(),
+    corporateId: text("corporate_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqClubCorporate: uniqueIndex(
+      "club_sponsorship_interests_club_corporate_uniq",
+    ).on(t.clubId, t.corporateId),
+  }),
+);

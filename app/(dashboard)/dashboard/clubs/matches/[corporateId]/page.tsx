@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { SponsorshipInterestButton } from "@/components/matches/sponsorship-interest-button";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getClubSponsorshipInterestStatus } from "@/lib/server/actions/club-sponsorship-interests";
 import { scoreClubMatchBreakdown } from "@/lib/server/matching/club-matches";
 import {
   getCurrentPersona,
@@ -42,6 +44,12 @@ export default async function ClubMatchRationalePage({ params }: PageProps) {
 
   const breakdown = scoreClubMatchBreakdown(club, corporate);
 
+  // Read whether THIS club has already expressed interest in THIS corporate.
+  // We gate the render on `current.kind === "club"`, so the read below
+  // can't observe a non-club row — but the helper is still safe for
+  // non-clubs and returns the "not recorded" sentinel.
+  const interestStatus = await getClubSponsorshipInterestStatus(corporate.id);
+
   return (
     <section
       aria-labelledby="rationale-heading"
@@ -60,22 +68,32 @@ export default async function ClubMatchRationalePage({ params }: PageProps) {
         <p className="font-mono text-sm text-muted-foreground">
           Match rationale
         </p>
-        <h1
-          id="rationale-heading"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl"
-        >
-          <span className="flex items-center gap-2">
-            <Building2
-              aria-hidden="true"
-              className="size-6 text-muted-foreground"
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1
+              id="rationale-heading"
+              className="text-3xl font-semibold tracking-tight sm:text-4xl"
+            >
+              <span className="flex items-center gap-2">
+                <Building2
+                  aria-hidden="true"
+                  className="size-6 text-muted-foreground"
+                />
+                {corporate.organizationName}
+              </span>
+            </h1>
+            <p className="max-w-2xl text-base text-muted-foreground">
+              {corporate.industry}
+              {corporate.location ? ` · ${corporate.location}` : ""}
+            </p>
+          </div>
+          {current.kind === "club" ? (
+            <SponsorshipInterestButton
+              corporateId={corporate.id}
+              initialStatus={interestStatus.recorded ? "recorded" : "idle"}
             />
-            {corporate.organizationName}
-          </span>
-        </h1>
-        <p className="max-w-2xl text-base text-muted-foreground">
-          {corporate.industry}
-          {corporate.location ? ` · ${corporate.location}` : ""}
-        </p>
+          ) : null}
+        </div>
         <Badge
           variant="default"
           data-testid="club-rationale-match-score"
