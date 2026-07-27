@@ -36,6 +36,22 @@ export interface RankedClubCandidate {
   topReasons: readonly string[];
 }
 
+/**
+ * Per-signal scoring breakdown for a single (corporate, club) pair.
+ * `matchedCategories` and `matchedMissionTokens` are display-cased club
+ * tokens in input order, deduplicated. `score` is the raw integer sum
+ * (`matchedCategories.length * CATEGORY_WEIGHT +
+ * matchedMissionTokens.length * MISSION_WEIGHT +
+ * (sponsorshipIntent ? SPONSORSHIP_INTENT_BONUS : 0)`); never rounded,
+ * never normalized.
+ */
+export interface CorporateClubBreakdown {
+  readonly score: number;
+  readonly matchedCategories: readonly string[];
+  readonly matchedMissionTokens: readonly string[];
+  readonly sponsorshipIntent: boolean;
+}
+
 const MAX_REASONS = 3;
 const CATEGORY_WEIGHT = 2;
 const MISSION_WEIGHT = 3;
@@ -61,6 +77,58 @@ const SUBSTRING_STOPWORDS: ReadonlySet<string> = new Set([
   "our",
   "out",
 ]);
+
+/**
+ * Compute the per-signal breakdown for a single (corporate, club) pair.
+ * Used by both `rankClubsForCorporate` (list page) and the public
+ * `scoreClubCandidateBreakdown` (rationale detail page) so the two
+ * stay in lockstep: for any pair,
+ * `RankedClubCandidate.score === computeClubCandidateBreakdown(...).score`.
+ */
+function computeClubCandidateBreakdown(
+  corporate: CorporateClubMatchInput,
+  club: ClubFixture,
+  sponsorshipKey: Set<string>,
+  descriptionLower: string,
+): CorporateClubBreakdown {
+  const categories = normalizeList(club.categories);
+  const missionTokens = normalizeMission(club.mission);
+
+  const matchedCategories: string[] = [];
+  for (const normalized of categories.set) {
+    if (sponsorshipKey.has(normalized)) {
+      matchedCategories.push(categories.display.get(normalized) ?? normalized);
+    }
+  }
+
+  const matchedMissionTokens: string[] = [];
+  for (const normalized of missionTokens.set) {
+    const hit =
+      sponsorshipKey.has(normalized) ||
+      descriptionLower.includes(normalized);
+    if (hit) {
+      matchedMissionTokens.push(
+        missionTokens.display.get(normalized) ?? normalized,
+      );
+    }
+  }
+
+  const sponsorshipIntent =
+    corporate.collaborationIntent === "sponsorship" ||
+    corporate.collaborationIntent === "both";
+
+  const score =
+    matchedCategories.length * CATEGORY_WEIGHT +
+    matchedMissionTokens.length * MISSION_WEIGHT +
+    (sponsorshipIntent ? SPONSORSHIP_INTENT_BONUS : 0);
+
+  return {
+    score,
+    matchedCategories,
+    matchedMissionTokens,
+    sponsorshipIntent,
+  };
+}
 
 /**
  * Trim, lowercase, dedup while preserving first-seen casing for display.
@@ -157,52 +225,25 @@ export function rankClubsForCorporate(
   const descriptionLower = (corporate.description ?? "").toLowerCase();
 
   const ranked: RankedClubCandidate[] = clubs.map((club) => {
-    const categories = normalizeList(club.categories);
-    const missionTokens = normalizeMission(club.mission);
-
-    const matchedCategories: string[] = [];
-    for (const normalized of categories.set) {
-      if (sponsorshipKey.has(normalized)) {
-        matchedCategories.push(
-          categories.display.get(normalized) ?? normalized,
-        );
-      }
-    }
-
-    const matchedMissionTokens: string[] = [];
-    for (const normalized of missionTokens.set) {
-      const hit =
-        sponsorshipKey.has(normalized) ||
-        descriptionLower.includes(normalized);
-      if (hit) {
-        matchedMissionTokens.push(
-          missionTokens.display.get(normalized) ?? normalized,
-        );
-      }
-    }
-
-    const sponsorshipIntent =
-      corporate.collaborationIntent === "sponsorship" ||
-      corporate.collaborationIntent === "both";
-
-    const score =
-      matchedCategories.length * CATEGORY_WEIGHT +
-      matchedMissionTokens.length * MISSION_WEIGHT +
-      (sponsorshipIntent ? SPONSORSHIP_INTENT_BONUS : 0);
-
+    const breakdown = computeClubCandidateBreakdown(
+      corporate,
+      club,
+      sponsorshipKey,
+      descriptionLower,
+    );
     const reasons: string[] = [];
-    for (const category of matchedCategories) {
+    for (const category of breakdown.matchedCategories) {
       if (reasons.length >= MAX_REASONS) break;
       reasons.push(`Matches your sponsorship focus: ${category}`);
     }
-    for (const token of matchedMissionTokens) {
+    for (const token of breakdown.matchedMissionTokens) {
       if (reasons.length >= MAX_REASONS) break;
       reasons.push(`Aligns with their mission: ${token}`);
     }
 
     return {
       club,
-      score,
+      score: breakdown.score,
       topReasons: reasons.slice(0, MAX_REASONS),
     };
   });
@@ -213,4 +254,36 @@ export function rankClubsForCorporate(
   });
 
   return ranked;
+}
+
+/**
+ * Public per-pair scorer: returns the same breakdown the list page uses
+ * to rank and badge each candidate. Consumed by the corporate
+ * rationale detail page (`/dashboard/corporate/candidates/[candidateId]`)
+ * for the club branch so its score badge and signal blocks stay in
+ * lockstep with the list view.
+ */
+export function scoreClubCandidateBreakdown(
+  corporate: CorporateClubMatchInput,
+  club: ClubFixture,
+): CorporateClubBreakdown {
+  const sponsorshipInterests = normalizeList(corporate.sponsorshipInterests);
+  const csrFocus = normalizeList(corporate.csrFocus);
+
+  const sponsorshipKey = new Set<string>();
+  for (const [key] of [
+    ...sponsorshipInterests.display.entries(),
+    ...csrFocus.display.entries(),
+  ]) {
+    sponsorshipKey.add(key);
+  }
+
+  const descriptionLower = (corporate.description ?? "").toLowerCase();
+
+  return computeClubCandidateBreakdown(
+    corporate,
+    club,
+    sponsorshipKey,
+    descriptionLower,
+  );
 }
