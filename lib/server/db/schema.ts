@@ -219,3 +219,34 @@ export const corporateInterests = pgTable(
     ).on(t.corporateId, t.candidateKind, t.candidateId),
   }),
 );
+
+// ----------------------------------------------------------------------
+// Phase 5: outreach_events (local Demo "send" state). One row per
+// (role, personaId, kind, corporateId) tuple — enforced at the DB level so
+// a duplicate insert becomes a Postgres 23505 and is translated to a
+// friendly "duplicate" status in the Server Action.
+//
+// `kind` is the draft kind (`"student-application" | "club-sponsorship-pitch"`)
+// and `role` is the persona role (`"student" | "club"`). Both are `text`
+// rather than Postgres enums to keep migrations light. This table is
+// PURELY local state: the Demo "Send" button never touches an email API
+// or external recipient. Re-sending on the same rationale is blocked by
+// the unique constraint.
+export const outreachEvents = pgTable(
+  "outreach_events",
+  {
+    id: serial("id").primaryKey(),
+    kind: text("kind").notNull(),
+    role: text("role").notNull(),
+    personaId: text("persona_id").notNull(),
+    corporateId: text("corporate_id").notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqPersonaCorporateKind: uniqueIndex(
+      "outreach_events_persona_corporate_kind_uniq",
+    ).on(t.role, t.personaId, t.kind, t.corporateId),
+  }),
+);

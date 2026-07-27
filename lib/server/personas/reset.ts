@@ -1,7 +1,12 @@
 import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/server/db";
-import { students, clubs, corporates } from "@/lib/server/db/schema";
+import {
+  students,
+  clubs,
+  corporates,
+  outreachEvents,
+} from "@/lib/server/db/schema";
 import { PERSONA_FIXTURE } from "@/data/personas";
 // Import PersonaRole from the canonical type module rather than from
 // `@/lib/server/personas/current` to avoid a circular re-export between
@@ -57,6 +62,7 @@ export async function resetPersonaToFixture(
       .update(students)
       .set({ ...candidate, updatedAt: new Date() })
       .where(eq(students.id, personaId));
+    await clearOutreachEventsForPersona(personaId);
     return { changed: true };
   }
   if (role === "club") {
@@ -89,6 +95,7 @@ export async function resetPersonaToFixture(
       .update(clubs)
       .set({ ...candidate, updatedAt: new Date() })
       .where(eq(clubs.id, personaId));
+    await clearOutreachEventsForPersona(personaId);
     return { changed: true };
   }
   const fixture = PERSONA_FIXTURE.corporates.find(
@@ -121,4 +128,23 @@ export async function resetPersonaToFixture(
     .set({ ...candidate, updatedAt: new Date() })
     .where(eq(corporates.id, personaId));
   return { changed: true };
+}
+
+/**
+ * Best-effort delete of any `outreach_events` rows belonging to the
+ * given persona. Wrapped in try/catch so a delete failure (e.g. transient
+ * DB error) never blocks the persona reset. Per Phase 5's plan, the
+ * persona reset must succeed even if this cleanup fails.
+ */
+async function clearOutreachEventsForPersona(personaId: string): Promise<void> {
+  try {
+    await db
+      .delete(outreachEvents)
+      .where(eq(outreachEvents.personaId, personaId));
+  } catch (err) {
+    console.error(
+      "[resetPersonaToFixture] outreach_events cleanup failed:",
+      err,
+    );
+  }
 }

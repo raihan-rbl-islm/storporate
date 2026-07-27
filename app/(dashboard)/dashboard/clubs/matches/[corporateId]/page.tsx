@@ -5,6 +5,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { and, desc, eq } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 
 import { SponsorshipInterestButton } from "@/components/matches/sponsorship-interest-button";
@@ -27,6 +28,8 @@ import {
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
+import { db } from "@/lib/server/db";
+import { outreachEvents } from "@/lib/server/db/schema";
 
 interface PageProps {
   readonly params: Promise<{ corporateId: string }>;
@@ -52,6 +55,23 @@ export default async function ClubMatchRationalePage({ params }: PageProps) {
   // can't observe a non-club row — but the helper is still safe for
   // non-clubs and returns the "not recorded" sentinel.
   const interestStatus = await getClubSponsorshipInterestStatus(corporate.id);
+
+  // Read the latest local Demo "send" for this (club, corporate) pair so
+  // the panel can mount in `sent` state when applicable. Per the Phase 5
+  // plan, we inline this query rather than introducing a helper module.
+  const [latestSend] = await db
+    .select({ sentAt: outreachEvents.sentAt })
+    .from(outreachEvents)
+    .where(
+      and(
+        eq(outreachEvents.role, current.kind),
+        eq(outreachEvents.personaId, current.row.id),
+        eq(outreachEvents.corporateId, corporate.id),
+      ),
+    )
+    .orderBy(desc(outreachEvents.sentAt))
+    .limit(1);
+  const initialSentAtIso = latestSend?.sentAt.toISOString() ?? null;
 
   return (
     <section
@@ -190,6 +210,7 @@ export default async function ClubMatchRationalePage({ params }: PageProps) {
           corporateId={corporate.id}
           action={generateClubSponsorshipPitch}
           ctaLabel="Generate sponsorship pitch"
+          initialSentAtIso={initialSentAtIso}
         />
       ) : null}
 

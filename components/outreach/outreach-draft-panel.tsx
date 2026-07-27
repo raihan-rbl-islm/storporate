@@ -1,11 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { AlertTriangle, Check, Copy, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  clearOutreachEventsForCurrentPersona,
+  markOutreachSent,
+} from "@/lib/server/actions/outreach/mark-sent";
 
 export interface OutreachDraftPanelProps {
   corporateId: string;
@@ -32,6 +36,12 @@ export interface OutreachDraftPanelProps {
   >;
   /** CTA label, e.g. "Generate application draft" or "Generate sponsorship pitch". */
   ctaLabel: string;
+  /**
+   * Server-read seed: if the current persona has already marked this
+   * rationale as "sent (Demo simulation)" in a previous render, pass the
+   * ISO timestamp here so the panel mounts directly in the `sent` state.
+   */
+  initialSentAtIso: string | null;
   className?: string;
 }
 
@@ -45,21 +55,36 @@ type LocalState =
       closing: string;
       fullText: string;
     }
+  | { kind: "sent"; sentAtIso: string }
   | { kind: "error"; reason: string };
 
 export function OutreachDraftPanel({
   corporateId,
   action,
   ctaLabel,
+  initialSentAtIso,
   className,
 }: OutreachDraftPanelProps) {
   const [isPending, startTransition] = useTransition();
-  const [state, setState] = useState<LocalState>({ kind: "idle" });
+  const [state, setState] = useState<LocalState>(
+    initialSentAtIso ? { kind: "sent", sentAtIso: initialSentAtIso } : { kind: "idle" },
+  );
   const [copied, setCopied] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+
+  // If the server-rendered `sent` seed changes (e.g. after revalidation),
+  // reconcile local state so the panel reflects the canonical value.
+  useEffect(() => {
+    if (initialSentAtIso && state.kind !== "sent") {
+      setState({ kind: "sent", sentAtIso: initialSentAtIso });
+    }
+  }, [initialSentAtIso, state.kind]);
 
   function onGenerate() {
     setState({ kind: "generating" });
     setCopied(false);
+    setSendError(null);
     const fd = new FormData();
     fd.set("corporateId", corporateId);
     startTransition(async () => {
@@ -106,8 +131,46 @@ export function OutreachDraftPanel({
   }
 
   function onClear() {
+    // Reset local UI immediately, then ask the server to drop any rows
+    // for this persona. If the clear fails, the next render will
+    // rehydrate from DB and may show `sent` again — which is honest.
     setState({ kind: "idle" });
     setCopied(false);
+    setSendError(null);
+    startTransition(async () => {
+      try {
+        await clearOutreachEventsForCurrentPersona();
+      } catch (err) {
+        console.error("[OutreachDraftPanel] clear failed:", err);
+      }
+    });
+  }
+
+  function onSend() {
+    if (state.kind !== "ready") return;
+    setSendError(null);
+    const fd = new FormData();
+    fd.set("corporateId", corporateId);
+    startTransition(async () => {
+      const result = await markOutreachSent(fd);
+      if (result.status === "sent") {
+        setState({ kind: "sent", sentAtIso: result.sentAtIso });
+        setConfirmOpen(false);
+        return;
+      }
+      if (result.status === "duplicate") {
+        // Treat duplicate as success — we already have a row, so just
+        // transition to `sent` using the existing timestamp.
+        setState({
+          kind: "sent",
+          sentAtIso: initialSentAtIso ?? new Date().toISOString(),
+        });
+        setConfirmOpen(false);
+        return;
+      }
+      setSendError(result.reason);
+      setConfirmOpen(false);
+    });
   }
 
   const isGenerating = state.kind === "generating" || isPending;
@@ -179,7 +242,7 @@ export function OutreachDraftPanel({
               </pre>
             </div>
           </div>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             <Button
               type="button"
               onClick={onCopy}
@@ -188,6 +251,15 @@ export function OutreachDraftPanel({
             >
               <Copy aria-hidden="true" className="mr-1 size-4" />
               {copied ? "Copied" : "Copy"}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setConfirmOpen(true)}
+              variant="default"
+              size="sm"
+              aria-label="Send — Demo simulation only, no email will be transmitted"
+            >
+              Send (Demo simulation)
             </Button>
             <Button
               type="button"
@@ -211,6 +283,45 @@ export function OutreachDraftPanel({
               Draft copied to your clipboard.
             </p>
           ) : null}
+          {sendError ? (
+            <p
+              role="status"
+              className="text-destructive text-xs"
+              aria-live="polite"
+            >
+              <AlertTriangle
+                aria-hidden="true"
+                className="mr-1 inline size-3"
+              />
+              {sendError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {state.kind === "sent" && !isPending ? (
+        <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-4">
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm font-medium"
+          >
+            <Check aria-hidden="true" className="mr-1 inline size-4" />
+            Marked as sent — Demo simulation only. No email was sent.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Recorded at {new Date(state.sentAtIso).toLocaleString()}.
+          </p>
+          <div>
+            <Button
+              type="button"
+              onClick={onClear}
+              variant="ghost"
+              size="sm"
+            >
+              Clear and start over
+            </Button>
+          </div>
         </div>
       ) : null}
 
@@ -235,6 +346,59 @@ export function OutreachDraftPanel({
           >
             Retry
           </Button>
+        </div>
+      ) : null}
+
+      {confirmOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="send-confirm-title"
+          aria-describedby="send-confirm-body"
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              if (!isPending) setConfirmOpen(false);
+            }}
+          />
+          <div className="relative z-10 mx-4 w-full max-w-sm rounded-md border border-border bg-card p-4 shadow-lg">
+            <h3
+              id="send-confirm-title"
+              className="text-base font-semibold tracking-tight"
+            >
+              Confirm Demo send
+            </h3>
+            <p
+              id="send-confirm-body"
+              className="text-muted-foreground mt-2 text-sm"
+            >
+              This is a Demo simulation. No email will be sent to the
+              organization. Continue?
+            </p>
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmOpen(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                onClick={onSend}
+                disabled={isPending}
+                aria-busy={isPending}
+              >
+                Continue (Demo simulation)
+              </Button>
+            </div>
+          </div>
         </div>
       ) : null}
     </section>
