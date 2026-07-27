@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Building2, Sparkles } from "lucide-react";
+import { AlertCircle, Building2, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -57,10 +57,14 @@ export default async function ClubMatchesPage() {
       </header>
 
       {matches.length === 0 ? (
-        <Card>
+        <Card data-testid="empty-fixture-state">
           <CardHeader>
             <CardTitle>
-              <h2 className="text-lg font-semibold">
+              <h2 className="flex items-center gap-2 text-lg font-semibold">
+                <AlertCircle
+                  aria-hidden="true"
+                  className="text-muted-foreground size-4"
+                />
                 The corporate catalog is empty
               </h2>
             </CardTitle>
@@ -70,6 +74,14 @@ export default async function ClubMatchesPage() {
               pick a different demo persona to see matches.
             </CardDescription>
           </CardHeader>
+          <CardContent className="pt-0">
+            <Link
+              href="/dashboard/clubs/matches"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Reload
+            </Link>
+          </CardContent>
         </Card>
       ) : (
         <ul className="grid gap-6">
