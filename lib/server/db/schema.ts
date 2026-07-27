@@ -5,6 +5,7 @@ import {
   text,
   timestamp,
   customType,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -134,3 +135,30 @@ export const corporates = pgTable("corporates", {
     .defaultNow()
     .notNull(),
 });
+
+// ----------------------------------------------------------------------
+// Phase 4: student apply (a student expresses interest in a specific
+// corporate match). One row per (student, corporate) pair, enforced at
+// the DB level so a duplicate insert becomes a Postgres 23505 — caught
+// and translated to a friendly "duplicate" status in the Server Action.
+//
+// `studentId` / `corporateId` mirror the persona table `id` columns
+// (text, not serial) so the FK semantics match the rest of the schema
+// even though we don't declare formal FKs (personas are fixtures; the
+// canonical id comes from the cookie session).
+export const studentApplications = pgTable(
+  "student_applications",
+  {
+    id: serial("id").primaryKey(),
+    studentId: text("student_id").notNull(),
+    corporateId: text("corporate_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqStudentCorporate: uniqueIndex(
+      "student_applications_student_corporate_uniq",
+    ).on(t.studentId, t.corporateId),
+  }),
+);
