@@ -120,12 +120,16 @@ export function OutreachDraftPanel({
     >
       <h2
         id="outreach-heading"
+        aria-describedby="outreach-disclaimer"
         className="text-xl font-semibold tracking-tight"
       >
         Outreach draft
       </h2>
-      <p className="text-muted-foreground text-sm">
-        Storporate does not send this message. Review the draft, then copy it
+      <p
+        id="outreach-disclaimer"
+        className="text-muted-foreground text-sm"
+      >
+        Storporate has not sent this message. Review the draft, then copy it
         and send it from your own email.
       </p>
 
@@ -157,15 +161,24 @@ export function OutreachDraftPanel({
 
       {state.kind === "ready" && !isPending ? (
         <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-4">
-          <p className="text-sm font-medium">Subject</p>
-          <p className="text-sm">{state.subject}</p>
-          <p className="mt-2 text-sm font-medium">Body</p>
-          <pre className="whitespace-pre-wrap font-sans text-sm">
-            {state.body}
-          </pre>
-          <pre className="whitespace-pre-wrap font-sans text-sm">
-            {state.closing}
-          </pre>
+          <div className="mt-3 flex flex-col gap-2">
+            <div>
+              <p className="text-sm font-medium">Subject</p>
+              <p className="text-sm">{state.subject}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Body</p>
+              <pre className="whitespace-pre-wrap font-sans text-sm">
+                {state.body}
+              </pre>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Closing</p>
+              <pre className="whitespace-pre-wrap font-sans text-sm">
+                {state.closing}
+              </pre>
+            </div>
+          </div>
           <div className="mt-2 flex gap-2">
             <Button
               type="button"
