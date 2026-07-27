@@ -7,6 +7,7 @@ import {
   PERSONA_FIXTURE,
   type CorporateFixture,
   type PersonaRole,
+  type StudentFixture,
 } from "@/data/personas";
 
 export type AnyPersona = {
@@ -210,4 +211,22 @@ export async function getAllHeroPersonas(): Promise<AnyPersona[]> {
  */
 export function getCorporateFixtures(): readonly CorporateFixture[] {
   return PERSONA_FIXTURE.corporates.slice();
+}
+
+/**
+ * All student fixtures in fixture order. Pure in-memory — does NOT query
+ * the DB. The Corporate→Student matcher
+ * (lib/server/matching/corporate-student-matches.ts) takes the active
+ * corporate row as the query input, not from this fixture list. This
+ * helper is provided for future corporate-side surfaces (e.g. the
+ * corporate club list page, or the unified corporate rationale detail
+ * page that handles both student and club candidates).
+ *
+ * Returns a shallow array copy. `PERSONA_FIXTURE.students` is declared
+ * as a mutable `StudentFixture[]` in `data/personas.ts`, so `.slice()`
+ * returns a fresh array and prevents callers from reordering or
+ * removing entries from the fixture-owned array through this reference.
+ */
+export function getStudentFixtures(): readonly StudentFixture[] {
+  return PERSONA_FIXTURE.students.slice();
 }
