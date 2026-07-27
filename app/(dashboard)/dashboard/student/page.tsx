@@ -14,12 +14,16 @@ import {
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { MatchCard } from "@/components/matches/match-card";
 import { Disclaimer } from "@/components/personas/disclaimer";
+import { HeroCallout } from "@/components/hero/hero-callout";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import {
   getCurrentPersona,
   hasOnboarded,
 } from "@/lib/server/personas/current";
-import { rankCorporateMatchesFor } from "@/lib/server/matching/student-matches";
+import {
+  rankCorporateMatchesFor,
+  toDisplayMatchPercent,
+} from "@/lib/server/matching/student-matches";
 
 export default async function StudentDashboardPage() {
   const current = await getCurrentPersona();
@@ -27,6 +31,8 @@ export default async function StudentDashboardPage() {
   const student = current.row;
   const matches = rankCorporateMatchesFor(student, await getCorporateFixtures()).slice(0, 3);
   const ready = hasOnboarded(student);
+  const heroTop =
+    student.heroFlag && matches.length > 0 ? matches[0] : null;
 
   return (
     <DashboardLayout
@@ -69,6 +75,18 @@ export default async function StudentDashboardPage() {
           </Link>
         </CardContent>
       </Card>
+
+      {heroTop ? (
+        <HeroCallout
+          personaName={student.fullName}
+          topMatch={{
+            corporateId: heroTop.corporate.id,
+            corporateName: heroTop.corporate.organizationName,
+            role: "Internship",
+            scorePercent: toDisplayMatchPercent(heroTop.score),
+          }}
+        />
+      ) : null}
 
       <section
         aria-labelledby="top-opportunities-heading"

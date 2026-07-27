@@ -179,3 +179,18 @@ export function scoreMatchBreakdown(
     normalizeList(student.careerInterests),
   );
 }
+
+/**
+ * Display-only percentage derived from the raw integer score. The
+ * hero scenario (Tasnim → bKash) is the calibration point: a raw
+ * score of 8 displays as 92%. The calibration is a single linear
+ * mapping applied to every persona — there is no per-persona branch.
+ */
+export const HERO_CALIBRATION_RAW = 8;
+export const HERO_CALIBRATION_PERCENT = 92;
+
+export function toDisplayMatchPercent(rawScore: number): number {
+  if (rawScore <= 0) return 0;
+  const percent = Math.round((rawScore / HERO_CALIBRATION_RAW) * HERO_CALIBRATION_PERCENT);
+  return Math.max(1, Math.min(99, percent));
+}

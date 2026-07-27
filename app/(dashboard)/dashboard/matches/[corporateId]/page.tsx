@@ -17,8 +17,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { HeroDisclaimer } from "@/components/hero/hero-disclaimer";
 import { getStudentApplicationStatus } from "@/lib/server/actions/student-applications";
-import { scoreMatchBreakdown } from "@/lib/server/matching/student-matches";
+import {
+  scoreMatchBreakdown,
+  toDisplayMatchPercent,
+} from "@/lib/server/matching/student-matches";
 import {
   getCurrentPersona,
   hasOnboarded,
@@ -44,6 +48,9 @@ export default async function MatchRationalePage({ params }: PageProps) {
 
   const breakdown = scoreMatchBreakdown(student, corporate);
 
+  const isHero = current.kind === "student" && current.row.heroFlag;
+  const isBikash = corporate.organizationName.toLowerCase().includes("bkash");
+
   // Read whether THIS student has already applied to THIS corporate. We
   // gate the render on `current.kind === "student"`, so the read below
   // can't observe a non-student row — but the helper is still safe for
@@ -56,6 +63,13 @@ export default async function MatchRationalePage({ params }: PageProps) {
       className="mx-auto max-w-3xl space-y-8"
       data-testid="match-rationale-page"
     >
+      {isHero && isBikash ? (
+        <HeroDisclaimer
+          personaName={current.row.fullName}
+          corporateName={corporate.organizationName}
+        />
+      ) : null}
+
       <Link
         href="/dashboard/matches"
         className={buttonVariants({ variant: "ghost", size: "sm" })}
@@ -98,9 +112,13 @@ export default async function MatchRationalePage({ params }: PageProps) {
           variant="default"
           data-testid="rationale-match-score"
           className="shrink-0 self-start whitespace-nowrap"
+          aria-describedby={isHero && isBikash ? "hero-disclaimer-heading" : undefined}
         >
           <Sparkles aria-hidden="true" className="mr-1 size-3" />
           Score {breakdown.score}
+          {isHero && isBikash
+            ? ` · ${toDisplayMatchPercent(breakdown.score)}% match`
+            : null}
         </Badge>
       </header>
 
