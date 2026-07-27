@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { AlertTriangle, Check, Copy, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -100,14 +100,6 @@ export function OutreachDraftPanel({
   // can offer a "Hide and start over" path without losing the in-flight
   // request context.
   const guard = useDelayedActionGuard();
-
-  // If the server-rendered `sent` seed changes (e.g. after revalidation),
-  // reconcile local state so the panel reflects the canonical value.
-  useEffect(() => {
-    if (initialSentAtIso && state.kind !== "sent") {
-      setState({ kind: "sent", sentAtIso: initialSentAtIso });
-    }
-  }, [initialSentAtIso, state.kind]);
 
   function onGenerate() {
     setState({ kind: "generating" });
@@ -219,8 +211,6 @@ export function OutreachDraftPanel({
       setConfirmOpen(false);
     });
   }
-
-  const isGenerating = state.kind === "generating" || state.kind === "slow";
 
   return (
     <section

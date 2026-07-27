@@ -20,8 +20,8 @@ import {
   getCurrentPersona,
   hasOnboarded,
 } from "@/lib/server/personas/current";
-import { getClubFixtures } from "@/lib/server/personas/lookup";
-import type { CorporateFixture } from "@/lib/server/personas/lookup";
+import { getClubFixtures, getCorporateFixtures } from "@/lib/server/personas/lookup";
+import type { CorporateFixture } from "@/data/personas";
 import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 
 export const dynamic = "force-dynamic";
@@ -152,6 +152,12 @@ export default async function CorporateClubCandidatesPage() {
   if (!hasOnboarded(current.row)) redirect("/onboarding");
 
   const corporate = current.row;
+  const corporateFixture = getCorporateFixtures().find(
+    (item) => item.id === corporate.id,
+  );
+  if (!corporateFixture) {
+    redirect("/dashboard");
+  }
 
   return (
     <section
@@ -180,7 +186,7 @@ export default async function CorporateClubCandidatesPage() {
       <Suspense
         fallback={<LoadingPanel label="Loading club candidates" rows={5} />}
       >
-        <CandidatesList corporate={corporate} />
+        <CandidatesList corporate={corporateFixture} />
       </Suspense>
     </section>
   );

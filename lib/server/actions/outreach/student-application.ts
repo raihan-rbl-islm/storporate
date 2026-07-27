@@ -7,6 +7,7 @@ import { db } from "@/lib/server/db";
 import { corporates } from "@/lib/server/db/schema";
 import { scoreMatchBreakdown } from "@/lib/server/matching/student-matches";
 import { getCurrentPersona } from "@/lib/server/personas/current";
+import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import {
   buildStudentApplicationDraft,
   type StudentApplicationDraft,
@@ -57,11 +58,17 @@ export async function generateStudentApplicationDraft(
   if (!corporate) {
     return { status: "error", reason: "That organization is no longer listed." };
   }
+  const corporateFixture = getCorporateFixtures().find(
+    (item) => item.id === corporate.id,
+  );
+  if (!corporateFixture) {
+    return { status: "error", reason: "That organization is no longer listed." };
+  }
 
   // Use the existing scorer breakdown as the only source of matched
   // signals. The action only formats the display strings; it does not
   // re-run or approximate the matching logic.
-  const breakdown = scoreMatchBreakdown(current.row, corporate);
+  const breakdown = scoreMatchBreakdown(current.row, corporateFixture);
   const reasons = [
     ...breakdown.matchedSkills.map((s) => `Matches your skills: ${s}`),
     ...breakdown.matchedInterests.map((i) => `Aligns with your interest in ${i}`),
@@ -75,8 +82,8 @@ export async function generateStudentApplicationDraft(
         studyProgram: current.row.studyProgram,
       },
       corporate: {
-        organizationName: corporate.organizationName,
-        industry: corporate.industry,
+        organizationName: corporateFixture.organizationName,
+        industry: corporateFixture.industry,
       },
       reasons,
     });
@@ -91,7 +98,7 @@ export async function generateStudentApplicationDraft(
     );
     try {
       const fallback = buildPreparedStudentApplication({
-        corporate: { organizationName: corporate.organizationName },
+        corporate: { organizationName: corporateFixture.organizationName },
         student: {
           fullName: current.row.fullName,
           university: current.row.university,

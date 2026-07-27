@@ -19,7 +19,7 @@ import { PreparedResultsBanner } from "@/components/matches/prepared-results-ban
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
-import type { ClubFixture } from "@/lib/server/personas/lookup";
+import type { ClubFixture } from "@/data/personas";
 import {
   getCurrentPersona,
   hasOnboarded,

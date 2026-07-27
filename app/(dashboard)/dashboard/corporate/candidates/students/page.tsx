@@ -19,8 +19,11 @@ import {
   getCurrentPersona,
   hasOnboarded,
 } from "@/lib/server/personas/current";
-import { getStudentFixtures } from "@/lib/server/personas/lookup";
-import type { CorporateFixture } from "@/lib/server/personas/lookup";
+import {
+  getCorporateFixtures,
+  getStudentFixtures,
+} from "@/lib/server/personas/lookup";
+import type { CorporateFixture } from "@/data/personas";
 import { rankStudentsForCorporate } from "@/lib/server/matching/corporate-student-matches";
 import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 
@@ -153,6 +156,12 @@ export default async function CorporateStudentCandidatesPage() {
   if (!hasOnboarded(current.row)) redirect("/onboarding");
 
   const corporate = current.row;
+  const corporateFixture = getCorporateFixtures().find(
+    (item) => item.id === corporate.id,
+  );
+  if (!corporateFixture) {
+    redirect("/dashboard");
+  }
 
   return (
     <section
@@ -182,7 +191,7 @@ export default async function CorporateStudentCandidatesPage() {
       <Suspense
         fallback={<LoadingPanel label="Loading student candidates" rows={5} />}
       >
-        <CandidatesList corporate={corporate} />
+        <CandidatesList corporate={corporateFixture} />
       </Suspense>
     </section>
   );

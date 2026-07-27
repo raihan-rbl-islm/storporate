@@ -7,6 +7,7 @@ import { db } from "@/lib/server/db";
 import { corporates } from "@/lib/server/db/schema";
 import { scoreClubMatchBreakdown } from "@/lib/server/matching/club-matches";
 import { getCurrentPersona } from "@/lib/server/personas/current";
+import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import {
   buildClubSponsorshipPitchDraft,
   type ClubSponsorshipPitchDraft,
@@ -57,11 +58,17 @@ export async function generateClubSponsorshipPitch(
   if (!corporate) {
     return { status: "error", reason: "That organization is no longer listed." };
   }
+  const corporateFixture = getCorporateFixtures().find(
+    (item) => item.id === corporate.id,
+  );
+  if (!corporateFixture) {
+    return { status: "error", reason: "That organization is no longer listed." };
+  }
 
   // Use the existing scorer breakdown as the only source of matched
   // signals. The action only formats the display strings; it does not
   // re-run or approximate the matching logic.
-  const breakdown = scoreClubMatchBreakdown(current.row, corporate);
+  const breakdown = scoreClubMatchBreakdown(current.row, corporateFixture);
   const reasons = [
     ...breakdown.matchedCategories.map((c) => `Matches your category: ${c}`),
     ...breakdown.matchedMissionTokens.map((t) => `Aligns with your mission: ${t}`),
@@ -76,8 +83,8 @@ export async function generateClubSponsorshipPitch(
         sponsorshipNeeds: current.row.sponsorshipNeeds,
       },
       corporate: {
-        organizationName: corporate.organizationName,
-        industry: corporate.industry,
+        organizationName: corporateFixture.organizationName,
+        industry: corporateFixture.industry,
       },
       reasons,
     });
@@ -92,7 +99,7 @@ export async function generateClubSponsorshipPitch(
     );
     try {
       const fallback = buildPreparedClubSponsorshipPitch({
-        corporate: { organizationName: corporate.organizationName },
+        corporate: { organizationName: corporateFixture.organizationName },
         club: {
           clubName: current.row.clubName,
           university: current.row.university,

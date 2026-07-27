@@ -20,7 +20,7 @@ import {
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
-import type { StudentFixture } from "@/lib/server/personas/lookup";
+import type { StudentFixture } from "@/data/personas";
 import { rankCorporateMatchesFor } from "@/lib/server/matching/student-matches";
 import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 

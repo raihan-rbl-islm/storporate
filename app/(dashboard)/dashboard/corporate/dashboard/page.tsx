@@ -24,9 +24,10 @@ import {
 } from "@/lib/server/personas/current";
 import {
   getClubFixtures,
+  getCorporateFixtures,
   getStudentFixtures,
 } from "@/lib/server/personas/lookup";
-import type { CorporateFixture } from "@/lib/server/personas/lookup";
+import type { CorporateFixture } from "@/data/personas";
 import { rankClubsForCorporate } from "@/lib/server/matching/corporate-club-matches";
 import { rankStudentsForCorporate } from "@/lib/server/matching/corporate-student-matches";
 import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
@@ -176,6 +177,12 @@ export default async function CorporateDashboardPage() {
   const current = await getCurrentPersona();
   if (!current || current.kind !== "corporate") redirect("/dashboard");
   const corporate = current.row;
+  const corporateFixture = getCorporateFixtures().find(
+    (item) => item.id === corporate.id,
+  );
+  if (!corporateFixture) {
+    redirect("/dashboard");
+  }
   const intent = classify(corporate.collaborationIntent);
   const ready = hasOnboarded(corporate);
 
@@ -245,7 +252,7 @@ export default async function CorporateDashboardPage() {
               <LoadingPanel label="Loading student candidates" rows={3} />
             }
           >
-            <TopStudentCandidates corporate={corporate} />
+            <TopStudentCandidates corporate={corporateFixture} />
           </Suspense>
         </section>
       ) : null}
@@ -266,7 +273,7 @@ export default async function CorporateDashboardPage() {
               <LoadingPanel label="Loading club candidates" rows={3} />
             }
           >
-            <TopClubCandidates corporate={corporate} />
+            <TopClubCandidates corporate={corporateFixture} />
           </Suspense>
         </section>
       ) : null}

@@ -20,7 +20,7 @@ import { Disclaimer } from "@/components/personas/disclaimer";
 import { HeroCallout } from "@/components/hero/hero-callout";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
-import type { StudentFixture } from "@/lib/server/personas/lookup";
+import type { StudentFixture } from "@/data/personas";
 import {
   getCurrentPersona,
   hasOnboarded,
