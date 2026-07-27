@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { CorporateInterestButton } from "@/components/candidates/corporate-interest-button";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -21,6 +22,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  getCorporateInterestStatus,
+} from "@/lib/server/actions/corporate-interests";
 import { scoreClubCandidateBreakdown } from "@/lib/server/matching/corporate-club-matches";
 import { scoreStudentCandidateBreakdown } from "@/lib/server/matching/corporate-student-matches";
 import {
@@ -102,6 +106,15 @@ export default async function CandidateRationalePage({ params }: PageProps) {
       : [candidate.row.university, candidate.row.location];
   const subtitle = subtitleParts.filter((p) => p.length > 0).join(" · ");
 
+  // Read interest status for the action button. The action is gated to
+  // corporate sessions only; reading for any other persona simply returns
+  // `{ recorded: false }`, so the conditional render below is what hides
+  // the affordance for non-corporate visitors.
+  const interestStatus = await getCorporateInterestStatus(
+    candidate.kind,
+    candidate.row.id,
+  );
+
   return (
     <section
       aria-labelledby="rationale-heading"
@@ -120,36 +133,49 @@ export default async function CandidateRationalePage({ params }: PageProps) {
         <p className="font-mono text-sm text-muted-foreground">
           Match rationale
         </p>
-        <h1
-          id="rationale-heading"
-          className="text-3xl font-semibold tracking-tight sm:text-4xl"
-        >
-          <span className="flex items-center gap-2">
-            {candidate.kind === "student" ? (
-              <GraduationCap
-                aria-hidden="true"
-                className="size-6 text-muted-foreground"
-              />
-            ) : (
-              <Users
-                aria-hidden="true"
-                className="size-6 text-muted-foreground"
-              />
-            )}
-            {displayName}
-          </span>
-        </h1>
-        <p className="max-w-2xl text-base text-muted-foreground">
-          {subtitle}
-        </p>
-        <Badge
-          variant="default"
-          data-testid="candidate-rationale-match-score"
-          className="shrink-0 self-start whitespace-nowrap"
-        >
-          <Sparkles aria-hidden="true" className="mr-1 size-3" />
-          Score {candidate.breakdown.score}
-        </Badge>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 space-y-3">
+            <h1
+              id="rationale-heading"
+              className="text-3xl font-semibold tracking-tight sm:text-4xl"
+            >
+              <span className="flex items-center gap-2">
+                {candidate.kind === "student" ? (
+                  <GraduationCap
+                    aria-hidden="true"
+                    className="size-6 text-muted-foreground"
+                  />
+                ) : (
+                  <Users
+                    aria-hidden="true"
+                    className="size-6 text-muted-foreground"
+                  />
+                )}
+                {displayName}
+              </span>
+            </h1>
+            <p className="max-w-2xl text-base text-muted-foreground">
+              {subtitle}
+            </p>
+          </div>
+          <div className="flex flex-col items-start gap-3 sm:items-end">
+            <Badge
+              variant="default"
+              data-testid="candidate-rationale-match-score"
+              className="shrink-0 whitespace-nowrap"
+            >
+              <Sparkles aria-hidden="true" className="mr-1 size-3" />
+              Score {candidate.breakdown.score}
+            </Badge>
+            <CorporateInterestButton
+              candidateKind={candidate.kind}
+              candidateId={candidate.row.id}
+              initialStatus={
+                interestStatus.recorded ? "recorded" : "idle"
+              }
+            />
+          </div>
+        </div>
       </header>
 
       <section aria-labelledby="why-matched" className="space-y-4">

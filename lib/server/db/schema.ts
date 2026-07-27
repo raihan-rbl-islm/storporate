@@ -189,3 +189,33 @@ export const clubSponsorshipInterests = pgTable(
     ).on(t.clubId, t.corporateId),
   }),
 );
+
+// ----------------------------------------------------------------------
+// Phase 4: corporate interest (a corporate expresses interest in a
+// specific student or club candidate). One row per
+// (corporate, candidateKind, candidateId) triple — `candidateKind` is the
+// discriminator (`'student' | 'club'`) and lives in the unique key so a
+// corporate cannot accidentally record two interests in the same
+// `candidateId` for two different kinds. A duplicate insert becomes a
+// Postgres 23505 — caught and translated to a friendly "duplicate"
+// status in the Server Action.
+//
+// `candidateKind` is `text` rather than a Postgres enum to keep this
+// migration light (a future polish ticket can tighten the type).
+export const corporateInterests = pgTable(
+  "corporate_interests",
+  {
+    id: serial("id").primaryKey(),
+    corporateId: text("corporate_id").notNull(),
+    candidateKind: text("candidate_kind").notNull(),
+    candidateId: text("candidate_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqCorporateCandidate: uniqueIndex(
+      "corporate_interests_corporate_candidate_uniq",
+    ).on(t.corporateId, t.candidateKind, t.candidateId),
+  }),
+);
