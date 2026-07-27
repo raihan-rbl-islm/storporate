@@ -81,3 +81,42 @@ test("demo: no console errors on load", async ({ page }) => {
   ).toBeVisible();
   expect(errors, `console errors: ${JSON.stringify(errors)}`).toEqual([]);
 });
+
+const errorVariants = [
+  "oauth_cancelled",
+  "oauth_provider_error",
+  "missing_code",
+  "oauth_exchange_failed",
+  "oauth_start_failed",
+  "no_role",
+  "test_mode_disabled",
+  "unknown_persona",
+] as const;
+
+for (const variant of errorVariants) {
+  test(`demo: error page renders for ?error=${variant}`, async ({ page }) => {
+    const errors = await captureErrors(page);
+    const res = await page.goto(`/demo?error=${variant}`);
+    expect(res?.status(), "page returns 200").toBe(200);
+    // The H1 is unique to the error variant — assert the page rendered
+    // something meaningful (H1 is present, not the default "Open the demo").
+    await expect(page.locator("h1").first()).toBeVisible();
+    expect(errors, `console errors: ${JSON.stringify(errors)}`).toEqual([]);
+  });
+}
+
+test("demo: oauth_cancelled error page shows expected copy and CTAs", async ({
+  page,
+}) => {
+  await page.goto("/demo?error=oauth_cancelled");
+  await expect(
+    page.getByRole("heading", { name: "Sign-in was cancelled" }),
+  ).toBeVisible();
+  await expect(page.getByText(/you didn't finish signing in/i)).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /try with google again/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /pick a prepared persona/i }),
+  ).toBeVisible();
+});
