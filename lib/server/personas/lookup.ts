@@ -2,7 +2,12 @@ import "server-only";
 import { eq, desc, asc } from "drizzle-orm";
 import { db } from "@/lib/server/db";
 import { students, clubs, corporates } from "@/lib/server/db/schema";
-import { HERO_PERSONAS, type PersonaRole } from "@/data/personas";
+import {
+  HERO_PERSONAS,
+  PERSONA_FIXTURE,
+  type CorporateFixture,
+  type PersonaRole,
+} from "@/data/personas";
 
 export type AnyPersona = {
   id: string;
@@ -191,4 +196,18 @@ export async function getAllHeroPersonas(): Promise<AnyPersona[]> {
       p.name,
     ),
   );
+}
+
+/**
+ * All corporate fixtures in fixture order. Pure in-memory — does NOT query
+ * the DB. Used by the Student→Corporate matcher
+ * (lib/server/matching/student-matches.ts), which is deterministic over
+ * fixtures. The DB row of the active corporate is not consulted by the
+ * matcher.
+ *
+ * Returns a shallow array copy so callers cannot reorder or remove
+ * entries from the exported fixture array through this reference.
+ */
+export function getCorporateFixtures(): readonly CorporateFixture[] {
+  return PERSONA_FIXTURE.corporates.slice();
 }
