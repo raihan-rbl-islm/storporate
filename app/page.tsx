@@ -37,6 +37,12 @@ export default function Home() {
             <Link
               href="/demo"
               aria-label="Try the Demo, navigates to the demo entry screen"
+              // prefetch={false} — /demo does not exist yet (Phase 1.2
+              // owns the destination). Without this, Next.js auto-
+              // prefetches the route in production builds, producing a
+              // 404 that surfaces as a console.error and breaks the
+              // "no console errors" landing test.
+              prefetch={false}
               className={buttonVariants({ variant: "default", size: "lg" })}
             >
               Try the Demo
@@ -44,6 +50,7 @@ export default function Home() {
             <Link
               href="/demo/google"
               aria-label="Continue with Google, navigates to the demo entry screen"
+              prefetch={false}
               className={buttonVariants({ variant: "outline", size: "lg" })}
             >
               Continue with Google

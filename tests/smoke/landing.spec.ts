@@ -140,8 +140,15 @@ test("landing: stub-status notice visible at 360px", async ({ page }) => {
 test("landing: no console errors on load", async ({ page }) => {
   const errors = await captureErrors(page);
   await page.goto("/");
-  // give hydration a tick
-  await page.waitForLoadState("networkidle");
+  // Wait for the H1 to be visible to ensure hydration has finished.
+  // Note: we deliberately do NOT use waitForLoadState("networkidle") —
+  // the production build's HMR/sourcemap streams can keep the network
+  // active past Playwright's 30s default timeout, causing false-positive
+  // test failures. page.goto already waits for the load event, and the
+  // H1 visibility check confirms the page is interactive.
+  await expect(
+    page.getByRole("heading", { name: "Storporate", level: 1 }),
+  ).toBeVisible();
   expect(errors, `console errors: ${JSON.stringify(errors)}`).toEqual([]);
 });
 
