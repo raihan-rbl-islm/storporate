@@ -8,6 +8,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { ApplyButton } from "@/components/matches/apply-button";
+import { OutreachDraftPanel } from "@/components/outreach/outreach-draft-panel";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -204,6 +205,10 @@ export default async function MatchRationalePage({ params }: PageProps) {
           </CardContent>
         </Card>
       </section>
+
+      {current.kind === "student" ? (
+        <OutreachDraftPanel corporateId={corporate.id} />
+      ) : null}
     </section>
   );
 }
