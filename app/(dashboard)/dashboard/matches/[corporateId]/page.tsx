@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { HeroDisclaimer } from "@/components/hero/hero-disclaimer";
 import { getStudentApplicationStatus } from "@/lib/server/actions/student-applications";
+import { generateStudentApplicationDraft } from "@/lib/server/actions/outreach/student-application";
 import {
   scoreMatchBreakdown,
   toDisplayMatchPercent,
@@ -207,7 +208,11 @@ export default async function MatchRationalePage({ params }: PageProps) {
       </section>
 
       {current.kind === "student" ? (
-        <OutreachDraftPanel corporateId={corporate.id} />
+        <OutreachDraftPanel
+          corporateId={corporate.id}
+          action={generateStudentApplicationDraft}
+          ctaLabel="Generate application draft"
+        />
       ) : null}
     </section>
   );

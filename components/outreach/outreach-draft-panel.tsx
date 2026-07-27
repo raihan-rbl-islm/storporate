@@ -5,14 +5,33 @@ import { useState, useTransition } from "react";
 import { AlertTriangle, Check, Copy, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  generateStudentApplicationDraft,
-  type StudentApplicationDraftResult,
-} from "@/lib/server/actions/outreach/student-application";
 import { cn } from "@/lib/utils";
 
 export interface OutreachDraftPanelProps {
   corporateId: string;
+  /**
+   * The Server Action the panel should call. Both
+   * `generateStudentApplicationDraft` and `generateClubSponsorshipPitch`
+   * satisfy this signature. Typed as a structural union rather than the
+   * raw action reference so the consumer does not need to import both
+   * server-action modules into a Client Component.
+   */
+  action: (formData: FormData) => Promise<
+    | {
+        status: "ok";
+        draft: {
+          subject: string;
+          body: string;
+          closing: string;
+          fullText: string;
+          generatedAtIso: string;
+          kind: string;
+        };
+      }
+    | { status: "error"; reason: string }
+  >;
+  /** CTA label, e.g. "Generate application draft" or "Generate sponsorship pitch". */
+  ctaLabel: string;
   className?: string;
 }
 
@@ -30,6 +49,8 @@ type LocalState =
 
 export function OutreachDraftPanel({
   corporateId,
+  action,
+  ctaLabel,
   className,
 }: OutreachDraftPanelProps) {
   const [isPending, startTransition] = useTransition();
@@ -42,8 +63,7 @@ export function OutreachDraftPanel({
     const fd = new FormData();
     fd.set("corporateId", corporateId);
     startTransition(async () => {
-      const result: StudentApplicationDraftResult =
-        await generateStudentApplicationDraft(fd);
+      const result = await action(fd);
       if (result.status === "ok") {
         setState({
           kind: "ready",
@@ -117,7 +137,7 @@ export function OutreachDraftPanel({
           aria-busy={isPending}
         >
           <Sparkles aria-hidden="true" className="mr-1 size-4" />
-          Generate application draft
+          {ctaLabel}
         </Button>
       ) : null}
 

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { SponsorshipInterestButton } from "@/components/matches/sponsorship-interest-button";
+import { OutreachDraftPanel } from "@/components/outreach/outreach-draft-panel";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -17,6 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Disclaimer } from "@/components/personas/disclaimer";
+import { generateClubSponsorshipPitch } from "@/lib/server/actions/outreach/club-sponsorship-pitch";
 import { getClubSponsorshipInterestStatus } from "@/lib/server/actions/club-sponsorship-interests";
 import { scoreClubMatchBreakdown } from "@/lib/server/matching/club-matches";
 import {
@@ -181,6 +184,16 @@ export default async function ClubMatchRationalePage({ params }: PageProps) {
           </CardContent>
         </Card>
       </section>
+
+      {current.kind === "club" ? (
+        <OutreachDraftPanel
+          corporateId={corporate.id}
+          action={generateClubSponsorshipPitch}
+          ctaLabel="Generate sponsorship pitch"
+        />
+      ) : null}
+
+      <Disclaimer />
     </section>
   );
 }
