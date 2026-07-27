@@ -1,0 +1,9 @@
+title = "Storporate gitleaks config"
+
+[allowlist]
+description = "Allowlist non-secret placeholder values"
+paths = [
+  '''\.env\.example$''',
+  '''\.env\.example\.tmpl$''',
+  '''README\.md$''',
+]

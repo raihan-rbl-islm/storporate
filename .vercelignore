@@ -1,0 +1,19 @@
+# Test artifacts
+/test-results/
+/playwright-report/
+/coverage/
+/playwright/.cache/
+
+# Build caches
+*.tsbuildinfo
+.turbo
+
+# Local planning scratch
+/docs/plans/
+/docs/superpowers/plans/
+.superpowers/
+
+# Editor / OS noise
+.DS_Store
+.vscode/
+.idea/

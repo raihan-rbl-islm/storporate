@@ -15,7 +15,8 @@
     "db:check": "dotenv -e .env.local -- drizzle-kit check",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
     "test:e2e": "rm -rf .next && playwright test",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "secrets:scan": "gitleaks detect --no-banner --redact --config gitleaks.toml --source . --log-opts=\"--all\" --exit-code 2"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

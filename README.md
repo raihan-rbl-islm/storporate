@@ -38,6 +38,12 @@ The infrastructure tables (currently only `health_check`, used to verify pgvecto
 
 The Drizzle schema lives in `lib/server/db/schema.ts`. Migrations are managed via `drizzle-kit push` (state-tracked, not file-tracked) — re-running `db:push` after a no-op schema change must print `No changes detected`. The single server-side entry point is `lib/server/db/index.ts` and is marked `import "server-only"` so it can never be bundled into the client.
 
+## Environment variables
+
+Every configuration value the app needs lives in `.env.example` (tracked) — copy it to `.env.local` (ignored) and fill in real values for local development. Production secrets live in the Vercel project under Settings → Environment Variables (Production scope), marked Sensitive so the value is write-only.
+
+See `.env.example` for the canonical list and per-variable descriptions.
+
 ## Project structure
 
 ```text
