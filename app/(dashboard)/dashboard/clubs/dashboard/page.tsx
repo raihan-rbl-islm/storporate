@@ -14,6 +14,7 @@ import {
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { MatchCard } from "@/components/matches/match-card";
 import { Disclaimer } from "@/components/personas/disclaimer";
+import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import {
   getCurrentPersona,
@@ -121,6 +122,8 @@ export default async function ClubDashboardPage() {
           View all sponsors
         </Link>
       </div>
+
+      <CollaborationSignals role="club" />
 
       <Disclaimer />
     </DashboardLayout>

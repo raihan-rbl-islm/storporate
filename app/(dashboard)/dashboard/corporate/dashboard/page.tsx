@@ -14,6 +14,7 @@ import {
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { MatchCard } from "@/components/matches/match-card";
 import { Disclaimer } from "@/components/personas/disclaimer";
+import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import {
   getCurrentPersona,
   hasOnboarded,
@@ -196,6 +197,8 @@ export default async function CorporateDashboardPage() {
           )}
         </section>
       ) : null}
+
+      <CollaborationSignals role="corporate" />
 
       <Disclaimer />
     </DashboardLayout>

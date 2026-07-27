@@ -15,6 +15,7 @@ import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { MatchCard } from "@/components/matches/match-card";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { HeroCallout } from "@/components/hero/hero-callout";
+import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import {
   getCurrentPersona,
@@ -136,6 +137,8 @@ export default async function StudentDashboardPage() {
           View all matches
         </Link>
       </div>
+
+      <CollaborationSignals role="student" />
 
       <Disclaimer />
     </DashboardLayout>
