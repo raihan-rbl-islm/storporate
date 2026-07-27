@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2, Sparkles } from "lucide-react";
+import { AlertCircle, Building2, Sparkles } from "lucide-react";
 
 import {
   Card,
@@ -57,18 +57,7 @@ export default async function StudentMatchesPage() {
       </header>
 
       {matches.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2 className="text-lg font-semibold">No opportunities yet</h2>
-            </CardTitle>
-            <CardDescription>
-              We couldn&apos;t find any corporate matches using the skills
-              and interests on your profile. Try editing your profile to
-              add or refine a few keywords, then check back here.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <EmptyFixtureState />
       ) : (
         <ul className="grid gap-6">
           {matches.map(({ corporate, score, topReasons }) => (
@@ -137,5 +126,36 @@ export default async function StudentMatchesPage() {
         </ul>
       )}
     </section>
+  );
+}
+
+function EmptyFixtureState() {
+  return (
+    <Card data-testid="empty-fixture-state">
+      <CardHeader>
+        <CardTitle>
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <AlertCircle
+              aria-hidden="true"
+              className="text-muted-foreground size-4"
+            />
+            The corporate catalog is empty
+          </h2>
+        </CardTitle>
+        <CardDescription>
+          No corporate fixtures are available to match against. This is a
+          Demo data condition, not a profile issue: reload the page, or
+          pick a different demo persona to see matches.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <Link
+          href="/dashboard/matches"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          Reload
+        </Link>
+      </CardContent>
+    </Card>
   );
 }
