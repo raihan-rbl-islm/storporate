@@ -51,9 +51,10 @@ export default function Home() {
             </Link>
           </div>
           <p className="text-muted-foreground text-xs">
-            Open the demo to explore — no signup required. The demo ships with
-            prepared personas and Google sign-in so you can reach a persona
-            dashboard in under a minute.
+            Open the demo to explore. The demo ships with prepared personas
+            you can step into without signing up — Google sign-in is offered
+            as an optional alternative for users who want to bring their own
+            account.
           </p>
           <Disclaimer />
         </div>

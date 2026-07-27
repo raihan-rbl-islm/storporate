@@ -1,5 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getServerSupabase } from "@/lib/supabase/server";
+import {
+  getCanonicalOrigin,
+  safeRedirectPath,
+} from "@/lib/security/redirect";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -32,6 +36,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/demo?error=${reason}`);
   }
 
-  const next = searchParams.get("next") ?? "/dashboard";
-  return NextResponse.redirect(`${origin}${next}`);
+  // Validate the `next` parameter against our canonical origin to
+  // prevent open-redirect (an attacker could otherwise craft a callback
+  // URL like /auth/callback?code=...&next=https://evil.com that lands
+  // the user on a phishing page immediately after a successful sign-in).
+  const canonical = getCanonicalOrigin();
+  const next = safeRedirectPath(searchParams.get("next"), canonical);
+  return NextResponse.redirect(`${canonical.origin}${next}`);
 }

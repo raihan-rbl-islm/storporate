@@ -4,7 +4,6 @@ import {
   getPersonaById,
   getDefaultPersonaForRole,
 } from "@/lib/server/personas/lookup";
-import { Disclaimer } from "@/components/personas/disclaimer";
 import type { PersonaRole } from "@/data/personas";
 
 const VALID_ROLES: readonly PersonaRole[] = ["student", "club", "corporate"];
@@ -64,8 +63,6 @@ export default async function DashboardPage() {
           Profile editor (lands in Phase 2)
         </Link>
       </nav>
-
-      <Disclaimer />
     </div>
   );
 }

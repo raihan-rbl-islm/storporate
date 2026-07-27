@@ -1,4 +1,5 @@
 import { Loader2, Search } from "lucide-react";
+import { notFound } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+
+/**
+ * Dev-only UI reference page. The dev reference surface exposes every
+ * design primitive so contributors can eyeball variants, but it is not
+ * part of the production app surface — gate it with notFound() so a
+ * production build returns 404 instead of leaking the catalog.
+ */
+export const dynamic = "force-static";
 
 const buttonVariantsList = [
   "default",
@@ -33,6 +42,12 @@ const buttonSizes = [
 ] as const;
 
 export default function Page() {
+  // Production guard: only non-production builds serve this page. The
+  // /dev tree is excluded from the runtime path entirely in CI; this
+  // notFound() is the last-mile defense if the route is ever
+  // accidentally built.
+  if (process.env.NODE_ENV === "production") notFound();
+
   return (
     <main className="min-h-screen bg-background p-8 text-foreground">
       <div className="mx-auto max-w-6xl space-y-12">

@@ -7,7 +7,8 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { getAllHeroPersonas } from "@/lib/server/personas/lookup";
+import { Badge } from "@/components/ui/badge";
+import { getAllHeroPersonas, type AnyPersona } from "@/lib/server/personas/lookup";
 import { selectPersona } from "./actions";
 import { Disclaimer } from "@/components/personas/disclaimer";
 
@@ -70,6 +71,12 @@ const ERROR_COPY: Record<
 };
 
 type SearchParams = Promise<{ error?: string }>;
+
+function roleLabel(role: AnyPersona["role"]): string {
+  if (role === "student") return "Student";
+  if (role === "club") return "Club";
+  return "Corporate";
+}
 
 export default async function DemoPage({
   searchParams,
@@ -138,15 +145,22 @@ export default async function DemoPage({
           {heroPersonas.map((p) => (
             <Card key={p.id}>
               <CardHeader>
-                <CardTitle>
-                  <h3 className="text-lg font-medium">{p.name}</h3>
-                </CardTitle>
-                <CardDescription>{getInstitutionLabel(p)}</CardDescription>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle>
+                    <h3 className="text-lg font-medium">{p.name}</h3>
+                  </CardTitle>
+                  <Badge
+                    variant="secondary"
+                    data-testid={`persona-role-${p.id}`}
+                    aria-label={`Role: ${roleLabel(p.role)}`}
+                  >
+                    {roleLabel(p.role)}
+                  </Badge>
+                </div>
+                <CardDescription>{p.institution}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  {getScenarioLabel(p.id)}
-                </p>
+                <p className="text-muted-foreground text-sm">{p.scenario}</p>
                 <form action={selectPersona} className="mt-4">
                   <input type="hidden" name="personaId" value={p.id} />
                   <Button type="submit" className="w-full">
@@ -163,6 +177,10 @@ export default async function DemoPage({
         <div role="separator" className="my-8 border-t" />
 
         <h2 className="text-2xl font-semibold">Or sign in with Google</h2>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          Signing in with Google is optional. You can explore every dashboard
+          from a prepared persona below — no Google account required.
+        </p>
         {process.env.ENABLE_DEMO_AUTH_DEV_LOGIN === "true" ? (
           <form action="/demo/google/dev" method="post">
             <Button variant="outline" type="submit">
@@ -179,29 +197,4 @@ export default async function DemoPage({
       </div>
     </main>
   );
-}
-
-const SCENARIO_BY_ID: Record<string, string> = {
-  tasnim: "Final-year CS student looking for ML internships in Dhaka.",
-  "nsu-robotics":
-    "Engineering club seeking sponsors for an inter-university robotics showdown.",
-  bkash: "Hiring data and ML interns; sponsoring STEM outreach events.",
-};
-
-const INSTITUTION_BY_ID: Record<string, string> = {
-  tasnim: "BRAC University",
-  "nsu-robotics": "North South University",
-  bkash: "bKash Limited",
-};
-
-function getScenarioLabel(id: string): string {
-  return SCENARIO_BY_ID[id] ?? "Prepared scenario.";
-}
-
-function getInstitutionLabel(p: {
-  id: string;
-  role: string;
-}): string {
-  if (INSTITUTION_BY_ID[p.id]) return INSTITUTION_BY_ID[p.id];
-  return p.role === "corporate" ? "Organization" : "University";
 }

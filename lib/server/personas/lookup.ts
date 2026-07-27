@@ -8,6 +8,10 @@ export type AnyPersona = {
   id: string;
   name: string;
   role: PersonaRole;
+  /** Institution or organization the persona is anchored to. */
+  institution: string;
+  /** Short scenario blurb used on the /demo catalog card. */
+  scenario: string;
   heroFlag: boolean;
   fixtureDisclaimerRequired: boolean;
 };
@@ -18,15 +22,51 @@ type CommonRow = {
   fixtureDisclaimerRequired: boolean;
 };
 
+function defaultInstitution(role: PersonaRole): string {
+  if (role === "corporate") return "Organization";
+  return "University";
+}
+
+function defaultScenario(): string {
+  return "Prepared scenario.";
+}
+
+/**
+ * Map a row from one of the persona tables into an AnyPersona.
+ *
+ * `institution` and `scenario` come straight from the row's columns so
+ * we don't have to maintain a parallel map keyed by id. When the row is
+ * missing the column (e.g. a future table addition, or a fallback
+ * fixture row), we provide sane defaults so /demo cards still render.
+ */
 function rowToPersona(
-  row: CommonRow,
+  row: CommonRow & Partial<Record<string, unknown>>,
   role: PersonaRole,
   name: string,
 ): AnyPersona {
+  // Pick the first non-empty candidate per field. The order is role-aware
+  // so the most informative column wins for each table:
+  //   - students:  university (institution) + bio (scenario)
+  //   - clubs:     university (institution) + mission (scenario)
+  //   - corporates: industry (institution) + description (scenario)
+  // The DB fallback path keeps these columns first so we don't have to
+  // pass role-specific knowledge through the call site.
+  const rawInstitution =
+    row.university ?? row.industry ?? row.institution ?? null;
+  const rawScenario =
+    row.scenario ?? row.bio ?? row.description ?? row.mission ?? null;
   return {
     id: row.id,
     name,
     role,
+    institution:
+      typeof rawInstitution === "string" && rawInstitution.length > 0
+        ? rawInstitution
+        : defaultInstitution(role),
+    scenario:
+      typeof rawScenario === "string" && rawScenario.length > 0
+        ? rawScenario
+        : defaultScenario(),
     heroFlag: row.heroFlag,
     fixtureDisclaimerRequired: row.fixtureDisclaimerRequired,
   };
@@ -65,7 +105,7 @@ export async function getPersonaById(
       `[personas] no DB row for id="${id}", falling back to fixture`,
     );
     return rowToPersona(
-      fallback as unknown as CommonRow & { name: string },
+      fallback as unknown as AnyPersona & CommonRow,
       fallback.role,
       fallback.name,
     );
@@ -79,7 +119,7 @@ export async function getPersonaById(
 export async function getDefaultPersonaForRole(
   role: PersonaRole,
 ): Promise<AnyPersona | null> {
-  let row: CommonRow & Record<string, unknown> | undefined;
+  let row: (CommonRow & Record<string, unknown>) | undefined;
   let nameCol: "fullName" | "clubName" | "organizationName" = "fullName";
 
   if (role === "student") {
@@ -115,7 +155,7 @@ export async function getDefaultPersonaForRole(
   const fallback = HERO_PERSONAS.find((p) => p.role === role);
   if (fallback) {
     return rowToPersona(
-      fallback as unknown as CommonRow & { name: string },
+      fallback as unknown as AnyPersona & CommonRow,
       fallback.role,
       fallback.name,
     );
@@ -124,17 +164,16 @@ export async function getDefaultPersonaForRole(
 }
 
 /** All hero personas (3 rows: one student, one club, one corporate). Used by
- *  /demo to render the persona catalog. Order: students, clubs, corporates. */
+ *  /demo to render the persona catalog. Order: students, clubs, corporates.
+ *
+ *  The three queries are independent — fire them concurrently so /demo
+ *  pays one DB round-trip instead of three. */
 export async function getAllHeroPersonas(): Promise<AnyPersona[]> {
-  const s = await db
-    .select()
-    .from(students)
-    .where(eq(students.heroFlag, true));
-  const c = await db.select().from(clubs).where(eq(clubs.heroFlag, true));
-  const co = await db
-    .select()
-    .from(corporates)
-    .where(eq(corporates.heroFlag, true));
+  const [s, c, co] = await Promise.all([
+    db.select().from(students).where(eq(students.heroFlag, true)),
+    db.select().from(clubs).where(eq(clubs.heroFlag, true)),
+    db.select().from(corporates).where(eq(corporates.heroFlag, true)),
+  ]);
 
   const fromDb = [
     ...s.map((r) => rowToPersona(r, "student", r.fullName)),
@@ -147,7 +186,7 @@ export async function getAllHeroPersonas(): Promise<AnyPersona[]> {
   console.warn("[personas] no hero rows in DB, falling back to fixture");
   return HERO_PERSONAS.map((p) =>
     rowToPersona(
-      p as unknown as CommonRow & { name: string },
+      p as unknown as AnyPersona & CommonRow,
       p.role,
       p.name,
     ),
