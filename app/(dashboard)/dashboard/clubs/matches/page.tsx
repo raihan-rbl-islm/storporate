@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { LoadingPanel } from "@/components/ui/loading-panel";
+import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
 
 import {
   getCurrentPersona,
@@ -21,11 +22,23 @@ import {
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import type { ClubFixture } from "@/lib/server/personas/lookup";
 import { rankClubMatchesFor } from "@/lib/server/matching/club-matches";
+import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 
 export const dynamic = "force-dynamic";
 
 async function MatchesList({ club }: { club: ClubFixture }) {
-  const matches = rankClubMatchesFor(club, await getCorporateFixtures());
+  let matches: ReturnType<typeof rankClubMatchesFor> = [];
+  let usedPreparedFallback = false;
+  try {
+    matches = rankClubMatchesFor(club, await getCorporateFixtures());
+  } catch (err) {
+    console.error(
+      "[club matches] matcher threw, using prepared:",
+      err,
+    );
+    matches = getPreparedMatchesFor("club-corporate", club);
+    usedPreparedFallback = true;
+  }
 
   if (matches.length === 0) {
     return (
@@ -59,7 +72,9 @@ async function MatchesList({ club }: { club: ClubFixture }) {
   }
 
   return (
-    <ul className="grid gap-6">
+    <>
+      {usedPreparedFallback ? <PreparedResultsBanner /> : null}
+      <ul className="grid gap-6">
       {matches.map(({ corporate, score, topReasons }) => (
         <li key={corporate.id}>
           <Card>
@@ -123,6 +138,7 @@ async function MatchesList({ club }: { club: ClubFixture }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }
 

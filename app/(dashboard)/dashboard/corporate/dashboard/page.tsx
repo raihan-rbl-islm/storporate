@@ -15,6 +15,7 @@ import {
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { MatchCard } from "@/components/matches/match-card";
+import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import {
@@ -28,6 +29,7 @@ import {
 import type { CorporateFixture } from "@/lib/server/personas/lookup";
 import { rankClubsForCorporate } from "@/lib/server/matching/corporate-club-matches";
 import { rankStudentsForCorporate } from "@/lib/server/matching/corporate-student-matches";
+import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 
 type Intent = "hiring" | "sponsorship" | "both" | "unknown";
 
@@ -43,10 +45,21 @@ async function TopStudentCandidates({
 }: {
   corporate: CorporateFixture;
 }) {
-  const topStudents = rankStudentsForCorporate(
-    corporate,
-    await getStudentFixtures(),
-  ).slice(0, 3);
+  let topStudents: ReturnType<typeof rankStudentsForCorporate> = [];
+  let usedPreparedFallback = false;
+  try {
+    topStudents = rankStudentsForCorporate(
+      corporate,
+      await getStudentFixtures(),
+    ).slice(0, 3);
+  } catch (err) {
+    console.error(
+      "[corporate dashboard] student matcher threw, using prepared:",
+      err,
+    );
+    topStudents = getPreparedMatchesFor("corporate-student", corporate);
+    usedPreparedFallback = true;
+  }
 
   if (topStudents.length === 0) {
     return (
@@ -60,6 +73,7 @@ async function TopStudentCandidates({
 
   return (
     <>
+      {usedPreparedFallback ? <PreparedResultsBanner /> : null}
       <ul className="flex flex-col gap-3">
         {topStudents.map((m) => (
           <li key={m.student.id}>
@@ -97,10 +111,21 @@ async function TopClubCandidates({
 }: {
   corporate: CorporateFixture;
 }) {
-  const topClubs = rankClubsForCorporate(
-    corporate,
-    await getClubFixtures(),
-  ).slice(0, 3);
+  let topClubs: ReturnType<typeof rankClubsForCorporate> = [];
+  let usedPreparedFallback = false;
+  try {
+    topClubs = rankClubsForCorporate(
+      corporate,
+      await getClubFixtures(),
+    ).slice(0, 3);
+  } catch (err) {
+    console.error(
+      "[corporate dashboard] club matcher threw, using prepared:",
+      err,
+    );
+    topClubs = getPreparedMatchesFor("corporate-club", corporate);
+    usedPreparedFallback = true;
+  }
 
   if (topClubs.length === 0) {
     return (
@@ -114,6 +139,7 @@ async function TopClubCandidates({
 
   return (
     <>
+      {usedPreparedFallback ? <PreparedResultsBanner /> : null}
       <ul className="flex flex-col gap-3">
         {topClubs.map((m) => (
           <li key={m.club.id}>

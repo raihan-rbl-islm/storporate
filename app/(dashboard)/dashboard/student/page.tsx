@@ -15,6 +15,7 @@ import {
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { MatchCard } from "@/components/matches/match-card";
+import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { HeroCallout } from "@/components/hero/hero-callout";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
@@ -28,16 +29,29 @@ import {
   rankCorporateMatchesFor,
   toDisplayMatchPercent,
 } from "@/lib/server/matching/student-matches";
+import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 
 async function HeroAndMatches({ student }: { student: StudentFixture }) {
-  const matches = rankCorporateMatchesFor(
-    student,
-    await getCorporateFixtures(),
-  ).slice(0, 3);
+  let matches: ReturnType<typeof rankCorporateMatchesFor> = [];
+  let usedPreparedFallback = false;
+  try {
+    matches = rankCorporateMatchesFor(
+      student,
+      await getCorporateFixtures(),
+    ).slice(0, 3);
+  } catch (err) {
+    console.error(
+      "[student dashboard] matcher threw, using prepared:",
+      err,
+    );
+    matches = getPreparedMatchesFor("student-corporate", student);
+    usedPreparedFallback = true;
+  }
   const heroTop = student.heroFlag && matches.length > 0 ? matches[0] : null;
 
   return (
     <>
+      {usedPreparedFallback ? <PreparedResultsBanner /> : null}
       {heroTop ? (
         <HeroCallout
           personaName={student.fullName}

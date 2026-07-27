@@ -15,6 +15,7 @@ import {
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { MatchCard } from "@/components/matches/match-card";
+import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
@@ -24,12 +25,24 @@ import {
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { rankClubMatchesFor } from "@/lib/server/matching/club-matches";
+import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 
 async function TopSponsors({ club }: { club: ClubFixture }) {
-  const matches = rankClubMatchesFor(
-    club,
-    await getCorporateFixtures(),
-  ).slice(0, 3);
+  let matches: ReturnType<typeof rankClubMatchesFor> = [];
+  let usedPreparedFallback = false;
+  try {
+    matches = rankClubMatchesFor(
+      club,
+      await getCorporateFixtures(),
+    ).slice(0, 3);
+  } catch (err) {
+    console.error(
+      "[club dashboard] matcher threw, using prepared:",
+      err,
+    );
+    matches = getPreparedMatchesFor("club-corporate", club);
+    usedPreparedFallback = true;
+  }
 
   if (matches.length === 0) {
     return (
@@ -42,7 +55,9 @@ async function TopSponsors({ club }: { club: ClubFixture }) {
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <>
+      {usedPreparedFallback ? <PreparedResultsBanner /> : null}
+      <ul className="flex flex-col gap-3">
       {matches.map((m) => (
         <li key={m.corporate.id}>
           <MatchCard
@@ -61,6 +76,7 @@ async function TopSponsors({ club }: { club: ClubFixture }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }
 

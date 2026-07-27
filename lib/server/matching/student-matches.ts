@@ -20,6 +20,13 @@ export interface RankedMatch {
   corporate: CorporateFixture;
   score: number;
   topReasons: readonly string[];
+  /**
+   * Source of the ranking. `"live"` means produced by the deterministic
+   * live scorer; `"prepared"` means produced by
+   * `getPreparedMatchesFor(...)` as a fallback. Optional so callers that
+   * construct `RankedMatch` directly (legacy code, tests) keep compiling.
+   */
+  source?: "live" | "prepared";
 }
 
 /**
@@ -152,6 +159,7 @@ export function rankCorporateMatchesFor(
       corporate,
       score: breakdown.score,
       topReasons: reasons.slice(0, MAX_REASONS),
+      source: "live",
     };
   });
 

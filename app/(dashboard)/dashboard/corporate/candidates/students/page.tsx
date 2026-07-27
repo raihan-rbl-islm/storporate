@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LoadingPanel } from "@/components/ui/loading-panel";
+import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
 
 import {
   getCurrentPersona,
@@ -21,14 +22,26 @@ import {
 import { getStudentFixtures } from "@/lib/server/personas/lookup";
 import type { CorporateFixture } from "@/lib/server/personas/lookup";
 import { rankStudentsForCorporate } from "@/lib/server/matching/corporate-student-matches";
+import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
 
 export const dynamic = "force-dynamic";
 
 async function CandidatesList({ corporate }: { corporate: CorporateFixture }) {
-  const matches = rankStudentsForCorporate(
-    corporate,
-    await getStudentFixtures(),
-  );
+  let matches: ReturnType<typeof rankStudentsForCorporate> = [];
+  let usedPreparedFallback = false;
+  try {
+    matches = rankStudentsForCorporate(
+      corporate,
+      await getStudentFixtures(),
+    );
+  } catch (err) {
+    console.error(
+      "[corporate candidates/students] matcher threw, using prepared:",
+      err,
+    );
+    matches = getPreparedMatchesFor("corporate-student", corporate);
+    usedPreparedFallback = true;
+  }
 
   if (matches.length === 0) {
     return (
@@ -62,7 +75,9 @@ async function CandidatesList({ corporate }: { corporate: CorporateFixture }) {
   }
 
   return (
-    <ul className="grid gap-6">
+    <>
+      {usedPreparedFallback ? <PreparedResultsBanner /> : null}
+      <ul className="grid gap-6">
       {matches.map(({ student, score, topReasons }) => (
         <li key={student.id}>
           <Card>
@@ -127,6 +142,7 @@ async function CandidatesList({ corporate }: { corporate: CorporateFixture }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }
 
