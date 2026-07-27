@@ -20,6 +20,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        # fetch-depth: 0 — gitleaks-action scans the commit range
+        # `<merge-parent>..<merge-commit>`. With the default depth=1 the
+        # merge parent is unreachable and `git log <rev>` fails. Full
+        # history keeps gitleaks resolvable; this is a small repo.
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -31,6 +37,11 @@ jobs:
       - run: npm run test
       - name: secrets scan
         uses: gitleaks/gitleaks-action@v2
+        # The repo's allowlist lives at `gitleaks.toml` (committed in the
+        # env-deploy checkpoint). gitleaks-action looks for `.gitleaks.toml`
+        # by default; point it at the existing file so the allowlist applies.
+        with:
+          config-path: gitleaks.toml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run build
