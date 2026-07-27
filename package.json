@@ -13,6 +13,8 @@
     "db:verify": "dotenv -e .env.local -- tsx scripts/verify-pgvector.ts",
     "db:check": "dotenv -e .env.local -- drizzle-kit check",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
+    "db:seed": "dotenv -e .env.local -- tsx scripts/seed/personas.ts",
+    "db:seed:dry": "dotenv -e .env.local -- tsx scripts/seed/personas.ts --dry-run",
     "test:e2e": "rm -rf .next && playwright test",
     "test:e2e:ci": "playwright test --config=playwright.ci.config.ts",
     "test:e2e:install": "playwright install chromium",
