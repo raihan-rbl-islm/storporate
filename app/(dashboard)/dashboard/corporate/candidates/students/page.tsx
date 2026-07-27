@@ -132,6 +132,18 @@ export default async function CorporateStudentCandidatesPage() {
                       candidates.
                     </p>
                   )}
+                  <div className="pt-2">
+                    <Link
+                      href={`/dashboard/corporate/candidates/${student.id}`}
+                      prefetch={false}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
+                    >
+                      View rationale
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             </li>

@@ -130,6 +130,18 @@ export default async function CorporateClubCandidatesPage() {
                       Review the match signals above when shortlisting clubs.
                     </p>
                   )}
+                  <div className="pt-2">
+                    <Link
+                      href={`/dashboard/corporate/candidates/${club.id}`}
+                      prefetch={false}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
+                    >
+                      View rationale
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             </li>
