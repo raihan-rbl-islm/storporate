@@ -7,6 +7,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { Disclaimer } from "@/components/personas/disclaimer";
 import Link from "next/link";
 
 export default function Home() {
@@ -54,6 +55,7 @@ export default function Home() {
             prepared personas and Google sign-in so you can reach a persona
             dashboard in under a minute.
           </p>
+          <Disclaimer />
         </div>
       </section>
 

@@ -7,8 +7,9 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { HERO_PERSONAS } from "@/data/personas";
+import { getAllHeroPersonas } from "@/lib/server/personas/lookup";
 import { selectPersona } from "./actions";
+import { Disclaimer } from "@/components/personas/disclaimer";
 
 export const metadata: Metadata = {
   title: "Demo entry · Storporate",
@@ -57,7 +58,7 @@ const ERROR_COPY: Record<
   test_mode_disabled: {
     h1: "Test sign-in is off",
     intro:
-      "The development sign-in shortcut isn't enabled in this environment. Click \"Continue with Google\" instead, or pick a prepared persona.",
+      'The development sign-in shortcut isn\'t enabled in this environment. Click "Continue with Google" instead, or pick a prepared persona.',
     showRetry: false,
   },
   unknown_persona: {
@@ -80,6 +81,8 @@ export default async function DemoPage({
     error && Object.prototype.hasOwnProperty.call(ERROR_COPY, error)
       ? ERROR_COPY[error]
       : null;
+
+  const heroPersonas = await getAllHeroPersonas();
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -132,16 +135,18 @@ export default async function DemoPage({
           Prepared personas
         </h2>
         <div className="grid gap-4 sm:grid-cols-3">
-          {HERO_PERSONAS.map((p) => (
+          {heroPersonas.map((p) => (
             <Card key={p.id}>
               <CardHeader>
                 <CardTitle>
                   <h3 className="text-lg font-medium">{p.name}</h3>
                 </CardTitle>
-                <CardDescription>{p.institution}</CardDescription>
+                <CardDescription>{getInstitutionLabel(p)}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-sm">{p.scenario}</p>
+                <p className="text-muted-foreground text-sm">
+                  {getScenarioLabel(p.id)}
+                </p>
                 <form action={selectPersona} className="mt-4">
                   <input type="hidden" name="personaId" value={p.id} />
                   <Button type="submit" className="w-full">
@@ -152,6 +157,8 @@ export default async function DemoPage({
             </Card>
           ))}
         </div>
+
+        <Disclaimer />
 
         <div role="separator" className="my-8 border-t" />
 
@@ -169,13 +176,32 @@ export default async function DemoPage({
             </Button>
           </form>
         )}
-
-        <p className="text-muted-foreground mt-8 text-xs leading-relaxed">
-          Prepared personas are fixtures for evaluation. Names and scenarios
-          reference real organizations for scenario realism only — they do not
-          imply partnership, endorsement, or audited employment data.
-        </p>
       </div>
     </main>
   );
+}
+
+const SCENARIO_BY_ID: Record<string, string> = {
+  tasnim: "Final-year CS student looking for ML internships in Dhaka.",
+  "nsu-robotics":
+    "Engineering club seeking sponsors for an inter-university robotics showdown.",
+  bkash: "Hiring data and ML interns; sponsoring STEM outreach events.",
+};
+
+const INSTITUTION_BY_ID: Record<string, string> = {
+  tasnim: "BRAC University",
+  "nsu-robotics": "North South University",
+  bkash: "bKash Limited",
+};
+
+function getScenarioLabel(id: string): string {
+  return SCENARIO_BY_ID[id] ?? "Prepared scenario.";
+}
+
+function getInstitutionLabel(p: {
+  id: string;
+  role: string;
+}): string {
+  if (INSTITUTION_BY_ID[p.id]) return INSTITUTION_BY_ID[p.id];
+  return p.role === "corporate" ? "Organization" : "University";
 }
