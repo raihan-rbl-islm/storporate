@@ -83,6 +83,15 @@ export default async function DashboardPage() {
             Sponsorship matches
           </Link>
         ) : null}
+        {roleCookie === "corporate" ? (
+          <Link
+            href="/dashboard/corporate/candidates/students"
+            prefetch={false}
+            className="text-foreground text-base underline-offset-4 hover:underline"
+          >
+            Candidate matches
+          </Link>
+        ) : null}
         <Link
           href="/dashboard/profile"
           prefetch={false}
