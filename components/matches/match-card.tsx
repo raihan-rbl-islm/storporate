@@ -94,7 +94,6 @@ export interface MatchCardProps {
  * pages and all three role dashboards.
  */
 export function MatchCard({ match, emptyReasonFallback }: MatchCardProps) {
-  const Icon = iconFor(match.direction);
   return (
     <Card>
       <CardHeader>
@@ -102,10 +101,23 @@ export function MatchCard({ match, emptyReasonFallback }: MatchCardProps) {
           <div className="space-y-1">
             <CardTitle>
               <h3 className="flex items-center gap-2 text-lg font-semibold">
-                <Icon
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
+                {match.direction === "student-to-corporate" ||
+                match.direction === "club-to-corporate" ? (
+                  <Building2
+                    aria-hidden="true"
+                    className="text-muted-foreground size-4"
+                  />
+                ) : match.direction === "corporate-to-student" ? (
+                  <GraduationCap
+                    aria-hidden="true"
+                    className="text-muted-foreground size-4"
+                  />
+                ) : (
+                  <Users
+                    aria-hidden="true"
+                    className="text-muted-foreground size-4"
+                  />
+                )}
                 {match.title}
               </h3>
             </CardTitle>
@@ -148,16 +160,4 @@ export function MatchCard({ match, emptyReasonFallback }: MatchCardProps) {
       </CardContent>
     </Card>
   );
-}
-
-function iconFor(direction: MatchCardMatch["direction"]) {
-  switch (direction) {
-    case "student-to-corporate":
-    case "club-to-corporate":
-      return Building2;
-    case "corporate-to-student":
-      return GraduationCap;
-    case "corporate-to-club":
-      return Users;
-  }
 }

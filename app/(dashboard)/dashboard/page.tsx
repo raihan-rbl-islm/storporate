@@ -36,6 +36,10 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
+  if (roleCookie === "student") redirect("/dashboard/student");
+  if (roleCookie === "club") redirect("/dashboard/clubs/dashboard");
+  if (roleCookie === "corporate") redirect("/dashboard/corporate/dashboard");
+
   const fromId = personaIdCookie
     ? await getPersonaById(personaIdCookie)
     : null;
