@@ -1,5 +1,6 @@
 import {
   pgTable,
+  boolean,
   serial,
   text,
   timestamp,
@@ -46,6 +47,90 @@ export const healthCheck = pgTable("health_check", {
   embedding: vector(768)("embedding").notNull(),
   note: text("note").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// ----------------------------------------------------------------------
+// Persona schema (Phase 1.3)
+//
+// Three tables back the Demo personas and the eventual onboarding /
+// matching flow. They are intentionally minimal here; Phase 2 adds
+// nullable profile columns, Phase 3 adds `profile_embedding vector(768)`
+// for similarity search.
+//
+// Conventions (mirrored from health_check above):
+//   - snake_case column names, camelCase TS keys
+//   - every column .notNull() unless truly optional
+//   - timestamps use { withTimezone: true } and .defaultNow()
+//   - heroFlag distinguishes the 3 demo anchors from the 20 variety
+//     personas (so the malformed-cookie fallback can resolve them
+//     deterministically: order by heroFlag desc, createdAt asc)
+
+export const students = pgTable("students", {
+  id: text("id").primaryKey(),
+  fullName: text("full_name").notNull(),
+  university: text("university").notNull(),
+  studyProgram: text("study_program").notNull(),
+  expectedGraduation: text("expected_graduation").notNull(),
+  location: text("location").notNull(),
+  bio: text("bio").notNull().default(""),
+  skills: text("skills").array().notNull(),
+  careerInterests: text("career_interests").array().notNull(),
+  heroFlag: boolean("hero_flag").notNull().default(false),
+  fixtureDisclaimerRequired: boolean("fixture_disclaimer_required")
+    .notNull()
+    .default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const clubs = pgTable("clubs", {
+  id: text("id").primaryKey(),
+  clubName: text("club_name").notNull(),
+  university: text("university").notNull(),
+  categories: text("categories").array().notNull(),
+  mission: text("mission").notNull().default(""),
+  audienceReachLabel: text("audience_reach_label").notNull(),
+  eventFocus: text("event_focus").array().notNull(),
+  sponsorshipNeeds: text("sponsorship_needs").array().notNull(),
+  location: text("location").notNull(),
+  contactRole: text("contact_role").notNull(),
+  heroFlag: boolean("hero_flag").notNull().default(false),
+  fixtureDisclaimerRequired: boolean("fixture_disclaimer_required")
+    .notNull()
+    .default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const corporates = pgTable("corporates", {
+  id: text("id").primaryKey(),
+  organizationName: text("organization_name").notNull(),
+  industry: text("industry").notNull(),
+  location: text("location").notNull(),
+  description: text("description").notNull().default(""),
+  talentNeeds: text("talent_needs").array().notNull(),
+  sponsorshipInterests: text("sponsorship_interests").array().notNull(),
+  csrFocus: text("csr_focus").array().notNull(),
+  budgetRange: text("budget_range").notNull().default("Undisclosed"),
+  collaborationIntent: text("collaboration_intent").notNull(),
+  heroFlag: boolean("hero_flag").notNull().default(false),
+  fixtureDisclaimerRequired: boolean("fixture_disclaimer_required")
+    .notNull()
+    .default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
