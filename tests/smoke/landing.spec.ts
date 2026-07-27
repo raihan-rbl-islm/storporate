@@ -1,8 +1,28 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+
+interface CapturedError {
+  type: "console" | "pageerror";
+  text: string;
+}
+
+async function captureErrors(page: Page): Promise<CapturedError[]> {
+  const errors: CapturedError[] = [];
+  page.on("console", (msg) => {
+    if (msg.type() === "error") {
+      errors.push({ type: "console", text: msg.text() });
+    }
+  });
+  page.on("pageerror", (err) => {
+    errors.push({ type: "pageerror", text: err.message });
+  });
+  return errors;
+}
 
 test("landing: renders Storporate", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Storporate" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Storporate", level: 1 }),
+  ).toBeVisible();
 });
 
 test("landing: hero flourish respects prefers-reduced-motion", async ({
@@ -32,3 +52,61 @@ test("landing: hero flourish respects prefers-reduced-motion", async ({
     `expected reduced-motion to collapse animation-duration near zero, got ${animationDuration}`,
   ).toBeLessThan(1);
 });
+
+test("landing: value-prop H2 visible", async ({ page }) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { name: "Who Storporate is for", level: 2 }),
+  ).toBeVisible();
+});
+
+test("landing: three role cards present by title", async ({ page }) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { name: "Students", level: 3 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "University clubs", level: 3 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Companies", level: 3 }),
+  ).toBeVisible();
+});
+
+test("landing: trust section heading visible", async ({ page }) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { name: "How compatibility works", level: 2 }),
+  ).toBeVisible();
+});
+
+test("landing: no console errors on load", async ({ page }) => {
+  const errors = await captureErrors(page);
+  await page.goto("/");
+  // give hydration a tick
+  await page.waitForLoadState("networkidle");
+  expect(errors, `console errors: ${JSON.stringify(errors)}`).toEqual([]);
+});
+
+const viewports = [360, 768, 1440] as const;
+
+for (const width of viewports) {
+  test(`landing: no horizontal overflow at ${width}px`, async ({ page }) => {
+    const errors = await captureErrors(page);
+    await page.setViewportSize({
+      width,
+      height: Math.round(Math.max(800, width * 0.7)),
+    });
+    await page.goto("/");
+
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(scrollWidth, "no horizontal overflow").toBeLessThanOrEqual(
+      clientWidth,
+    );
+
+    expect(errors, `console errors: ${JSON.stringify(errors)}`).toEqual([]);
+  });
+}
