@@ -53,26 +53,25 @@ export default async function DashboardPage() {
 
       <p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
         Your dashboard surfaces top matches, recent activity, and the
-        role-specific actions available to you. To begin,{" "}
+        role-specific actions available to you. Start by{" "}
         <Link
           href="/dashboard/profile/edit"
           className="underline"
           prefetch={false}
         >
-          edit your profile
+          editing your profile
         </Link>{" "}
-        or browse the available{" "}
-        <Link
-          href="/dashboard/match"
-          className="underline"
-          prefetch={false}
-        >
-          matches
-        </Link>
-        .
+        so matches reflect your goals.
       </p>
 
       <nav aria-label="Dashboard sections" className="flex flex-col gap-3">
+        <Link
+          href="/dashboard/matches"
+          prefetch={false}
+          className="text-foreground text-base underline-offset-4 hover:underline"
+        >
+          Ranked matches
+        </Link>
         <Link
           href="/dashboard/profile"
           prefetch={false}
