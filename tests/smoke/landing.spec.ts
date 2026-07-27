@@ -90,6 +90,53 @@ test("landing: demo CTAs stub-link to /demo routes", async ({ page }) => {
   await expect(googleBtn).toHaveAttribute("href", "/demo/google");
 });
 
+test("landing: keyboard tab order reaches primary CTA first", async ({
+  page,
+}) => {
+  await page.goto("/");
+  // Focus the body explicitly so the first Tab moves focus into the document.
+  await page.evaluate(() => document.body.focus());
+  // Tab through the first 5 focusable elements.
+  const focusedTags: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    await page.keyboard.press("Tab");
+    const tag = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el) return "<none>";
+      return `${el.tagName.toLowerCase()}${el.getAttribute("aria-label") ? `[aria-label="${el.getAttribute("aria-label")}"]` : ""}${el.textContent ? `[text="${el.textContent.trim().slice(0, 30)}"]` : ""}`;
+    });
+    focusedTags.push(tag);
+  }
+  // The primary CTA must be in the first 5 focused elements.
+  const primary = focusedTags.find((t) =>
+    t.toLowerCase().includes("try the demo"),
+  );
+  expect(
+    primary,
+    `expected primary CTA in first 5 tab stops; got: ${JSON.stringify(focusedTags)}`,
+  ).toBeTruthy();
+});
+
+test("landing: stub-status notice is visible", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(
+    page.getByText(
+      "Demo routes open in the next sub-phase — clicking lands on a temporary placeholder.",
+    ),
+  ).toBeVisible();
+});
+
+test("landing: stub-status notice visible at 360px", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/");
+  await expect(
+    page.getByText(
+      "Demo routes open in the next sub-phase — clicking lands on a temporary placeholder.",
+    ),
+  ).toBeVisible();
+});
+
 test("landing: no console errors on load", async ({ page }) => {
   const errors = await captureErrors(page);
   await page.goto("/");
