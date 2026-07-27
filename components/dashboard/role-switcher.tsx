@@ -15,11 +15,7 @@ function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export function RoleSwitcher({
-  currentRole,
-}: {
-  currentRole: PersonaRole;
-}) {
+export function RoleSwitcher({ currentRole }: { currentRole: PersonaRole }) {
   async function invokeSetRole(role: PersonaRole) {
     const fd = new FormData();
     fd.set("role", role);

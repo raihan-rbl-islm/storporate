@@ -122,10 +122,7 @@ test("dashboard: placeholder links render with phase labels", async ({
   ).toBeVisible();
 });
 
-test("dashboard: no console errors on load", async ({
-  page,
-  context,
-}) => {
+test("dashboard: no console errors on load", async ({ page, context }) => {
   const errors = await captureErrors(page);
   await setRoleCookies(context, "student", "tasnim");
   await page.goto("/dashboard");

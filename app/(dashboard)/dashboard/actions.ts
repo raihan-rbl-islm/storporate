@@ -8,7 +8,6 @@ import {
 import type { PersonaRole } from "@/data/personas";
 
 const VALID_ROLES = ["student", "club", "corporate"] as const;
-type Role = (typeof VALID_ROLES)[number];
 
 function isPersonaRole(value: string | undefined): value is PersonaRole {
   return (

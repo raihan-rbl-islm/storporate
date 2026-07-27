@@ -33,9 +33,7 @@ test("demo: renders three persona cards by name", async ({ page }) => {
 
 test("demo: explainer visible", async ({ page }) => {
   await page.goto("/demo");
-  await expect(
-    page.getByText(/prepared profiles and matches/i),
-  ).toBeVisible();
+  await expect(page.getByText(/prepared profiles and matches/i)).toBeVisible();
 });
 
 test("demo: continue-with-google button is visible and posts to /demo/google", async ({

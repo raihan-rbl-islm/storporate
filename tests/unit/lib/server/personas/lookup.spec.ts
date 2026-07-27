@@ -1,11 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-// Mock the db module so the lookup helper never tries to read env at import.
-const selectMock = vi.fn();
-const fromMock = vi.fn();
-const whereMock = vi.fn();
-const orderByMock = vi.fn();
-const limitMock = vi.fn();
+const { selectMock, fromMock, whereMock, orderByMock, limitMock } =
+  vi.hoisted(() => ({
+    selectMock: vi.fn(),
+    fromMock: vi.fn(),
+    whereMock: vi.fn(),
+    orderByMock: vi.fn(),
+    limitMock: vi.fn(),
+  }));
 
 vi.mock("@/lib/server/db", () => ({
   db: {
@@ -18,10 +20,9 @@ import {
   getDefaultPersonaForRole,
   getAllHeroPersonas,
 } from "@/lib/server/personas/lookup";
-import { students, clubs, corporates } from "@/lib/server/db/schema";
+import { students } from "@/lib/server/db/schema";
 
 function chainReturning(rows: unknown[]) {
-  // select(...).from(...).where(...).limit(1) → rows
   limitMock.mockResolvedValueOnce(rows);
   whereMock.mockReturnValueOnce({ limit: limitMock });
   fromMock.mockReturnValueOnce({ where: whereMock });
@@ -29,7 +30,6 @@ function chainReturning(rows: unknown[]) {
 }
 
 function chainOrderedReturning(rows: unknown[]) {
-  // select(...).from(...).orderBy(...).limit(1) → rows
   limitMock.mockResolvedValueOnce(rows);
   orderByMock.mockReturnValueOnce({ limit: limitMock });
   fromMock.mockReturnValueOnce({ orderBy: orderByMock });
@@ -37,7 +37,6 @@ function chainOrderedReturning(rows: unknown[]) {
 }
 
 function chainUnfilteredReturning(rows: unknown[]) {
-  // select(...).from(...).where(...) → rows (no limit for getAllHeroPersonas)
   whereMock.mockResolvedValueOnce(rows);
   fromMock.mockReturnValueOnce({ where: whereMock });
   selectMock.mockReturnValueOnce({ from: fromMock });
@@ -74,9 +73,7 @@ describe("getPersonaById", () => {
   });
 
   it("falls back to a club row when student misses", async () => {
-    // First call (students) returns empty
     chainReturning([]);
-    // Second call (clubs) returns a row
     chainReturning([
       {
         id: "nsu-robotics",
@@ -96,9 +93,9 @@ describe("getPersonaById", () => {
   });
 
   it("falls back to HERO_PERSONAS fixture when DB misses all tables", async () => {
-    chainReturning([]); // students
-    chainReturning([]); // clubs
-    chainReturning([]); // corporates
+    chainReturning([]);
+    chainReturning([]);
+    chainReturning([]);
     const p = await getPersonaById("tasnim");
     expect(p?.name).toBe("Tasnim Hossain");
     expect(p?.role).toBe("student");
