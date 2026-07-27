@@ -30,10 +30,71 @@ export interface RankedStudentCandidate {
   topReasons: readonly string[];
 }
 
+/**
+ * Per-signal scoring breakdown for a single (corporate, student) pair.
+ * `matchedSkills` and `matchedInterests` are display-cased student tokens
+ * in input order, deduplicated. `score` is the raw integer sum
+ * (`matchedSkills.length * SKILL_WEIGHT +
+ * matchedInterests.length * INTEREST_WEIGHT +
+ * (hiringIntent ? HIRING_INTENT_BONUS : 0)`); never rounded, never normalized.
+ */
+export interface CorporateStudentBreakdown {
+  readonly score: number;
+  readonly matchedSkills: readonly string[];
+  readonly matchedInterests: readonly string[];
+  readonly hiringIntent: boolean;
+}
+
 const MAX_REASONS = 3;
 const SKILL_WEIGHT = 2;
 const INTEREST_WEIGHT = 3;
 const HIRING_INTENT_BONUS = 1;
+
+/**
+ * Compute the per-signal breakdown for a single (corporate, student) pair.
+ * Used by both `rankStudentsForCorporate` (list page) and the public
+ * `scoreStudentCandidateBreakdown` (rationale detail page) so the two
+ * stay in lockstep: for any pair,
+ * `RankedStudentCandidate.score === computeStudentCandidateBreakdown(...).score`.
+ */
+function computeStudentCandidateBreakdown(
+  corporate: CorporateStudentMatchInput,
+  student: StudentFixture,
+  needs: { set: Set<string>; display: Map<string, string> },
+): CorporateStudentBreakdown {
+  const skills = normalizeList(student.skills);
+  const interests = normalizeList(student.careerInterests);
+
+  const matchedSkills: string[] = [];
+  for (const norm of skills.set) {
+    if (needs.set.has(norm)) {
+      matchedSkills.push(skills.display.get(norm) ?? norm);
+    }
+  }
+
+  const matchedInterests: string[] = [];
+  for (const norm of interests.set) {
+    if (needs.set.has(norm)) {
+      matchedInterests.push(interests.display.get(norm) ?? norm);
+    }
+  }
+
+  const hiringIntent =
+    corporate.collaborationIntent === "hiring" ||
+    corporate.collaborationIntent === "both";
+
+  const score =
+    matchedSkills.length * SKILL_WEIGHT +
+    matchedInterests.length * INTEREST_WEIGHT +
+    (hiringIntent ? HIRING_INTENT_BONUS : 0);
+
+  return {
+    score,
+    matchedSkills,
+    matchedInterests,
+    hiringIntent,
+  };
+}
 
 /**
  * Trim, lowercase, dedup while preserving first-seen casing for display.
@@ -79,45 +140,20 @@ export function rankStudentsForCorporate(
   const needs = normalizeList(corporate.talentNeeds);
 
   const ranked: RankedStudentCandidate[] = students.map((student) => {
-    const skills = normalizeList(student.skills);
-    const interests = normalizeList(student.careerInterests);
-
-    const matchedSkills: string[] = [];
-    for (const norm of skills.set) {
-      if (needs.set.has(norm)) {
-        matchedSkills.push(skills.display.get(norm) ?? norm);
-      }
-    }
-
-    const matchedInterests: string[] = [];
-    for (const norm of interests.set) {
-      if (needs.set.has(norm)) {
-        matchedInterests.push(interests.display.get(norm) ?? norm);
-      }
-    }
-
-    const hiringIntent =
-      corporate.collaborationIntent === "hiring" ||
-      corporate.collaborationIntent === "both";
-
-    const score =
-      matchedSkills.length * SKILL_WEIGHT +
-      matchedInterests.length * INTEREST_WEIGHT +
-      (hiringIntent ? HIRING_INTENT_BONUS : 0);
-
+    const breakdown = computeStudentCandidateBreakdown(corporate, student, needs);
     const reasons: string[] = [];
-    for (const s of matchedSkills) {
+    for (const s of breakdown.matchedSkills) {
       if (reasons.length >= MAX_REASONS) break;
       reasons.push(`Matches your talent needs: ${s}`);
     }
-    for (const i of matchedInterests) {
+    for (const i of breakdown.matchedInterests) {
       if (reasons.length >= MAX_REASONS) break;
       reasons.push(`Aligns with their interest in ${i}`);
     }
 
     return {
       student,
-      score,
+      score: breakdown.score,
       topReasons: reasons.slice(0, MAX_REASONS),
     };
   });
@@ -128,4 +164,22 @@ export function rankStudentsForCorporate(
   });
 
   return ranked;
+}
+
+/**
+ * Public per-pair scorer: returns the same breakdown the list page uses
+ * to rank and badge each candidate. Consumed by the corporate
+ * rationale detail page (`/dashboard/corporate/candidates/[candidateId]`)
+ * for the student branch so its score badge and signal blocks stay in
+ * lockstep with the list view.
+ */
+export function scoreStudentCandidateBreakdown(
+  corporate: CorporateStudentMatchInput,
+  student: StudentFixture,
+): CorporateStudentBreakdown {
+  return computeStudentCandidateBreakdown(
+    corporate,
+    student,
+    normalizeList(corporate.talentNeeds),
+  );
 }
