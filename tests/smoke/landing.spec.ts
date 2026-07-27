@@ -117,22 +117,22 @@ test("landing: keyboard tab order reaches primary CTA first", async ({
   ).toBeTruthy();
 });
 
-test("landing: stub-status notice is visible", async ({ page }) => {
+test("landing: live-demo disclosure is visible", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(
     page.getByText(
-      "Demo routes open in the next sub-phase — clicking lands on a temporary placeholder.",
+      "Open the demo to explore — no signup required. The demo ships with prepared personas and Google sign-in so you can reach a persona dashboard in under a minute.",
     ),
   ).toBeVisible();
 });
 
-test("landing: stub-status notice visible at 360px", async ({ page }) => {
+test("landing: live-demo disclosure visible at 360px", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
   await expect(
     page.getByText(
-      "Demo routes open in the next sub-phase — clicking lands on a temporary placeholder.",
+      "Open the demo to explore — no signup required. The demo ships with prepared personas and Google sign-in so you can reach a persona dashboard in under a minute.",
     ),
   ).toBeVisible();
 });
