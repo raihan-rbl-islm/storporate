@@ -11,10 +11,22 @@ import {
   buildStudentApplicationDraft,
   type StudentApplicationDraft,
 } from "@/lib/server/outreach/student-application-template";
+import { buildPreparedStudentApplication } from "@/lib/server/outreach/prepared-template";
 import type { PersonaRole } from "@/data/personas";
 
 export type StudentApplicationDraftResult =
   | { status: "ok"; draft: StudentApplicationDraft }
+  | {
+      status: "partial";
+      draft: {
+        subject: string;
+        body: string;
+        closing: string;
+        fullText: string;
+        generatedAtIso: string;
+        kind: "student-application-prepared";
+      };
+    }
   | { status: "error"; reason: string };
 
 function isPersonaRole(value: string | undefined): value is PersonaRole {
@@ -55,18 +67,53 @@ export async function generateStudentApplicationDraft(
     ...breakdown.matchedInterests.map((i) => `Aligns with your interest in ${i}`),
   ].slice(0, 3);
 
-  const draft = buildStudentApplicationDraft({
-    student: {
-      fullName: current.row.fullName,
-      university: current.row.university,
-      studyProgram: current.row.studyProgram,
-    },
-    corporate: {
-      organizationName: corporate.organizationName,
-      industry: corporate.industry,
-    },
-    reasons,
-  });
-
-  return { status: "ok", draft };
+  try {
+    const draft = buildStudentApplicationDraft({
+      student: {
+        fullName: current.row.fullName,
+        university: current.row.university,
+        studyProgram: current.row.studyProgram,
+      },
+      corporate: {
+        organizationName: corporate.organizationName,
+        industry: corporate.industry,
+      },
+      reasons,
+    });
+    return { status: "ok", draft };
+  } catch (err) {
+    // Personalized builder threw — fall back to the prepared template. Log
+    // server-side for observability; do not surface the error text to the
+    // user (the prepared template is the honest UX).
+    console.error(
+      "[generateStudentApplicationDraft] personalized builder threw:",
+      err,
+    );
+    try {
+      const fallback = buildPreparedStudentApplication({
+        corporate: { organizationName: corporate.organizationName },
+        student: {
+          fullName: current.row.fullName,
+          university: current.row.university,
+        },
+      });
+      return {
+        status: "partial",
+        draft: {
+          ...fallback,
+          generatedAtIso: new Date().toISOString(),
+          kind: "student-application-prepared",
+        },
+      };
+    } catch (fallbackErr) {
+      console.error(
+        "[generateStudentApplicationDraft] prepared builder threw:",
+        fallbackErr,
+      );
+      return {
+        status: "error",
+        reason: "Draft generation is unavailable right now. Please try again.",
+      };
+    }
+  }
 }

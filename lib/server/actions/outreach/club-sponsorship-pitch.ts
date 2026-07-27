@@ -11,10 +11,22 @@ import {
   buildClubSponsorshipPitchDraft,
   type ClubSponsorshipPitchDraft,
 } from "@/lib/server/outreach/club-sponsorship-pitch-template";
+import { buildPreparedClubSponsorshipPitch } from "@/lib/server/outreach/prepared-template";
 import type { PersonaRole } from "@/data/personas";
 
 export type ClubSponsorshipPitchDraftResult =
   | { status: "ok"; draft: ClubSponsorshipPitchDraft }
+  | {
+      status: "partial";
+      draft: {
+        subject: string;
+        body: string;
+        closing: string;
+        fullText: string;
+        generatedAtIso: string;
+        kind: "club-sponsorship-pitch-prepared";
+      };
+    }
   | { status: "error"; reason: string };
 
 function isPersonaRole(value: string | undefined): value is PersonaRole {
@@ -55,19 +67,54 @@ export async function generateClubSponsorshipPitch(
     ...breakdown.matchedMissionTokens.map((t) => `Aligns with your mission: ${t}`),
   ].slice(0, 3);
 
-  const draft = buildClubSponsorshipPitchDraft({
-    club: {
-      clubName: current.row.clubName,
-      university: current.row.university,
-      categories: current.row.categories,
-      sponsorshipNeeds: current.row.sponsorshipNeeds,
-    },
-    corporate: {
-      organizationName: corporate.organizationName,
-      industry: corporate.industry,
-    },
-    reasons,
-  });
-
-  return { status: "ok", draft };
+  try {
+    const draft = buildClubSponsorshipPitchDraft({
+      club: {
+        clubName: current.row.clubName,
+        university: current.row.university,
+        categories: current.row.categories,
+        sponsorshipNeeds: current.row.sponsorshipNeeds,
+      },
+      corporate: {
+        organizationName: corporate.organizationName,
+        industry: corporate.industry,
+      },
+      reasons,
+    });
+    return { status: "ok", draft };
+  } catch (err) {
+    // Personalized builder threw — fall back to the prepared template. Log
+    // server-side for observability; do not surface the error text to the
+    // user (the prepared template is the honest UX).
+    console.error(
+      "[generateClubSponsorshipPitch] personalized builder threw:",
+      err,
+    );
+    try {
+      const fallback = buildPreparedClubSponsorshipPitch({
+        corporate: { organizationName: corporate.organizationName },
+        club: {
+          clubName: current.row.clubName,
+          university: current.row.university,
+        },
+      });
+      return {
+        status: "partial",
+        draft: {
+          ...fallback,
+          generatedAtIso: new Date().toISOString(),
+          kind: "club-sponsorship-pitch-prepared",
+        },
+      };
+    } catch (fallbackErr) {
+      console.error(
+        "[generateClubSponsorshipPitch] prepared builder threw:",
+        fallbackErr,
+      );
+      return {
+        status: "error",
+        reason: "Draft generation is unavailable right now. Please try again.",
+      };
+    }
+  }
 }

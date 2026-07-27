@@ -32,6 +32,17 @@ export interface OutreachDraftPanelProps {
           kind: string;
         };
       }
+    | {
+        status: "partial";
+        draft: {
+          subject: string;
+          body: string;
+          closing: string;
+          fullText: string;
+          generatedAtIso: string;
+          kind: string;
+        };
+      }
     | { status: "error"; reason: string }
   >;
   /** CTA label, e.g. "Generate application draft" or "Generate sponsorship pitch". */
@@ -55,8 +66,16 @@ type LocalState =
       closing: string;
       fullText: string;
     }
+  | {
+      kind: "partial";
+      subject: string;
+      body: string;
+      closing: string;
+      fullText: string;
+    }
   | { kind: "sent"; sentAtIso: string }
-  | { kind: "error"; reason: string };
+  | { kind: "error"; reason: string }
+  | { kind: "slow" };
 
 export function OutreachDraftPanel({
   corporateId,
@@ -81,6 +100,19 @@ export function OutreachDraftPanel({
     }
   }, [initialSentAtIso, state.kind]);
 
+  // Surface a soft-timeout state while the Server Action continues in the
+  // background. Changing state always runs this effect's cleanup, so the
+  // timer cannot fire after a result, clear, or sent-state reconciliation.
+  useEffect(() => {
+    if (state.kind !== "generating") return;
+    const timer = window.setTimeout(() => {
+      setState((current) =>
+        current.kind === "generating" ? { kind: "slow" } : current,
+      );
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [state.kind]);
+
   function onGenerate() {
     setState({ kind: "generating" });
     setCopied(false);
@@ -89,22 +121,38 @@ export function OutreachDraftPanel({
     fd.set("corporateId", corporateId);
     startTransition(async () => {
       const result = await action(fd);
-      if (result.status === "ok") {
-        setState({
-          kind: "ready",
-          subject: result.draft.subject,
-          body: result.draft.body,
-          closing: result.draft.closing,
-          fullText: result.draft.fullText,
-        });
-      } else {
-        setState({ kind: "error", reason: result.reason });
-      }
+      setState((current) => {
+        // A user can hide or clear the panel while the action continues.
+        // Only a request that still owns the generating/slow state may
+        // publish its result.
+        if (current.kind !== "generating" && current.kind !== "slow") {
+          return current;
+        }
+        if (result.status === "ok") {
+          return {
+            kind: "ready",
+            subject: result.draft.subject,
+            body: result.draft.body,
+            closing: result.draft.closing,
+            fullText: result.draft.fullText,
+          };
+        }
+        if (result.status === "partial") {
+          return {
+            kind: "partial",
+            subject: result.draft.subject,
+            body: result.draft.body,
+            closing: result.draft.closing,
+            fullText: result.draft.fullText,
+          };
+        }
+        return { kind: "error", reason: result.reason };
+      });
     });
   }
 
   function onCopy() {
-    if (state.kind !== "ready") return;
+    if (state.kind !== "ready" && state.kind !== "partial") return;
     try {
       if (
         typeof navigator !== "undefined" &&
@@ -173,7 +221,7 @@ export function OutreachDraftPanel({
     });
   }
 
-  const isGenerating = state.kind === "generating" || isPending;
+  const isGenerating = state.kind === "generating" || state.kind === "slow";
 
   return (
     <section
@@ -220,6 +268,35 @@ export function OutreachDraftPanel({
           />
           Generating draft…
         </p>
+      ) : null}
+
+      {state.kind === "slow" ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex flex-col gap-2 text-sm"
+        >
+          <p className="text-muted-foreground">
+            Still working — you can keep waiting or hide this panel.
+          </p>
+          <div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                // Resets to idle; the in-flight Server Action can't be
+                // cancelled client-side, but the late-result setter is
+                // gated to ignore results once we leave generating/slow.
+                setState({ kind: "idle" });
+                setCopied(false);
+                setSendError(null);
+              }}
+            >
+              Hide and start over
+            </Button>
+          </div>
+        </div>
       ) : null}
 
       {state.kind === "ready" && !isPending ? (
@@ -294,6 +371,69 @@ export function OutreachDraftPanel({
                 className="mr-1 inline size-3"
               />
               {sendError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {state.kind === "partial" && !isPending ? (
+        <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-4">
+          <p className="text-sm font-medium" role="status" aria-live="polite">
+            <AlertTriangle
+              aria-hidden="true"
+              className="mr-1 inline size-4 text-amber-600 dark:text-amber-400"
+            />
+            Prepared template — personalized draft was unavailable.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Review and edit before sending. This is a starting point, not a
+            finished personalized draft.
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            <div>
+              <p className="text-sm font-medium">Subject</p>
+              <p className="text-sm">{state.subject}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Body</p>
+              <pre className="whitespace-pre-wrap font-sans text-sm">
+                {state.body}
+              </pre>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Closing</p>
+              <pre className="whitespace-pre-wrap font-sans text-sm">
+                {state.closing}
+              </pre>
+            </div>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              onClick={onCopy}
+              variant="outline"
+              size="sm"
+            >
+              <Copy aria-hidden="true" className="mr-1 size-4" />
+              {copied ? "Copied" : "Copy"}
+            </Button>
+            <Button
+              type="button"
+              onClick={onClear}
+              variant="ghost"
+              size="sm"
+            >
+              Clear
+            </Button>
+          </div>
+          {copied ? (
+            <p
+              role="status"
+              className="text-muted-foreground text-xs"
+              aria-live="polite"
+            >
+              <Check aria-hidden="true" className="mr-1 inline size-3" />
+              Prepared template copied to your clipboard.
             </p>
           ) : null}
         </div>
