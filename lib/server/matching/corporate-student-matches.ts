@@ -16,7 +16,12 @@ export interface CorporateStudentMatchInput {
   // `talentNeeds: string[]` (per `lib/server/db/schema.ts:121`) can be
   // passed directly without a cast.
   talentNeeds?: string[];
-  collaborationIntent?: "hiring" | "sponsorship" | "both";
+  // `collaborationIntent` is widened to `string` so a Drizzle row's
+  // `text("collaboration_intent")` column (which infers as plain
+  // `string`) can be passed directly without a cast. The runtime check
+  // below only awards the hiring bonus when the value is one of the
+  // known intent tokens; unknown values are treated as "no bonus".
+  collaborationIntent?: string;
 }
 
 export interface RankedStudentCandidate {
