@@ -25,18 +25,18 @@ async function setRoleCookies(
     {
       name: "role",
       value: "student",
-      url: "http://localhost:3000",
+      domain: "localhost",
+      path: "/",
       httpOnly: true,
       sameSite: "Lax",
-      path: "/",
     },
     {
       name: "personaId",
       value: "tasnim",
-      url: "http://localhost:3000",
+      domain: "localhost",
+      path: "/",
       httpOnly: true,
       sameSite: "Lax",
-      path: "/",
     },
   ]);
 }

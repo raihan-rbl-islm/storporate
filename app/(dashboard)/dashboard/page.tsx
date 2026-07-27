@@ -40,12 +40,14 @@ export default async function DashboardPage() {
       <nav aria-label="Dashboard sections" className="flex flex-col gap-3">
         <Link
           href="/dashboard/match"
+          prefetch={false}
           className="text-foreground text-base underline-offset-4 hover:underline"
         >
           Ranked matches (lands in Phase 3)
         </Link>
         <Link
           href="/dashboard/profile"
+          prefetch={false}
           className="text-foreground text-base underline-offset-4 hover:underline"
         >
           Profile editor (lands in Phase 2)

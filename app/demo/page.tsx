@@ -135,7 +135,9 @@ export default async function DemoPage({
           {HERO_PERSONAS.map((p) => (
             <Card key={p.id}>
               <CardHeader>
-                <CardTitle>{p.name}</CardTitle>
+                <CardTitle>
+                  <h3 className="text-lg font-medium">{p.name}</h3>
+                </CardTitle>
                 <CardDescription>{p.institution}</CardDescription>
               </CardHeader>
               <CardContent>
