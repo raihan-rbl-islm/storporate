@@ -4,6 +4,7 @@ import {
   clubSchema,
   corporateSchema,
   schemaForRole,
+  matchRelevantSchemaForRole,
 } from "@/lib/server/personas/schemas";
 
 describe("studentSchema", () => {
@@ -162,5 +163,27 @@ describe("schemaForRole", () => {
     expect(schemaForRole("student")).toBe(studentSchema);
     expect(schemaForRole("club")).toBe(clubSchema);
     expect(schemaForRole("corporate")).toBe(corporateSchema);
+  });
+});
+
+describe("matchRelevantSchemaForRole", () => {
+  it("student subset rejects missing skills", () => {
+    const r = matchRelevantSchemaForRole("student").safeParse({
+      location: "Dhaka",
+      skills: [],
+      careerInterests: ["ML"],
+    });
+    expect(r.success).toBe(false);
+  });
+  it("corporate subset accepts minimal payload", () => {
+    const r = matchRelevantSchemaForRole("corporate").safeParse({
+      location: "Dhaka",
+      talentNeeds: ["ML"],
+      sponsorshipInterests: ["Hackathons"],
+      csrFocus: ["Inclusion"],
+      budgetRange: "",
+      collaborationIntent: "hiring",
+    });
+    expect(r.success).toBe(true);
   });
 });

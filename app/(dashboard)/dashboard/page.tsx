@@ -1,9 +1,14 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   getPersonaById,
   getDefaultPersonaForRole,
 } from "@/lib/server/personas/lookup";
+import {
+  getCurrentPersona,
+  hasOnboarded,
+} from "@/lib/server/personas/current";
 import type { PersonaRole } from "@/data/personas";
 
 const VALID_ROLES: readonly PersonaRole[] = ["student", "club", "corporate"];
@@ -24,6 +29,13 @@ export default async function DashboardPage() {
     return null;
   }
 
+  // First-run gate: if the persona row has never been edited
+  // (updatedAt === createdAt), bounce the user into /onboarding.
+  const current = await getCurrentPersona();
+  if (current && !hasOnboarded(current.row)) {
+    redirect("/onboarding");
+  }
+
   const fromId = personaIdCookie
     ? await getPersonaById(personaIdCookie)
     : null;
@@ -40,27 +52,33 @@ export default async function DashboardPage() {
       </h1>
 
       <p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
-        This dashboard stub is the entry into the Demo. Real role-specific
-        content — profile onboarding, ranked matches, action surfaces —
-        arrives in Phase 2 (Identity &amp; Onboarding) and Phase 4
-        (Dashboards). The role switcher in the top-right lets you jump between
-        Student, Club, and Corporate without leaving the demo.
+        Your dashboard surfaces top matches, recent activity, and the
+        role-specific actions available to you. To begin,{" "}
+        <Link
+          href="/dashboard/profile/edit"
+          className="underline"
+          prefetch={false}
+        >
+          edit your profile
+        </Link>{" "}
+        or browse the available{" "}
+        <Link
+          href="/dashboard/match"
+          className="underline"
+          prefetch={false}
+        >
+          matches
+        </Link>
+        .
       </p>
 
       <nav aria-label="Dashboard sections" className="flex flex-col gap-3">
-        <Link
-          href="/dashboard/match"
-          prefetch={false}
-          className="text-foreground text-base underline-offset-4 hover:underline"
-        >
-          Ranked matches (lands in Phase 3)
-        </Link>
         <Link
           href="/dashboard/profile"
           prefetch={false}
           className="text-foreground text-base underline-offset-4 hover:underline"
         >
-          Profile editor (lands in Phase 2)
+          View your profile
         </Link>
       </nav>
     </div>

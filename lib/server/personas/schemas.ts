@@ -72,3 +72,62 @@ export function schemaForRole(
       return corporateSchema;
   }
 }
+
+// ----------------------------------------------------------------------
+// Match-relevant subsets (used by `updateProfile` in edit mode).
+//
+// These intentionally omit identity fields (fullName, university,
+// organizationName, etc.). Edit mode locks identity as readonly and only
+// persists the match-relevant subset to the DB, so the strict subset
+// schemas here document the contract and reject any drift if a future
+// caller accidentally re-introduces identity fields.
+// ----------------------------------------------------------------------
+
+const matchRelevantStudent = z.object({
+  location: requiredText,
+  skills: z.array(requiredText).min(1, "Add at least one skill"),
+  careerInterests: z
+    .array(requiredText)
+    .min(1, "Add at least one interest"),
+});
+export type StudentMatchRelevantInput = z.infer<typeof matchRelevantStudent>;
+
+const matchRelevantClub = z.object({
+  categories: z.array(requiredText).min(1, "Add at least one category"),
+  eventFocus: z.array(requiredText).min(1, "Add at least one focus area"),
+  sponsorshipNeeds: z
+    .array(requiredText)
+    .min(1, "Add at least one sponsorship need"),
+  location: requiredText,
+});
+export type ClubMatchRelevantInput = z.infer<typeof matchRelevantClub>;
+
+const matchRelevantCorporate = z.object({
+  location: requiredText,
+  talentNeeds: z
+    .array(requiredText)
+    .min(1, "Add at least one talent need"),
+  sponsorshipInterests: z
+    .array(requiredText)
+    .min(1, "Add at least one sponsorship interest"),
+  csrFocus: z.array(requiredText).min(1, "Add at least one CSR focus area"),
+  budgetRange: optionalText,
+  collaborationIntent: z.enum(["hiring", "sponsorship", "both"]),
+});
+export type CorporateMatchRelevantInput = z.infer<typeof matchRelevantCorporate>;
+
+export function matchRelevantSchemaForRole(
+  role: PersonaRole,
+):
+  | typeof matchRelevantStudent
+  | typeof matchRelevantClub
+  | typeof matchRelevantCorporate {
+  switch (role) {
+    case "student":
+      return matchRelevantStudent;
+    case "club":
+      return matchRelevantClub;
+    case "corporate":
+      return matchRelevantCorporate;
+  }
+}
