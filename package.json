@@ -9,7 +9,6 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "db:verify": "dotenv -e .env.local -- tsx scripts/verify-pgvector.ts",
     "db:check": "dotenv -e .env.local -- drizzle-kit check",
