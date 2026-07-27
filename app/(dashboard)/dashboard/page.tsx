@@ -1,12 +1,18 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { HERO_PERSONAS, type PersonaRole } from "@/data/personas";
+import {
+  getPersonaById,
+  getDefaultPersonaForRole,
+} from "@/lib/server/personas/lookup";
+import { Disclaimer } from "@/components/personas/disclaimer";
+import type { PersonaRole } from "@/data/personas";
 
 const VALID_ROLES: readonly PersonaRole[] = ["student", "club", "corporate"];
 
 function isPersonaRole(value: string | undefined): value is PersonaRole {
   return (
-    typeof value === "string" && (VALID_ROLES as readonly string[]).includes(value)
+    typeof value === "string" &&
+    (VALID_ROLES as readonly string[]).includes(value)
   );
 }
 
@@ -16,12 +22,17 @@ export default async function DashboardPage() {
   const personaIdCookie = store.get("personaId")?.value;
 
   if (!isPersonaRole(roleCookie)) {
-    // Layout already redirects, but be defensive.
     return null;
   }
 
-  const persona =
-    HERO_PERSONAS.find((p) => p.id === personaIdCookie) ?? HERO_PERSONAS[0];
+  const fromId = personaIdCookie
+    ? await getPersonaById(personaIdCookie)
+    : null;
+  const persona = fromId ?? (await getDefaultPersonaForRole(roleCookie));
+
+  if (!persona) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -53,6 +64,8 @@ export default async function DashboardPage() {
           Profile editor (lands in Phase 2)
         </Link>
       </nav>
+
+      <Disclaimer />
     </div>
   );
 }

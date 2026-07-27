@@ -3,13 +3,16 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { RoleSwitcher } from "@/components/dashboard/role-switcher";
-import { HERO_PERSONAS, type PersonaRole } from "@/data/personas";
+import { getPersonaById } from "@/lib/server/personas/lookup";
+import { Disclaimer } from "@/components/personas/disclaimer";
+import type { PersonaRole } from "@/data/personas";
 
 const VALID_ROLES: readonly PersonaRole[] = ["student", "club", "corporate"];
 
 function isPersonaRole(value: string | undefined): value is PersonaRole {
   return (
-    typeof value === "string" && (VALID_ROLES as readonly string[]).includes(value)
+    typeof value === "string" &&
+    (VALID_ROLES as readonly string[]).includes(value)
   );
 }
 
@@ -30,9 +33,9 @@ export default async function DashboardLayout({
     redirect("/demo");
   }
 
-  // Find persona; fall back to the first hero entry when stale.
-  const persona =
-    HERO_PERSONAS.find((p) => p.id === personaIdCookie) ?? HERO_PERSONAS[0];
+  const persona = personaIdCookie
+    ? await getPersonaById(personaIdCookie)
+    : null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -56,12 +59,14 @@ export default async function DashboardLayout({
             <RoleSwitcher currentRole={roleCookie} />
           </div>
         </div>
+        <div className="mx-auto max-w-6xl px-6 pb-4">
+          <Disclaimer />
+        </div>
       </header>
       <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
-      {/* persona is referenced for hydration parity; keep the variable so
-          tests / dev-tools can inspect the resolved persona via React
-          DevTools without forcing a re-derivation. */}
-      <span hidden data-persona-id={persona.id} />
+      {persona ? (
+        <span hidden data-persona-id={persona.id} />
+      ) : null}
     </div>
   );
 }
