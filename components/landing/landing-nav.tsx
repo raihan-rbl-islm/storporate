@@ -14,7 +14,6 @@ const NAV_LINKS: readonly NavLink[] = [
   { label: "For students", href: "#students" },
   { label: "For clubs", href: "#clubs" },
   { label: "For companies", href: "#companies" },
-  { label: "Quick tour", href: "#tour" },
 ] as const;
 
 export async function LandingNav() {

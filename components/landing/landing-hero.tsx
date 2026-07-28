@@ -57,15 +57,6 @@ export function LandingHero() {
                 className="size-4 transition-transform group-hover/cta:translate-x-0.5"
               />
             </Link>
-            <Link
-              href="/opportunities"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "px-5",
-              )}
-            >
-              Explore jobs
-            </Link>
           </div>
 
           <ul className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
