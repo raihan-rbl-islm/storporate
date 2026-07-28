@@ -43,9 +43,14 @@ async function setRoleCookies(
   ]);
 }
 
-test("dashboard: redirects to /demo when no role cookie", async ({ page }) => {
+test("dashboard: redirects to /signin when no role cookie and no auth", async ({
+  page,
+}) => {
   await page.goto("/dashboard");
-  await expect(page).toHaveURL(/\/demo/);
+  // Phase 7: middleware now sends unauthenticated visitors to /signin
+  // (preserving the original path via ?next=…). The legacy /demo flow
+  // still works for users who set the demo cookies via the /demo page.
+  await expect(page).toHaveURL(/\/signin/);
 });
 
 test("dashboard: renders placeholder for Tasnim when role=student + personaId=tasnim", async ({

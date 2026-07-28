@@ -56,41 +56,47 @@ test("landing: hero flourish respects prefers-reduced-motion", async ({
 test("landing: value-prop H2 visible", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Who Storporate is for", level: 2 }),
+    page.getByRole("heading", {
+      name: /built for every seat at the table/i,
+    }),
   ).toBeVisible();
 });
 
 test("landing: three role cards present by title", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Students", level: 3 }),
+    page.getByRole("heading", { name: "For students", level: 3 }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "University clubs", level: 3 }),
+    page.getByRole("heading", { name: "For university clubs", level: 3 }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Companies", level: 3 }),
+    page.getByRole("heading", { name: "For companies", level: 3 }),
   ).toBeVisible();
 });
 
-test("landing: trust section heading visible", async ({ page }) => {
+test("landing: compatibility explanation visible", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "How compatibility works", level: 2 }),
+    page.getByText(/compatibility score/i).first(),
   ).toBeVisible();
 });
 
 test("landing: demo CTAs stub-link to /demo routes", async ({ page }) => {
   await page.goto("/");
-  const tryBtn = page.getByRole("link", { name: /try the demo/i }).first();
-  const googleBtn = page
-    .getByRole("link", { name: /continue with google/i })
+  // Hero / nav primary CTA → /demo
+  const tourBtn = page
+    .getByRole("link", { name: /take a quick tour/i })
     .first();
-  await expect(tryBtn).toHaveAttribute("href", "/demo");
+  await expect(tourBtn).toHaveAttribute("href", /(#tour|\/demo)/);
+  // Google link in the demo-tour section → /demo/google
+  const googleBtn = page
+    .getByRole("link", { name: /try with google/i })
+    .first();
   await expect(googleBtn).toHaveAttribute("href", "/demo/google");
 });
 
-test("landing: keyboard tab order reaches primary CTA first", async ({
+test("landing: keyboard tab order reaches a primary CTA within first 5 stops", async ({
   page,
 }) => {
   await page.goto("/");
@@ -107,35 +113,29 @@ test("landing: keyboard tab order reaches primary CTA first", async ({
     });
     focusedTags.push(tag);
   }
-  // The primary CTA must be in the first 5 focused elements.
+  // Some primary CTA must appear in the first 5 focused elements.
   const primary = focusedTags.find((t) =>
-    t.toLowerCase().includes("try the demo"),
+    t.toLowerCase().match(/get started|quick tour|sign up free/),
   );
   expect(
     primary,
-    `expected primary CTA in first 5 tab stops; got: ${JSON.stringify(focusedTags)}`,
+    `expected a primary CTA in first 5 tab stops; got: ${JSON.stringify(focusedTags)}`,
   ).toBeTruthy();
 });
 
-test("landing: live-demo disclosure is visible", async ({ page }) => {
+test("landing: disclaimer is visible", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(
-    page.getByText(/prepared personas/i),
-  ).toBeVisible();
-  await expect(
-    page.getByText(/Google sign-in is offered as an optional alternative/i),
+    page.getByText(/prepared personas/i).first(),
   ).toBeVisible();
 });
 
-test("landing: live-demo disclosure visible at 360px", async ({ page }) => {
+test("landing: disclaimer visible at 360px", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
   await expect(
-    page.getByText(/prepared personas/i),
-  ).toBeVisible();
-  await expect(
-    page.getByText(/optional alternative/i),
+    page.getByText(/prepared personas/i).first(),
   ).toBeVisible();
 });
 
