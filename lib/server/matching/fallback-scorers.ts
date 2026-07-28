@@ -10,30 +10,30 @@
  * overlap. Caller code clamps anything that exceeds 1 from a bonus.
  */
 
-type StudentForScoring = {
+export type StudentForScoring = {
   skills?: string[];
   careerInterests?: string[];
   expectedGraduation?: string;
   location?: string;
 };
 
-type EventForScoring = {
+export type EventForScoring = {
   tags?: string[];
 };
 
-type JobForScoring = {
+export type JobForScoring = {
   skills?: string[];
   locationLabel?: string;
   isRemote?: boolean;
   employmentType?: string;
 };
 
-type ClubForScoring = {
+export type ClubForScoring = {
   eventFocus?: string[];
   categories?: string[];
 };
 
-type CorporateForScoring = {
+export type CorporateForScoring = {
   sponsorshipInterests?: string[];
   csrFocus?: string[];
   budgetRange?: string;

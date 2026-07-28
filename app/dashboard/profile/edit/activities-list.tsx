@@ -53,6 +53,9 @@ export function ActivitiesList({ initialRows }: ActivitiesListProps) {
   >(null);
 
   React.useEffect(() => {
+    // Re-sync local rows whenever the server-rendered parent passes new
+    // initial data (e.g. after a successful server action revalidates).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRows(initialRows);
   }, [initialRows]);
 

@@ -11,7 +11,7 @@ import { embedText } from "./gemini";
 
 type Embedded<T> = T & {
   embedding: number[] | null;
-  needs_embedding: boolean;
+  needsEmbedding: boolean;
 };
 
 export function attachEmbedding<T>(
@@ -24,7 +24,7 @@ export function attachEmbedding<T>(
         return {
           ...row,
           embedding: vec,
-          needs_embedding: false,
+          needsEmbedding: false,
         };
       }
     } catch {
@@ -33,7 +33,7 @@ export function attachEmbedding<T>(
     return {
       ...row,
       embedding: null,
-      needs_embedding: true,
+      needsEmbedding: true,
     };
   };
 }

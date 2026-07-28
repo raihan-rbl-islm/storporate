@@ -145,7 +145,7 @@ export function RequestSponsorshipTrigger({
               required
             />
             <p className="text-xs text-muted-foreground">
-              Your club's contact email will be used so {toName} can reply.
+              Your club&apos;s contact email will be used so {toName} can reply.
             </p>
           </div>
           {previewText !== null ? (

@@ -39,7 +39,7 @@ function getRedis(): Redis {
   return cachedRedis;
 }
 
-type Window = `${number} s` | `${number} m`;
+type Window = `${number} s` | `${number} m` | `${number} h` | `${number} d`;
 
 export type RateLimitResult =
   | {

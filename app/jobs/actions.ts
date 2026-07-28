@@ -68,9 +68,7 @@ const baseJobSchema = z.object({
   employmentType: z.enum(
     ["internship", "full-time", "contract", "research"],
     {
-      errorMap: () => ({
-        message: "Pick an employment type",
-      }),
+      message: "Pick an employment type",
     },
   ),
   locationLabel: z.string(),

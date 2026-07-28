@@ -13,8 +13,8 @@ import { FieldError } from "@/components/onboarding/field-error";
 import {
   createExperience,
   updateExperience,
-  type FormState,
 } from "./actions";
+import type { FormState } from "@/components/onboarding/onboarding-form";
 
 export type ExperienceFormKind =
   | "work"

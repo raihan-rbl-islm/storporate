@@ -12,8 +12,8 @@ import { FieldError } from "@/components/onboarding/field-error";
 import {
   createAchievement,
   updateAchievement,
-  type FormState,
 } from "./actions";
+import type { FormState } from "@/components/onboarding/onboarding-form";
 
 export type AchievementFormKind =
   | "award"

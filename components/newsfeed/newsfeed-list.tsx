@@ -21,6 +21,12 @@ export interface NewsfeedListProps {
  * value. The filter is a plain `<form method="get">` so we don't need
  * a client component.
  */
+
+type OwnerKind = "club" | "corporate";
+function toOwnerKind(v: string): OwnerKind {
+  return v === "club" ? "club" : "corporate";
+}
+
 export async function NewsfeedList({
   studentId,
   filter,
@@ -59,7 +65,7 @@ export async function NewsfeedList({
                     slug: ev.slug,
                     title: ev.title,
                     startsAt: ev.startsAt,
-                    ownerKind: ev.ownerKind,
+                    ownerKind: toOwnerKind(ev.ownerKind),
                     ownerName,
                     tags: ev.tags,
                     matchScore: entry.score,
@@ -78,7 +84,7 @@ export async function NewsfeedList({
                   title: p.title,
                   body: p.body,
                   kind: p.kind === "news" ? "news" : "journal",
-                  ownerKind: p.ownerKind,
+                  ownerKind: toOwnerKind(p.ownerKind),
                   ownerName,
                   tags: p.tags,
                   publishedAt: p.publishedAt,

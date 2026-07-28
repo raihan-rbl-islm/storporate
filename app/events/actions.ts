@@ -233,7 +233,9 @@ export async function createEvent(
   const ownerName =
     current.kind === "club"
       ? current.row.clubName
-      : current.row.organizationName;
+      : current.kind === "corporate"
+        ? current.row.organizationName
+        : "";
   const withEmb = await attachEmbedding(eventComposer)({
     title: parsed.data.title,
     description: parsed.data.description,
@@ -373,7 +375,9 @@ export async function updateEvent(
   const ownerName =
     current.kind === "club"
       ? current.row.clubName
-      : current.row.organizationName;
+      : current.kind === "corporate"
+        ? current.row.organizationName
+        : "";
   const withEmb = await attachEmbedding(eventComposer)({
     title: parsed.data.title,
     description: parsed.data.description,

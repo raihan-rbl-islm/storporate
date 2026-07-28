@@ -115,6 +115,7 @@ export default async function PublicProfilePage({ params }: Props) {
         canView={canView}
         contactEmail={contactEmail}
         ownerName={ownerName}
+        viewerKind={viewer.kind}
       />
 
       {!isOwner && target.kind === "student" ? (
@@ -146,12 +147,14 @@ function ProfileHeader({
   canView,
   contactEmail,
   ownerName,
+  viewerKind,
 }: {
   target: ResolvedPersona;
   isOwner: boolean;
   canView: boolean;
   contactEmail: string;
   ownerName: string;
+  viewerKind: "student" | "club" | "corporate";
 }) {
   const roleLabel =
     target.kind === "student"
@@ -221,7 +224,7 @@ function ProfileHeader({
         contactEmail={contactEmail}
         ownerName={ownerName}
         target={target}
-        viewerKind={viewer.kind}
+        viewerKind={viewerKind}
       />
     </header>
   );

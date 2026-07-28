@@ -9,7 +9,6 @@ import {
 import { AchievementsList } from "./achievements-list";
 
 type StudentRow = typeof StudentsTable.$inferSelect;
-type AchievementRow = typeof studentAchievements.$inferSelect;
 
 export async function AchievementsSection({
   student,
@@ -20,7 +19,7 @@ export async function AchievementsSection({
     .select()
     .from(studentAchievements)
     .where(eq(studentAchievements.studentId, student.id))
-    .orderBy(asc(studentAchievements.sortOrder), asc(studentAchievements.createdAt));
+    .orderBy(asc(studentAchievements.sortOrder));
 
   return <AchievementsList initialRows={rows} />;
 }

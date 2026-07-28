@@ -59,7 +59,7 @@ function projectZodErrors(
 
 const basePostSchema = z.object({
   kind: z.enum(["journal", "news"], {
-    errorMap: () => ({ message: "Choose journal or news" }),
+    message: "Choose journal or news",
   }),
   title: z
     .string()
@@ -157,7 +157,9 @@ export async function createPost(
   const ownerName =
     current.kind === "club"
       ? current.row.clubName
-      : current.row.organizationName;
+      : current.kind === "corporate"
+        ? current.row.organizationName
+        : "";
   const withEmb = await attachEmbedding(postComposer)({
     title: parsed.data.title,
     body: parsed.data.body,
@@ -177,7 +179,7 @@ export async function createPost(
       body: parsed.data.body,
       tags: parsed.data.tags,
       embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needs_embedding,
+      needsEmbedding: withEmb.needsEmbedding,
     })
     .returning({ id: posts.id, slug: posts.slug });
 
@@ -264,7 +266,9 @@ export async function updatePost(
   const ownerName =
     current.kind === "club"
       ? current.row.clubName
-      : current.row.organizationName;
+      : current.kind === "corporate"
+        ? current.row.organizationName
+        : "";
   const withEmb = await attachEmbedding(postComposer)({
     title: parsed.data.title,
     body: parsed.data.body,
@@ -282,7 +286,7 @@ export async function updatePost(
       body: parsed.data.body,
       tags: parsed.data.tags,
       embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needs_embedding,
+      needsEmbedding: withEmb.needsEmbedding,
     })
     .where(eq(posts.id, postId));
 

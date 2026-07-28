@@ -34,7 +34,7 @@ export async function CandidateTable({ jobId }: CandidateTableProps) {
     return (
       <div className="rounded-md border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
         No matching students yet. Once students add experiences,
-        achievements, or activities to their profiles they'll show up
+        achievements, or activities to their profiles they&apos;ll show up
         here.
       </div>
     );

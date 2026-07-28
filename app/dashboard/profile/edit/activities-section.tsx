@@ -9,7 +9,6 @@ import {
 import { ActivitiesList } from "./activities-list";
 
 type StudentRow = typeof StudentsTable.$inferSelect;
-type ActivityRow = typeof studentActivities.$inferSelect;
 
 export async function ActivitiesSection({
   student,
@@ -20,7 +19,7 @@ export async function ActivitiesSection({
     .select()
     .from(studentActivities)
     .where(eq(studentActivities.studentId, student.id))
-    .orderBy(asc(studentActivities.sortOrder), asc(studentActivities.createdAt));
+    .orderBy(asc(studentActivities.sortOrder));
 
   return <ActivitiesList initialRows={rows} />;
 }

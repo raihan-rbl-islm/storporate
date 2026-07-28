@@ -20,11 +20,12 @@ import {
   type CorporateMatchRelevantInput,
 } from "@/lib/server/personas/schemas";
 import type { FormState } from "@/components/onboarding/onboarding-form";
-// Re-export so the sibling client form components can import the state
-// type alongside the actions. `export type` is stripped at build time so
-// the "use server" rule (only async functions can be exported) is
-// preserved.
-export type { FormState };
+// NOTE: do NOT re-export `FormState` from a "use server" module.
+// Turbopack's "use server" boundary treats every `export` (including
+// `export type`) as a runtime export, and the resulting module fails
+// to compile when the re-exported type can't be resolved at runtime.
+// Client form components must import `FormState` from
+// `@/components/onboarding/onboarding-form` directly.
 
 function getString(fd: FormData, name: string): string {
   const v = fd.get(name);

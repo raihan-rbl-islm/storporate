@@ -52,6 +52,7 @@ type JobLike = {
   employmentType?: string;
   skills?: string[];
   locationLabel?: string;
+  ownerName?: string;
 };
 
 type PostLike = {
@@ -59,6 +60,7 @@ type PostLike = {
   body?: string;
   tags?: string[];
   kind?: string;
+  ownerName?: string;
 };
 
 function join(parts: Array<string | string[] | undefined>): string {
@@ -117,9 +119,10 @@ export function jobComposer(row: JobLike): string {
     row.employmentType,
     row.skills,
     row.locationLabel,
+    row.ownerName,
   ]);
 }
 
 export function postComposer(row: PostLike): string {
-  return join([row.title, row.kind, row.body, row.tags]);
+  return join([row.title, row.kind, row.body, row.tags, row.ownerName]);
 }

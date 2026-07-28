@@ -14,7 +14,7 @@ type ExperienceRow = typeof studentExperiences.$inferSelect;
 
 /**
  * Server component. Reads the current student's experience rows ordered
- * by `sortOrder asc, createdAt asc` and hands them to the client list.
+ * by `sortOrder asc` and hands them to the client list.
  *
  * If the current persona is not a student we render nothing — the parent
  * page is role-agnostic and never shows this section otherwise.
@@ -28,10 +28,10 @@ export async function ExperiencesSection({
     .select()
     .from(studentExperiences)
     .where(eq(studentExperiences.studentId, student.id))
-    .orderBy(asc(studentExperiences.sortOrder), asc(studentExperiences.createdAt));
+    .orderBy(asc(studentExperiences.sortOrder));
 
   // Serialize to plain data for the client component.
   const initialRows: ExperienceRow[] = rows;
 
-  return <ExperiencesList studentId={student.id} initialRows={initialRows} />;
+  return <ExperiencesList initialRows={initialRows} />;
 }

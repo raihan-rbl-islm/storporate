@@ -157,7 +157,9 @@ export function CreateJobForm({
               />
               <Select
                 value={employmentType}
-                onValueChange={setEmploymentType}
+                onValueChange={(v) =>
+                  setEmploymentType(typeof v === "string" ? v : "internship")
+                }
               >
                 <SelectTrigger
                   id="employmentType"

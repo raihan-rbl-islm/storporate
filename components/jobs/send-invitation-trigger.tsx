@@ -84,8 +84,10 @@ export function SendInvitationTrigger({
             const r = await sendRecruitmentOutreach(fd);
             if (r.status === "success") {
               setResult({ status: "success", message: r.message });
-            } else {
+            } else if (r.status === "error") {
               setResult({ status: "error", reason: r.formMessage });
+            } else {
+              setResult({ status: "error", reason: "Something went wrong." });
             }
           });
         }}
@@ -125,7 +127,7 @@ export function SendInvitationTrigger({
           />
           <p className="text-xs text-muted-foreground">
             Sent from your company contact email. The student will see your
-            organization's details.
+            organization&apos;s details.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

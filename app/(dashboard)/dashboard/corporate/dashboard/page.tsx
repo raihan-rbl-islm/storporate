@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Check, AlertTriangle } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
   Card,

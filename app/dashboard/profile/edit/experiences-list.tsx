@@ -25,7 +25,6 @@ import {
 type ExperienceRow = typeof ExperiencesTable.$inferSelect;
 
 interface ExperiencesListProps {
-  studentId: string;
   initialRows: ExperienceRow[];
 }
 
@@ -51,7 +50,6 @@ function rowToInitial(row: ExperienceRow): ExperienceInitial {
 }
 
 export function ExperiencesList({
-  studentId,
   initialRows,
 }: ExperiencesListProps) {
   const [rows, setRows] = React.useState<ExperienceRow[]>(initialRows);
@@ -66,6 +64,7 @@ export function ExperiencesList({
   // state only when the upstream id-set changes — that way optimistic
   // edits from this client don't get clobbered.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRows(initialRows);
   }, [initialRows]);
 
