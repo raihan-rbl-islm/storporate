@@ -1,6 +1,7 @@
 import {
   pgTable,
   boolean,
+  integer,
   serial,
   text,
   timestamp,
@@ -124,6 +125,8 @@ export const students = pgTable("students", {
   fixtureDisclaimerRequired: boolean("fixture_disclaimer_required")
     .notNull()
     .default(false),
+  embedding: vector(768)("embedding"),
+  needsEmbedding: boolean("needs_embedding").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -147,6 +150,9 @@ export const clubs = pgTable("clubs", {
   fixtureDisclaimerRequired: boolean("fixture_disclaimer_required")
     .notNull()
     .default(false),
+  contactEmail: text("contact_email").notNull().default(""),
+  embedding: vector(768)("embedding"),
+  needsEmbedding: boolean("needs_embedding").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -170,6 +176,9 @@ export const corporates = pgTable("corporates", {
   fixtureDisclaimerRequired: boolean("fixture_disclaimer_required")
     .notNull()
     .default(false),
+  contactEmail: text("contact_email").notNull().default(""),
+  embedding: vector(768)("embedding"),
+  needsEmbedding: boolean("needs_embedding").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -292,3 +301,274 @@ export const outreachEvents = pgTable(
     ).on(t.role, t.personaId, t.kind, t.corporateId),
   }),
 );
+
+// ----------------------------------------------------------------------
+// Phase 8: profile sub-resources + events/jobs/posts/invitations.
+//
+// All FKs to persona tables are intentionally logical (string ids) rather
+// than declared REFERENCES — the same convention the rest of the schema
+// uses for persona <-> interest tables. New FKs on uuid primary keys
+// (event_id, job_id) DO use `.references(() => ...)` since those are
+// first-class tables with stable uuid PKs.
+
+// Student sub-resources: experiences, achievements, activities. Each row
+// belongs to a student and is owned/managed exclusively by that student.
+export const studentExperiences = pgTable("student_experiences", {
+  id: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  studentId: text("student_id")
+    .notNull()
+    .references(() => students.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  title: text("title").notNull(),
+  organization: text("organization").notNull(),
+  location: text("location").notNull().default(""),
+  startDate: text("start_date").notNull().default(""),
+  endDate: text("end_date").notNull().default("Present"),
+  description: text("description").notNull().default(""),
+  tags: text("tags").array().notNull().default([]),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const studentAchievements = pgTable("student_achievements", {
+  id: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  studentId: text("student_id")
+    .notNull()
+    .references(() => students.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  title: text("title").notNull(),
+  issuer: text("issuer").notNull().default(""),
+  date: text("date").notNull().default(""),
+  url: text("url").notNull().default(""),
+  description: text("description").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export const studentActivities = pgTable("student_activities", {
+  id: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  studentId: text("student_id")
+    .notNull()
+    .references(() => students.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  role: text("role").notNull(),
+  organization: text("organization").notNull(),
+  startDate: text("start_date").notNull().default(""),
+  endDate: text("end_date").notNull().default("Present"),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+// Events: owned by a club or corporate (ownerKind discriminator).
+// `slug` is unique so we can deep-link `/events/<slug>`.
+export const events = pgTable(
+  "events",
+  {
+    id: customType<{ data: string; driverData: string }>({
+      dataType: () => "uuid",
+      toDriver: (v: string) => v,
+      fromDriver: (s: string) => s,
+    })("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    ownerKind: text("owner_kind").notNull(),
+    ownerId: text("owner_id").notNull(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description").notNull().default(""),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    venue: text("venue").notNull().default(""),
+    locationLabel: text("location_label").notNull().default(""),
+    isVirtual: boolean("is_virtual").notNull().default(false),
+    registrationUrl: text("registration_url").notNull().default(""),
+    capacity: integer("capacity"),
+    tags: text("tags").array().notNull().default([]),
+    embedding: vector(768)("embedding"),
+    needsEmbedding: boolean("needs_embedding").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqEventSlug: uniqueIndex("events_slug_uniq").on(t.slug),
+  }),
+);
+
+// One row per (event, student) — a student registers their interest in
+// attending. UNIQUE prevents double-registration.
+export const eventRegistrations = pgTable(
+  "event_registrations",
+  {
+    id: customType<{ data: string; driverData: string }>({
+      dataType: () => "uuid",
+      toDriver: (v: string) => v,
+      fromDriver: (s: string) => s,
+    })("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    eventId: customType<{ data: string; driverData: string }>({
+      dataType: () => "uuid",
+      toDriver: (v: string) => v,
+      fromDriver: (s: string) => s,
+    })("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    studentId: text("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    motivation: text("motivation").notNull().default(""),
+    registeredAt: timestamp("registered_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqEventStudent: uniqueIndex("event_registrations_event_student_uniq").on(
+      t.eventId,
+      t.studentId,
+    ),
+  }),
+);
+
+// Jobs: posted by a corporate. `slug` is unique for deep-link routing.
+export const jobs = pgTable(
+  "jobs",
+  {
+    id: customType<{ data: string; driverData: string }>({
+      dataType: () => "uuid",
+      toDriver: (v: string) => v,
+      fromDriver: (s: string) => s,
+    })("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    corporateId: text("corporate_id")
+      .notNull()
+      .references(() => corporates.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description").notNull().default(""),
+    employmentType: text("employment_type").notNull(),
+    locationLabel: text("location_label").notNull().default(""),
+    isRemote: boolean("is_remote").notNull().default(false),
+    startsOn: text("starts_on").notNull().default(""),
+    endsOn: text("ends_on").notNull().default(""),
+    applyUrl: text("apply_url").notNull().default(""),
+    applyEmail: text("apply_email").notNull().default(""),
+    skills: text("skills").array().notNull().default([]),
+    embedding: vector(768)("embedding"),
+    needsEmbedding: boolean("needs_embedding").notNull().default(true),
+    isOpen: boolean("is_open").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqJobSlug: uniqueIndex("jobs_slug_uniq").on(t.slug),
+  }),
+);
+
+// Posts (journals/news): authored by a club or corporate. Discriminator
+// in `ownerKind`. `slug` is unique for deep-link routing.
+export const posts = pgTable(
+  "posts",
+  {
+    id: customType<{ data: string; driverData: string }>({
+      dataType: () => "uuid",
+      toDriver: (v: string) => v,
+      fromDriver: (s: string) => s,
+    })("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    ownerKind: text("owner_kind").notNull(),
+    ownerId: text("owner_id").notNull(),
+    kind: text("kind").notNull(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    body: text("body").notNull().default(""),
+    tags: text("tags").array().notNull().default([]),
+    embedding: vector(768)("embedding"),
+    needsEmbedding: boolean("needs_embedding").notNull().default(true),
+    publishedAt: timestamp("published_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqPostSlug: uniqueIndex("posts_slug_uniq").on(t.slug),
+  }),
+);
+
+// Invitations: outbound email log for invites (job applications, event
+// RSVPs, sponsor outreach). `status` tracks whether the email was sent,
+// delivered, or failed. `kind` distinguishes the invitation type.
+export const invitations = pgTable("invitations", {
+  id: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  kind: text("kind").notNull(),
+  fromKind: text("from_kind").notNull(),
+  fromId: text("from_id").notNull(),
+  toKind: text("to_kind").notNull().default("corporate"),
+  toId: text("to_id").notNull(),
+  jobId: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("job_id"),
+  eventId: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("event_id"),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  senderEmail: text("sender_email").notNull(),
+  recipientEmail: text("recipient_email").notNull(),
+  status: text("status").notNull().default("sent"),
+  sentAt: timestamp("sent_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// Aggregated export so tests, seed scripts, and admin tooling can iterate
+// every table without re-listing the named exports above.
+export const schema = {
+  healthCheck,
+  users,
+  students,
+  clubs,
+  corporates,
+  studentApplications,
+  clubSponsorshipInterests,
+  corporateInterests,
+  outreachEvents,
+  studentExperiences,
+  studentAchievements,
+  studentActivities,
+  events,
+  eventRegistrations,
+  jobs,
+  posts,
+  invitations,
+};
