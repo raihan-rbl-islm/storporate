@@ -8,12 +8,12 @@ import { Separator } from "@/components/ui/separator";
 import { db } from "@/lib/server/db";
 import { jobs } from "@/lib/server/db/schema";
 import { getCurrentPersona } from "@/lib/server/personas/current";
-import { CreateJobForm } from "@/app/(pages)/jobs/new/create-job-form";
+import { CreateJobForm } from "@/app/(pages)/opportunities/new/create-job-form";
 import {
   closeJob,
   deleteJob,
   reopenJob,
-} from "@/app/(pages)/jobs/actions";
+} from "@/app/(pages)/opportunities/actions";
 
 export const dynamic = "force-dynamic";
 

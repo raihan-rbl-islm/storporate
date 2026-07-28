@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
-import { updateProfile } from "@/app/dashboard/profile/edit/actions";
+import { updateProfile } from "./actions";
 import {
   getCurrentPersona,
   hasOnboarded,

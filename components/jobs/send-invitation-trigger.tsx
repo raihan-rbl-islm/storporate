@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { sendRecruitmentOutreach } from "@/app/(pages)/jobs/recruit-actions";
+import { sendRecruitmentOutreach } from "@/app/(pages)/opportunities/recruit-actions";
 
 export interface SendInvitationTriggerProps {
   jobId: string;
