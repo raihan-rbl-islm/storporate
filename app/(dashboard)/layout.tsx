@@ -4,10 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { UserMenu } from "@/components/dashboard/user-menu";
 import {
+  MobileSidebarTabs,
+  RoleSidebar,
+} from "@/components/dashboard/role-sidebar";
+import {
   getCurrentPersona,
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { getCurrentUser } from "@/lib/server/auth/current-user";
+import { getOverviewForCurrentPersona } from "@/lib/server/dashboard/overview";
 
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -46,10 +51,16 @@ export default async function DashboardLayout({
     // Let /onboarding handle the redirect; do nothing here.
   }
 
+  // Single pass: resolve counts + matches for the sidebar in parallel
+  // with anything else the dashboard body will resolve. React's
+  // request-time memoization means the same `current.personaId`
+  // produces a single round-trip across components.
+  const overview = await getOverviewForCurrentPersona();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link
             href="/"
             className="text-base font-semibold tracking-tight"
@@ -77,11 +88,23 @@ export default async function DashboardLayout({
             </Badge>
           </div>
         </div>
-        <div className="mx-auto max-w-6xl px-6 pb-4">
+        <div className="mx-auto max-w-6xl px-4 pb-4 sm:px-6">
           <Disclaimer />
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+        {overview ? (
+          <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
+            <RoleSidebar overview={overview} />
+            <div className="flex min-w-0 flex-1 flex-col gap-5">
+              <MobileSidebarTabs overview={overview} />
+              {children}
+            </div>
+          </div>
+        ) : (
+          children
+        )}
+      </main>
       {u.kind === "anonymous" ? (
         <span hidden data-persona-id={personaId} />
       ) : (

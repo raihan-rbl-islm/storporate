@@ -1,10 +1,20 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { Check, AlertTriangle } from "lucide-react";
+import {
+  AlertTriangle,
+  Building2,
+  Calendar,
+  Check,
+  ChevronRight,
+  Inbox,
+  Newspaper,
+  PencilLine,
+  Send,
+  Sparkles,
+  Users,
+} from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
   Card,
   CardContent,
@@ -12,16 +22,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
-import { LoadingPanel } from "@/components/ui/loading-panel";
 import { MatchCard } from "@/components/matches/match-card";
 import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { HeroCallout } from "@/components/hero/hero-callout";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
-import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import { ProfileCompletenessMeter } from "@/components/profile/profile-completeness-meter";
-import type { StudentFixture } from "@/data/personas";
+import { StatTile } from "@/components/dashboard/stat-tile";
+import {
+  QuickActionGrid,
+  type QuickAction,
+} from "@/components/dashboard/quick-actions";
+import { getStudentOverview } from "@/lib/server/dashboard/overview";
 import {
   getCurrentPersona,
   hasOnboarded,
@@ -30,26 +44,30 @@ import {
   rankCorporateMatchesFor,
   toDisplayMatchPercent,
 } from "@/lib/server/matching/student-matches";
-import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 
-async function HeroAndMatches({ student }: { student: StudentFixture }) {
-  let matches: ReturnType<typeof rankCorporateMatchesFor> = [];
-  let usedPreparedFallback = false;
-  try {
-    matches = rankCorporateMatchesFor(
-      student,
-      await getCorporateFixtures(),
-    ).slice(0, 3);
-  } catch (err) {
-    console.error(
-      "[student dashboard] matcher threw, using prepared:",
-      err,
-    );
-    matches = getPreparedMatchesFor("student-corporate", student);
-    usedPreparedFallback = true;
-  }
-  const heroTop = student.heroFlag && matches.length > 0 ? matches[0] : null;
-
+/**
+ * Static, no-network rendering of the "Top opportunities" panel.
+ *
+ * All matcher data has been pre-computed by `getStudentOverview` (a
+ * single server-side round trip). The dashboard renders fully on first
+ * paint — no Suspense flash, no LoadingPanel — so the student sees real
+ * numbers immediately.
+ */
+function TopOpportunities({
+  student,
+  matches,
+  usedPreparedFallback,
+}: {
+  student: Parameters<typeof rankCorporateMatchesFor>[0] & {
+    fullName: string;
+    heroFlag: boolean;
+  };
+  matches: ReturnType<typeof rankCorporateMatchesFor>;
+  usedPreparedFallback: boolean;
+}) {
+  const heroTop =
+    student.heroFlag && matches.length > 0 ? matches[0] : null;
   return (
     <>
       {usedPreparedFallback ? <PreparedResultsBanner /> : null}
@@ -69,12 +87,27 @@ async function HeroAndMatches({ student }: { student: StudentFixture }) {
         aria-labelledby="top-opportunities-heading"
         className="flex flex-col gap-3"
       >
-        <h2
-          id="top-opportunities-heading"
-          className="text-xl font-semibold tracking-tight"
-        >
-          Top opportunities
-        </h2>
+        <div className="flex items-end justify-between gap-2">
+          <h2
+            id="top-opportunities-heading"
+            className="text-xl font-semibold tracking-tight"
+          >
+            Top opportunities
+          </h2>
+          <Link
+            href="/dashboard/matches"
+            prefetch={false}
+            className={buttonVariants({
+              variant: "ghost",
+              size: "sm",
+              className: "gap-1 text-xs",
+            })}
+            data-testid="student-view-all-matches"
+          >
+            View all
+            <ChevronRight aria-hidden="true" className="size-3" />
+          </Link>
+        </div>
         {matches.length === 0 ? (
           <EmptyFixtureState
             title="No corporate opportunities are available"
@@ -82,8 +115,8 @@ async function HeroAndMatches({ student }: { student: StudentFixture }) {
             reloadHref="/dashboard/student"
           />
         ) : (
-          <ul className="flex flex-col gap-3">
-            {matches.map((m) => (
+          <ul className="flex flex-col gap-3" data-testid="student-top-matches">
+            {matches.slice(0, 3).map((m) => (
               <li key={m.corporate.id}>
                 <MatchCard
                   match={{
@@ -113,6 +146,48 @@ export default async function StudentDashboardPage() {
   const student = current.row;
   const ready = hasOnboarded(student);
 
+  // Single pass: resolve counts, matches, and any DB-backed panels in
+  // parallel. The Promise.all lives inside the helpers, so calling the
+  // role-specific fetcher once is all we need.
+  const overview = await getStudentOverview(student.id, student);
+
+  // Pre-compute the action set so the JSX stays readable.
+  const actions: QuickAction[] = [
+    {
+      title: "Browse the newsfeed",
+      description:
+        "See new jobs, events, and posts from organizations you follow.",
+      href: "/newsfeed",
+      icon: <Newspaper aria-hidden="true" />,
+      testId: "student-newsfeed-cta",
+    },
+    {
+      title: "View all matches",
+      description:
+        "Every corporate matched against your skills and career interests.",
+      href: "/dashboard/matches",
+      icon: <Sparkles aria-hidden="true" />,
+      testId: "student-view-all-matches-cta",
+    },
+    {
+      title: "Edit your profile",
+      description:
+        ready
+          ? "Refine skills, interests, and experiences to sharpen your matches."
+          : "Add skills and interests so your matches reflect your goals.",
+      href: "/dashboard/profile/edit",
+      icon: <PencilLine aria-hidden="true" />,
+      testId: "student-edit-profile-cta",
+    },
+    {
+      title: "Outbox",
+      description: "Track the applications and pitches you have sent.",
+      href: "/inbox",
+      icon: <Inbox aria-hidden="true" />,
+      testId: "student-inbox-cta",
+    },
+  ];
+
   return (
     <DashboardLayout
       role="student"
@@ -122,15 +197,19 @@ export default async function StudentDashboardPage() {
       <h2 className="text-3xl font-semibold tracking-tight">
         {student.fullName}
       </h2>
-
-      <ProfileCompletenessMeter student={student} />
+      <p className="text-muted-foreground -mt-4 text-sm">
+        {student.studyProgram} · {student.university}
+      </p>
 
       <Card data-testid="student-profile-readiness">
         <CardHeader>
           <CardTitle>
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <h3 className="flex items-center gap-2 text-lg font-semibold">
               {ready ? (
-                <Check aria-hidden="true" className="text-muted-foreground size-4" />
+                <Check
+                  aria-hidden="true"
+                  className="text-muted-foreground size-4"
+                />
               ) : (
                 <AlertTriangle
                   aria-hidden="true"
@@ -138,7 +217,7 @@ export default async function StudentDashboardPage() {
                 />
               )}
               {ready ? "Profile ready" : "Finish your profile"}
-            </h2>
+            </h3>
           </CardTitle>
           <CardDescription>
             {ready
@@ -147,9 +226,14 @@ export default async function StudentDashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
+          <ProfileCompletenessMeter student={student} />
           <Link
             href="/dashboard/profile/edit"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "mt-3",
+            })}
             prefetch={false}
           >
             {ready ? "Edit profile" : "Finish profile"}
@@ -157,35 +241,166 @@ export default async function StudentDashboardPage() {
         </CardContent>
       </Card>
 
-      <Suspense
-        fallback={
-          <LoadingPanel label="Loading top opportunities" rows={3} />
-        }
+      <section
+        aria-labelledby="stats-heading"
+        className="flex flex-col gap-3"
       >
-        <HeroAndMatches student={student} />
-      </Suspense>
+        <h2
+          id="stats-heading"
+          className="sr-only"
+        >
+          Your dashboard at a glance
+        </h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <StatTile
+            label="Matched corporates"
+            value={overview.totalMatches}
+            icon={<Building2 aria-hidden="true" />}
+            hint={
+              overview.totalMatches > 0
+                ? "Ranked by skills + career interests"
+                : "Add skills or interests to surface matches"
+            }
+            testId="student-stat-matches"
+          />
+          <StatTile
+            label="Registered events"
+            value={overview.registeredEvents}
+            icon={<Calendar aria-hidden="true" />}
+            hint="Events you've RSVP'd to"
+            testId="student-stat-events"
+          />
+          <StatTile
+            label="Outreach sent"
+            value={overview.invitationsSent}
+            icon={<Send aria-hidden="true" />}
+            hint="Applications, RSVPs, and pitches"
+            testId="student-stat-invitations"
+          />
+        </div>
+      </section>
 
-      <div className="flex flex-wrap justify-end gap-2">
-        <Link
-          href="/newsfeed"
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-          prefetch={false}
-          data-testid="student-newsfeed-cta"
+      <TopOpportunities
+        student={student}
+        matches={overview.topMatches}
+        usedPreparedFallback={overview.usedPreparedFallback}
+      />
+
+      <QuickActionGrid
+        title="Quick actions"
+        description="Jump straight to the surface you came for."
+        actions={actions}
+        testId="student-quick-actions"
+      />
+
+      <section
+        id="registered-events"
+        aria-labelledby="registered-events-heading"
+        className="flex flex-col gap-3"
+      >
+        <h2
+          id="registered-events-heading"
+          className="text-xl font-semibold tracking-tight"
         >
-          Open newsfeed
-        </Link>
-        <Link
-          href="/dashboard/matches"
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-          prefetch={false}
-        >
-          View all matches
-        </Link>
-      </div>
+          My registered events
+        </h2>
+        <RegisteredEventsList studentId={student.id} />
+      </section>
 
       <CollaborationSignals role="student" />
 
       <Disclaimer />
     </DashboardLayout>
+  );
+}
+
+/**
+ * Reads the student's outgoing RSVPs so the dashboard surfaces what
+ * the student has actually committed to, not just a count. Empty
+ * state — never a loading state — so the page renders on first paint.
+ */
+async function RegisteredEventsList({ studentId }: { studentId: string }) {
+  const { db } = await import("@/lib/server/db");
+  const { eventRegistrations, events } = await import(
+    "@/lib/server/db/schema"
+  );
+  const { eq, desc } = await import("drizzle-orm");
+  const { formatInDhaka } = await import("@/lib/format/datetime");
+
+  let rows: Array<{
+    eventId: string;
+    title: string;
+    slug: string;
+    startsAt: Date;
+    locationLabel: string;
+  }> = [];
+  try {
+    rows = await db
+      .select({
+        eventId: eventRegistrations.eventId,
+        title: events.title,
+        slug: events.slug,
+        startsAt: events.startsAt,
+        locationLabel: events.locationLabel,
+      })
+      .from(eventRegistrations)
+      .innerJoin(events, eq(eventRegistrations.eventId, events.id))
+      .where(eq(eventRegistrations.studentId, studentId))
+      .orderBy(desc(events.startsAt))
+      .limit(5);
+  } catch (err) {
+    console.error("[student dashboard] registrations query threw:", err);
+  }
+
+  if (rows.length === 0) {
+    return (
+      <Card>
+        <CardContent className="grid gap-2 py-6 text-center">
+          <Users
+            aria-hidden="true"
+            className="text-muted-foreground mx-auto size-6"
+          />
+          <p className="text-sm font-medium">No events registered yet</p>
+          <p className="text-muted-foreground text-xs">
+            Browse the{" "}
+            <Link
+              href="/newsfeed"
+              prefetch={false}
+              className="underline underline-offset-4"
+            >
+              newsfeed
+            </Link>{" "}
+            to find upcoming events and RSVP.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <ul className="flex flex-col gap-2" data-testid="student-registered-events">
+      {rows.map((r) => (
+        <li key={r.eventId}>
+          <Card size="sm">
+            <CardContent className="flex items-center justify-between gap-3 py-3">
+              <div className="grid min-w-0">
+                <Link
+                  href={`/events/${r.slug}`}
+                  prefetch={false}
+                  className="truncate text-sm font-medium underline-offset-4 hover:underline"
+                >
+                  {r.title}
+                </Link>
+                <p className="text-muted-foreground text-xs">
+                  {formatInDhaka(r.startsAt)}
+                  {r.locationLabel ? ` · ${r.locationLabel}` : ""}
+                </p>
+              </div>
+              <Badge variant="secondary">Registered</Badge>
+            </CardContent>
+          </Card>
+        </li>
+      ))}
+    </ul>
   );
 }
