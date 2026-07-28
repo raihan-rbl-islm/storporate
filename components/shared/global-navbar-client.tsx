@@ -30,7 +30,7 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
     { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
     { name: "Search", href: "/search", icon: Search },
     { name: "Opportunities", href: "/opportunities", icon: Briefcase },
-    { name: "Profile", href: `/profile/${personaId}`, icon: User },
+    { name: "Profile", href: "/dashboard/profile", icon: User },
   ];
 
   // (For other roles, keep minimal links for now or their old ones, but the user focused on students)

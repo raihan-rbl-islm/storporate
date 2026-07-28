@@ -17,7 +17,7 @@ import type {
 
 export const dynamic = "force-dynamic";
 
-const STUDENT_EDITABLE = ["location", "skills", "careerInterests"] as const;
+const STUDENT_EDITABLE = ["fullName", "university", "studyProgram", "expectedGraduation", "location", "bio", "skills", "careerInterests"] as const;
 const CLUB_EDITABLE = [
   "categories",
   "eventFocus",
