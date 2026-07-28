@@ -67,11 +67,31 @@ export async function updateSession(request: NextRequest) {
     // post-OAuth in the callback, but also here as a defense in depth)
     // and decide whether they need to land on /onboarding/role or
     // /onboarding/details before continuing.
-    const [row] = await db
-      .select()
-      .from(users)
-      .where(eq(users.authUserId, user.id))
-      .limit(1);
+    //
+    // The lookup is best-effort. If it fails (transient DB error,
+    // missing table on a fresh deploy, pool exhaustion, etc.) we treat
+    // the user as "in onboarding" and send them to /onboarding/role so
+    // the request never crashes with MIDDLEWARE_INVOCATION_FAILED. The
+    // role-selection page itself does the canonical lookup again with
+    // a fresh DB client and a full UX, so an upstream false positive
+    // is recoverable.
+    let row: typeof users.$inferSelect | undefined;
+    try {
+      const rows = await db
+        .select()
+        .from(users)
+        .where(eq(users.authUserId, user.id))
+        .limit(1);
+      row = rows[0];
+    } catch (err) {
+      console.error("[middleware] users lookup failed, treating as in-onboarding:", err);
+      if (!path.startsWith("/onboarding/role")) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding/role";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
+    }
 
     if (!row || !row.role || !row.personaId) {
       if (!path.startsWith("/onboarding/role")) {
