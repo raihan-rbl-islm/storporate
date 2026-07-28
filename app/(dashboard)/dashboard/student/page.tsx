@@ -165,7 +165,15 @@ export default async function StudentDashboardPage() {
         <HeroAndMatches student={student} />
       </Suspense>
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Link
+          href="/newsfeed"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+          prefetch={false}
+          data-testid="student-newsfeed-cta"
+        >
+          Open newsfeed
+        </Link>
         <Link
           href="/dashboard/matches"
           className={buttonVariants({ variant: "outline", size: "sm" })}

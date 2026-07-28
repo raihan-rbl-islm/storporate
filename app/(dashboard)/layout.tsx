@@ -60,6 +60,15 @@ export default async function DashboardLayout({
             Storporate
           </Link>
           <div className="flex items-center gap-3">
+            {role === "student" ? (
+              <Link
+                href="/newsfeed"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                data-testid="newsfeed-nav-link"
+              >
+                Newsfeed
+              </Link>
+            ) : null}
             <UserMenu />
             <Badge
               variant="secondary"
