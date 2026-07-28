@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { RoleSwitcher } from "@/components/dashboard/role-switcher";
 import { Disclaimer } from "@/components/personas/disclaimer";
 import { UserMenu } from "@/components/dashboard/user-menu";
 import {
@@ -41,7 +40,6 @@ export default async function DashboardLayout({
 
   const role = current.role;
   const personaId = current.row.id;
-  const roleCookieValue = role;
   // For demo users, keep the existing rule that profile pages redirect
   // to /onboarding when they haven't onboarded yet.
   if (u.kind === "anonymous" && !hasOnboarded(current.row)) {
@@ -73,11 +71,10 @@ export default async function DashboardLayout({
             <Badge
               variant="secondary"
               data-testid="role-badge"
-              aria-label={`Current role ${capitalize(roleCookieValue)}`}
+              aria-label={`Current role ${capitalize(role)}`}
             >
-              {capitalize(roleCookieValue)}
+              {capitalize(role)}
             </Badge>
-            <RoleSwitcher currentRole={role} />
           </div>
         </div>
         <div className="mx-auto max-w-6xl px-6 pb-4">

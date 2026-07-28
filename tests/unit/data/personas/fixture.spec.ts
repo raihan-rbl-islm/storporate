@@ -6,16 +6,16 @@ import {
 } from "@/data/personas";
 
 describe("PERSONA_FIXTURE", () => {
-  it("has 12 students", () => {
-    expect(PERSONA_FIXTURE.students).toHaveLength(12);
+  it("has 24 students", () => {
+    expect(PERSONA_FIXTURE.students).toHaveLength(24);
   });
 
-  it("has 6 clubs", () => {
-    expect(PERSONA_FIXTURE.clubs).toHaveLength(6);
+  it("has 10 clubs", () => {
+    expect(PERSONA_FIXTURE.clubs).toHaveLength(10);
   });
 
-  it("has 5 corporates", () => {
-    expect(PERSONA_FIXTURE.corporates).toHaveLength(5);
+  it("has 12 corporates", () => {
+    expect(PERSONA_FIXTURE.corporates).toHaveLength(12);
   });
 
   it("preserves the hero trio as heroes", () => {
