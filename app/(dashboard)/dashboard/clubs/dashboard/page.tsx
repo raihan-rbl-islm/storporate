@@ -26,6 +26,61 @@ import {
 } from "@/lib/server/personas/current";
 import { rankClubMatchesFor } from "@/lib/server/matching/club-matches";
 import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
+import { getTopSponsorsForClub } from "@/lib/server/matching/sponsors-for-event";
+
+async function SponsorsForClubEvents({
+  clubId,
+}: {
+  clubId: string;
+}) {
+  let ranked: Awaited<ReturnType<typeof getTopSponsorsForClub>> = [];
+  try {
+    ranked = await getTopSponsorsForClub(clubId, 5);
+  } catch (err) {
+    console.error(
+      "[club dashboard] sponsor aggregator threw:",
+      err,
+    );
+  }
+  if (ranked.length === 0) return null;
+  return (
+    <section
+      aria-labelledby="sponsors-for-events-heading"
+      className="flex flex-col gap-3"
+    >
+      <h2
+        id="sponsors-for-events-heading"
+        className="text-xl font-semibold tracking-tight"
+      >
+        Sponsors for your events
+      </h2>
+      <ul className="grid gap-2">
+        {ranked.map((m, i) => (
+          <li
+            key={m.corporate.id}
+            className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm"
+          >
+            <div className="grid">
+              <Link
+                href={`/profile/${m.corporate.id}`}
+                prefetch={false}
+                className="font-medium underline-offset-4 hover:underline"
+              >
+                #{i + 1} · {m.corporate.organizationName}
+              </Link>
+              <p className="text-xs text-muted-foreground">
+                {m.corporate.industry} · {m.corporate.location}
+              </p>
+            </div>
+            <Badge variant="secondary">
+              {Math.round(m.score * 100)}% match
+            </Badge>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 async function TopSponsors({ club }: { club: ClubFixture }) {
   let matches: ReturnType<typeof rankClubMatchesFor> = [];
@@ -156,6 +211,14 @@ export default async function ClubDashboardPage() {
           View all sponsors
         </Link>
       </div>
+
+      <Suspense
+        fallback={
+          <LoadingPanel label="Loading sponsors for your events" rows={2} />
+        }
+      >
+        <SponsorsForClubEvents clubId={club.id} />
+      </Suspense>
 
       <CollaborationSignals role="club" />
 

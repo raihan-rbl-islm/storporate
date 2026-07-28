@@ -31,6 +31,7 @@ import type { CorporateFixture } from "@/data/personas";
 import { rankClubsForCorporate } from "@/lib/server/matching/corporate-club-matches";
 import { rankStudentsForCorporate } from "@/lib/server/matching/corporate-student-matches";
 import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
+import { getTopCandidatesForCorporate } from "@/lib/server/matching/jobs-for-corporate";
 
 type Intent = "hiring" | "sponsorship" | "both" | "unknown";
 
@@ -173,6 +174,60 @@ async function TopClubCandidates({
   );
 }
 
+async function TopJobCandidates({
+  corporateId,
+}: {
+  corporateId: string;
+}) {
+  let ranked: Awaited<ReturnType<typeof getTopCandidatesForCorporate>> = [];
+  try {
+    ranked = await getTopCandidatesForCorporate(corporateId, 5);
+  } catch (err) {
+    console.error(
+      "[corporate dashboard] job-candidate aggregator threw:",
+      err,
+    );
+  }
+  if (ranked.length === 0) return null;
+  return (
+    <section
+      aria-labelledby="top-job-candidates-heading"
+      className="flex flex-col gap-3"
+    >
+      <h2
+        id="top-job-candidates-heading"
+        className="text-xl font-semibold tracking-tight"
+      >
+        Top candidates for your jobs
+      </h2>
+      <ul className="grid gap-2">
+        {ranked.map((m, i) => (
+          <li
+            key={m.student.id}
+            className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm"
+          >
+            <div className="grid">
+              <Link
+                href={`/profile/${m.student.id}`}
+                prefetch={false}
+                className="font-medium underline-offset-4 hover:underline"
+              >
+                #{i + 1} · {m.student.fullName}
+              </Link>
+              <p className="text-xs text-muted-foreground">
+                {m.student.university} · {m.student.studyProgram}
+              </p>
+            </div>
+            <Badge variant="secondary">
+              {Math.round(m.score * 100)}% match
+            </Badge>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default async function CorporateDashboardPage() {
   const current = await getCurrentPersona();
   if (!current || current.kind !== "corporate") redirect("/dashboard");
@@ -255,6 +310,16 @@ export default async function CorporateDashboardPage() {
             <TopStudentCandidates corporate={corporateFixture} />
           </Suspense>
         </section>
+      ) : null}
+
+      {showStudents ? (
+        <Suspense
+          fallback={
+            <LoadingPanel label="Loading job candidates" rows={2} />
+          }
+        >
+          <TopJobCandidates corporateId={corporate.id} />
+        </Suspense>
       ) : null}
 
       {showClubs ? (
