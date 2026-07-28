@@ -17,6 +17,8 @@ import {
   deleteEvent,
   reopenEvent,
 } from "@/app/events/actions";
+import { getRankedSponsorsForEvent } from "@/lib/server/matching/sponsors-for-event";
+import { RequestSponsorshipTrigger } from "@/components/invitations/request-sponsorship-trigger";
 
 export const dynamic = "force-dynamic";
 
@@ -174,6 +176,13 @@ export default async function ManageEventPage({ params }: Props) {
         )}
       </section>
 
+      {viewer.kind === "club" ? (
+        <SponsorCandidatesSection
+          eventId={eventRow.id}
+          eventTitle={eventRow.title}
+        />
+      ) : null}
+
       <section className="mb-12 flex flex-wrap gap-3">
         {eventRow.capacity === 0 ? (
           <form action={reopenAction}>
@@ -195,5 +204,66 @@ export default async function ManageEventPage({ params }: Props) {
         </form>
       </section>
     </main>
+  );
+}
+
+/**
+ * Top-of-section list of suggested sponsors for this event. The
+ * club sees a ranked list and a "Request sponsorship" button per
+ * candidate — the trigger renders an inline form, expands to a
+ * preview pane, and only persists when the user clicks Send.
+ */
+async function SponsorCandidatesSection({
+  eventId,
+  eventTitle,
+}: {
+  eventId: string;
+  eventTitle: string;
+}) {
+  const ranked = await getRankedSponsorsForEvent(eventId, 10);
+  return (
+    <section className="mb-6" data-testid="event-sponsor-candidates">
+      <h2 className="mb-2 text-lg font-medium">Sponsor candidates</h2>
+      <Separator className="mb-4" />
+      <p className="text-muted-foreground mb-3 text-sm">
+        Ranked by relevance. Once a sponsor receives your pitch, both
+        sides can see each other&apos;s contact details.
+      </p>
+      {ranked.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No sponsor candidates available right now.
+        </p>
+      ) : (
+        <ul className="grid gap-3">
+          {ranked.map(({ corporate, score }) => (
+            <li
+              key={corporate.id}
+              className="rounded-md border border-border p-3 text-sm"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="grid gap-1">
+                  <p className="font-medium">{corporate.organizationName}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {corporate.industry} · {corporate.location}
+                  </p>
+                </div>
+                <Badge variant="secondary" className="shrink-0">
+                  Score {score.toFixed(2)}
+                </Badge>
+              </div>
+              <div className="mt-3">
+                <RequestSponsorshipTrigger
+                  fromKind="club"
+                  toId={corporate.id}
+                  toName={corporate.organizationName}
+                  eventId={eventId}
+                  eventTitle={eventTitle}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

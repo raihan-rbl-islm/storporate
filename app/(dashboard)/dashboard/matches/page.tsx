@@ -23,6 +23,7 @@ import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import type { StudentFixture } from "@/data/personas";
 import { rankCorporateMatchesFor } from "@/lib/server/matching/student-matches";
 import { getPreparedMatchesFor } from "@/lib/server/matching/prepared";
+import { SendInvitationTrigger } from "@/components/invitations/send-invitation-trigger";
 
 export const dynamic = "force-dynamic";
 
@@ -98,7 +99,7 @@ async function MatchesList({ student }: { student: StudentFixture }) {
                   organizations.
                 </p>
               )}
-              <div className="pt-2">
+              <div className="flex flex-wrap items-center gap-2 pt-2">
                 <Link
                   href={`/dashboard/matches/${corporate.id}`}
                   prefetch={false}
@@ -109,6 +110,11 @@ async function MatchesList({ student }: { student: StudentFixture }) {
                 >
                   View rationale
                 </Link>
+                <SendInvitationTrigger
+                  fromKind="student"
+                  toId={corporate.id}
+                  toName={corporate.organizationName}
+                />
               </div>
             </CardContent>
           </Card>
