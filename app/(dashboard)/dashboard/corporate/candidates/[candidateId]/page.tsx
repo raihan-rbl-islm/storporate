@@ -35,6 +35,9 @@ import {
   getClubFixtures,
   getStudentFixtures,
 } from "@/lib/server/personas/lookup";
+import { db } from "@/lib/server/db";
+import { students, clubs } from "@/lib/server/db/schema";
+import { eq } from "drizzle-orm";
 
 interface PageProps {
   readonly params: Promise<{ candidateId: string }>;
@@ -66,11 +69,23 @@ export default async function CandidateRationalePage({ params }: PageProps) {
   // Fixtures use distinct id namespaces (students: tasnim, sakib, ...;
   // clubs: nsu-robotics, brac-debate, ...; corporates: bkash, ...) so a
   // student id will not collide with a club id.
-  const students = getStudentFixtures();
-  const clubs = getClubFixtures();
+  let studentRow = (await db
+    .select()
+    .from(students)
+    .where(eq(students.id, candidateId))
+    .limit(1))[0] as unknown as StudentFixture | undefined;
+  if (!studentRow) {
+    studentRow = getStudentFixtures().find((s) => s.id === candidateId);
+  }
 
-  const studentRow = students.find((s) => s.id === candidateId);
-  const clubRow = clubs.find((c) => c.id === candidateId);
+  let clubRow = (await db
+    .select()
+    .from(clubs)
+    .where(eq(clubs.id, candidateId))
+    .limit(1))[0] as unknown as ClubFixture | undefined;
+  if (!clubRow) {
+    clubRow = getClubFixtures().find((c) => c.id === candidateId);
+  }
 
   // Discriminated narrowing via single ternary expression — TypeScript
   // narrows `candidate` to `CandidateMatch` because both branches return

@@ -29,7 +29,8 @@ import {
 } from "@/lib/server/personas/current";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
 import { db } from "@/lib/server/db";
-import { outreachEvents } from "@/lib/server/db/schema";
+import { outreachEvents, corporates as corporatesSchema } from "@/lib/server/db/schema";
+import type { CorporateFixture } from "@/data/personas";
 
 interface PageProps {
   readonly params: Promise<{ corporateId: string }>;
@@ -45,7 +46,16 @@ export default async function ClubMatchRationalePage({ params }: PageProps) {
 
   const club = current.row;
   const corporates = getCorporateFixtures();
-  const corporate = corporates.find((c) => c.id === corporateId);
+  let corporate = (await db
+    .select()
+    .from(corporatesSchema)
+    .where(eq(corporatesSchema.id, corporateId))
+    .limit(1))[0] as unknown as CorporateFixture | undefined;
+
+  if (!corporate) {
+    corporate = corporates.find((c) => c.id === corporateId);
+  }
+
   if (!corporate) notFound();
 
   const breakdown = scoreClubMatchBreakdown(club, corporate);

@@ -60,10 +60,7 @@ export async function generateClubSponsorshipPitch(
   }
   const corporateFixture = getCorporateFixtures().find(
     (item) => item.id === corporate.id,
-  );
-  if (!corporateFixture) {
-    return { status: "error", reason: "That organization is no longer listed." };
-  }
+  ) ?? (corporate as unknown as import("@/data/personas").CorporateFixture);
 
   // Use the existing scorer breakdown as the only source of matched
   // signals. The action only formats the display strings; it does not
