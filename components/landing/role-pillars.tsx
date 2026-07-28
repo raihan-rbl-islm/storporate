@@ -27,7 +27,7 @@ const PILLARS: readonly Pillar[] = [
     bullets: [
       "Ranked matches with a clear rationale",
       "Draft application emails tailored to each role",
-      "Try prepared personas without signing up",
+      "Secure outreach and inbox management",
     ],
   },
   {
@@ -37,9 +37,9 @@ const PILLARS: readonly Pillar[] = [
     pitch:
       "Reach companies whose sponsorship priorities match your event type, scale, and impact area.",
     bullets: [
+      "Post events, journals, and news updates",
       "Match with sponsors aligned to your event theme",
-      "Draft sponsorship pitches with your event details",
-      "Track interest signals sent to your shortlist",
+      "Pitch sponsors securely through the platform",
     ],
   },
   {
@@ -49,9 +49,9 @@ const PILLARS: readonly Pillar[] = [
     pitch:
       "Discover students and clubs whose skills, interests, and contexts align with your hiring and sponsorship goals.",
     bullets: [
-      "Browse ranked candidates with skill overlap",
-      "Express interest with one click",
-      "Browse a prepared corporate perspective first",
+      "Post jobs, events, and news updates",
+      "AI semantic matching for top candidates",
+      "Send invitations securely from your shortlist",
     ],
   },
 ] as const;

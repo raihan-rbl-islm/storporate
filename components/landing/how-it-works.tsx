@@ -20,23 +20,23 @@ const STEPS: readonly Step[] = [
   {
     number: "01",
     icon: <ClipboardList aria-hidden="true" className="size-5 text-primary" />,
-    title: "Tell us who you are",
+    title: "Complete Profile & Post",
     description:
-      "Pick your role — student, university club, or company — and share skills, interests, and what you're looking for. Takes about two minutes.",
+      "Add skills and achievements, or post jobs and events. This data powers our ingestion engine.",
   },
   {
     number: "02",
     icon: <Radar aria-hidden="true" className="size-5 text-primary" />,
-    title: "See ranked matches",
+    title: "AI-Powered Matching",
     description:
-      "Storporate ranks every opportunity by a 0–100 compatibility score, with a clear rationale for each. No black-box rankings.",
+      "Our semantic embedding engine (Gemini) ranks students, clubs, and companies using hybrid scoring.",
   },
   {
     number: "03",
     icon: <Send aria-hidden="true" className="size-5 text-primary" />,
-    title: "Reach out with confidence",
+    title: "Secure Engagement",
     description:
-      "Open a draft email tailored to the match, or send an interest signal — clubs to sponsors, students to roles, corporates to talent.",
+      "Send invitations or pitches. Contact details are revealed securely only after a meaningful interaction.",
   },
 ] as const;
 
@@ -57,8 +57,7 @@ export function HowItWorks() {
           Three steps from sign-up to first reach-out
         </h2>
         <p className="text-muted-foreground mt-4 text-base leading-relaxed">
-          We keep the loop short so you can move from profile to a real
-          conversation quickly — without losing the why behind every match.
+          From profile creation to relevance ranking and secure outreach, our pipeline continuously learns and improves with every interaction.
         </p>
       </div>
 

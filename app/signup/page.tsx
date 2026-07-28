@@ -62,12 +62,11 @@ export default async function SignupPage() {
             </p>
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li className="flex items-start gap-2">
-                <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
-                Free, no credit card, no demo lock-in.
+                Free to use for students, clubs, and companies.
               </li>
               <li className="flex items-start gap-2">
                 <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
-                Email or Google — both work the same once you&apos;re in.
+                Please use your institutional or corporate email for verification.
               </li>
               <li className="flex items-start gap-2">
                 <span className="bg-accent mt-1.5 size-1.5 shrink-0 rounded-full" />
@@ -78,9 +77,9 @@ export default async function SignupPage() {
           </div>
 
           <p className="text-muted-foreground hidden text-xs lg:block">
-            Want a taste first?{" "}
-            <Link href="/demo" className="text-foreground underline underline-offset-4">
-              Try a prepared persona
+            Already have an account?{" "}
+            <Link href="/signin" className="text-foreground underline underline-offset-4">
+              Sign in here
             </Link>
             .
           </p>
@@ -94,7 +93,7 @@ export default async function SignupPage() {
                 Create your account
               </h2>
               <p className="text-muted-foreground text-sm">
-                Sign up with email or Google. We&apos;ll send a verification
+                Sign up with your institutional email. We&apos;ll send a verification
                 link to your inbox.
               </p>
             </div>

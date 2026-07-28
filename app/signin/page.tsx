@@ -64,7 +64,7 @@ export default async function SigninPage({ searchParams }: PageProps) {
               </li>
               <li className="flex items-start gap-2">
                 <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
-                Or continue with Google if that&apos;s what you used.
+                Check your inbox for invitations, outreach, and matches.
               </li>
             </ul>
           </div>
@@ -84,7 +84,7 @@ export default async function SigninPage({ searchParams }: PageProps) {
             <div className="mb-6 flex flex-col gap-1.5">
               <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
               <p className="text-muted-foreground text-sm">
-                Use email or Google. We&apos;ll pick up your dashboard right where you left it.
+                Use your institutional email. We&apos;ll pick up your dashboard right where you left it.
               </p>
             </div>
             <SigninForm error={error} />

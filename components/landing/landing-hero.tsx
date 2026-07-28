@@ -21,7 +21,7 @@ export function LandingHero() {
         <div className="flex flex-col items-start gap-6">
           <Badge variant="outline" className="gap-1.5 border-primary/30 bg-primary/5 text-foreground">
             <Sparkles aria-hidden="true" className="size-3 text-primary" />
-            Bangladesh-first · Compatibility scoring
+            AI-Powered Smart Matching · Unified 3-Way Ecosystem
           </Badge>
 
           <h1
@@ -40,49 +40,46 @@ export function LandingHero() {
           </h1>
 
           <p className="text-muted-foreground max-w-xl text-lg leading-relaxed">
-            Storporate is a guided marketplace that ranks Bangladesh&apos;s
-            internships, sponsorships, and talent by a transparent 0–100
-            compatibility score — so you spend less time guessing who to
-            contact, and more time on the conversation that matters.
+            Storporate bridges the academic-industry gap. An intelligent, AI-driven networking ecosystem that uses semantic embeddings to dynamically calculate compatibility metrics for hiring, sponsorships, and strategic collaborations.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
             <Link
-              href="#tour"
+              href="/signup"
               className={cn(
                 buttonVariants({ variant: "default", size: "lg" }),
                 "group/cta px-5",
               )}
             >
-              Take a quick tour
+              Get started for free
               <ArrowRight
                 aria-hidden="true"
                 className="size-4 transition-transform group-hover/cta:translate-x-0.5"
               />
             </Link>
             <Link
-              href="/signup"
+              href="/opportunities"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
                 "px-5",
               )}
             >
-              Sign up free
+              Explore jobs
             </Link>
           </div>
 
           <ul className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <li className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-primary" />
-              No credit card
+              Verified Institutional Identities
             </li>
             <li className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent" />
-              Try a prepared demo
+              Visibility with Privacy Control
             </li>
             <li className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-primary" />
-              Email or Google sign-in
+              Data-Driven Insights
             </li>
           </ul>
         </div>
