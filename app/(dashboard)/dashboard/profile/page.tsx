@@ -20,6 +20,7 @@ import {
   invitations
 } from "@/lib/server/db/schema";
 import { Briefcase, Trophy, Activity, Mail, Plus, Pencil } from "lucide-react";
+import { ExperienceDialog, ActivityDialog, AchievementDialog } from "./inline-add-dialogs";
 
 type ClubRowShape = typeof ClubsTable.$inferSelect;
 type CorporateRowShape = typeof CorporatesTable.$inferSelect;
@@ -41,7 +42,7 @@ export default async function ProfilePage() {
     const coldEmails = await db.select().from(invitations).where(eq(invitations.fromId, current.row.id));
 
     return (
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <div className="w-full">
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -64,9 +65,16 @@ export default async function ProfilePage() {
 
             {/* Achievements */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-primary" /> Achievements
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-primary" /> Achievements
+                </h2>
+                <AchievementDialog trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" aria-label="Add Achievement">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                } />
+              </div>
               {achs.length > 0 ? (
                 <ul className="grid gap-4">
                   {achs.map(a => (
@@ -82,9 +90,16 @@ export default async function ProfilePage() {
 
             {/* Activities */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Activity className="w-6 h-6 text-primary" /> Activities
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Activity className="w-6 h-6 text-primary" /> Activities
+                </h2>
+                <ActivityDialog trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" aria-label="Add Activity">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                } />
+              </div>
               {acts.length > 0 ? (
                 <ul className="grid gap-4">
                   {acts.map(a => (
@@ -100,9 +115,16 @@ export default async function ProfilePage() {
 
             {/* Experience */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Briefcase className="w-6 h-6 text-primary" /> Experience
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Briefcase className="w-6 h-6 text-primary" /> Experience
+                </h2>
+                <ExperienceDialog trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" aria-label="Add Experience">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                } />
+              </div>
               {exps.length > 0 ? (
                 <ul className="grid gap-4">
                   {exps.map(e => (
@@ -197,13 +219,13 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   // Non-student layout
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
+    <div className="w-full">
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Your profile</h1>
         <Button variant="outline" render={
@@ -215,7 +237,7 @@ export default async function ProfilePage() {
       {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
       {current.kind === "club" ? <ClubReview row={current.row} /> : null}
       {current.kind === "corporate" ? <CorporateReview row={current.row} /> : null}
-    </main>
+    </div>
   );
 }
 
