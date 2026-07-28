@@ -45,6 +45,7 @@ import {
   toDisplayMatchPercent,
 } from "@/lib/server/matching/student-matches";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { NewsfeedList } from "@/components/newsfeed/newsfeed-list";
 
 /**
  * Static, no-network rendering of the "Top opportunities" panel.
@@ -305,6 +306,34 @@ export default async function StudentDashboardPage() {
           My registered events
         </h2>
         <RegisteredEventsList studentId={student.id} />
+      </section>
+
+      <section
+        id="newsfeed"
+        aria-labelledby="newsfeed-heading"
+        className="flex flex-col gap-3"
+      >
+        <div className="flex items-end justify-between gap-2">
+          <h2
+            id="newsfeed-heading"
+            className="text-xl font-semibold tracking-tight"
+          >
+            Your Feed
+          </h2>
+          <Link
+            href="/newsfeed"
+            prefetch={false}
+            className={buttonVariants({
+              variant: "ghost",
+              size: "sm",
+              className: "gap-1 text-xs",
+            })}
+          >
+            View all
+            <ChevronRight aria-hidden="true" className="size-3" />
+          </Link>
+        </div>
+        <NewsfeedList studentId={student.id} filter="all" />
       </section>
 
       <CollaborationSignals role="student" />

@@ -1,5 +1,6 @@
 import { EventCard } from "@/components/events/event-card";
 import { PostCard } from "@/components/posts/post-card";
+import { JobCard } from "@/components/jobs/job-card";
 import {
   getStudentNewsfeed,
   resolveOwnerNames,
@@ -54,6 +55,29 @@ export async function NewsfeedList({
         </li>
       ) : (
         filtered.map((entry, idx) => {
+          if (entry.kind === "job") {
+            const j = entry.item;
+            const ownerKey = `corporate:${j.corporateId}`;
+            const ownerName = ownerNames.get(ownerKey) ?? "Unknown company";
+            return (
+              <li key={`job-${j.id}-${idx}`}>
+                <JobCard
+                  job={{
+                    slug: j.slug,
+                    title: j.title,
+                    employerName: ownerName,
+                    employmentType: j.employmentType,
+                    locationLabel: j.locationLabel,
+                    isRemote: j.isRemote,
+                    skills: j.skills,
+                    matchScore: entry.score,
+                    isOpen: j.isOpen,
+                  }}
+                />
+              </li>
+            );
+          }
+
           const ownerKey = `${entry.item.ownerKind}:${entry.item.ownerId}`;
           const ownerName = ownerNames.get(ownerKey) ?? "Unknown";
           if (entry.kind === "event") {
