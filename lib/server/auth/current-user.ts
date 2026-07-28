@@ -11,6 +11,29 @@ import {
 import { getServerSupabase } from "@/lib/supabase/server";
 import type { PersonaRole } from "@/data/personas";
 
+/**
+ * Best-effort fallback name from an email local-part. Used when no
+ * display_name is persisted yet, so we don't surface a raw email
+ * handle like "jane_doe99" or "raihan.rbl.islm" anywhere.
+ */
+function emailLocalPartToName(email: string | null): string {
+  if (!email) return "";
+  const local = email.split("@")[0] ?? "";
+  if (!local) return "";
+  return local
+    .replace(/[._+\-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .map((part) =>
+      part.length === 0
+        ? ""
+        : (part[0]?.toUpperCase() ?? "") + part.slice(1).toLowerCase(),
+    )
+    .join(" ")
+    .slice(0, 80);
+}
+
 export type AuthenticatedUser =
   | {
       kind: "needs-role";
@@ -65,9 +88,12 @@ export async function getCurrentUser(): Promise<AuthenticatedUser> {
     .limit(1);
 
   const email = user.email ?? null;
+  // Use the persisted display_name when available. Fall back to a
+  // sanitized email local-part (not the raw handle like "jane_doe99")
+  // so we don't pollute persona rows with email-shaped strings.
   const displayName =
     row?.displayName?.trim() ||
-    (email ? email.split("@")[0] : "") ||
+    emailLocalPartToName(email) ||
     "Storporate member";
 
   if (!row || !row.role || !row.personaId) {

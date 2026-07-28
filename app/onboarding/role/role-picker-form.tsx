@@ -5,6 +5,8 @@ import { useTransition } from "react";
 import { GraduationCap, Landmark, Building2, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -63,8 +65,9 @@ const OPTIONS: readonly RoleOption[] = [
   },
 ];
 
-export function RolePickerForm() {
+export function RolePickerForm({ defaultName }: { defaultName?: string }) {
   const [selected, setSelected] = React.useState<RoleOption["id"] | null>(null);
+  const [displayName, setDisplayName] = React.useState(defaultName ?? "");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
@@ -73,6 +76,9 @@ export function RolePickerForm() {
     setError(null);
     const fd = new FormData();
     fd.set("role", selected);
+    // Trim before sending so the server action only sees the user's
+    // explicit choice, not accidental whitespace.
+    fd.set("displayName", displayName.trim());
     startTransition(async () => {
       try {
         await selectRole(fd);
@@ -87,6 +93,28 @@ export function RolePickerForm() {
 
   return (
     <div className="grid gap-6">
+      <div className="grid gap-2">
+        <Label htmlFor="displayName">What should we call you?</Label>
+        <Input
+          id="displayName"
+          name="displayName"
+          type="text"
+          autoComplete="name"
+          maxLength={80}
+          placeholder="Your name"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          aria-describedby="displayName-hint"
+        />
+        <p
+          id="displayName-hint"
+          className="text-muted-foreground text-xs"
+        >
+          Shown on your profile and to the people you reach out to. You can
+          change this any time.
+        </p>
+      </div>
+
       <div
         role="radiogroup"
         aria-label="Choose your account type"
