@@ -2,10 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/server/db";
 import { eq } from "drizzle-orm";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -187,35 +183,6 @@ export default async function ProfilePage() {
                   <Pencil className="w-4 h-4 mr-2" /> Edit Profile
                 </Link>
               } size="lg" className="w-full justify-start text-base font-semibold shadow-md" />
-              
-              <div className="pt-4 space-y-3 border-t">
-                <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">Quick Add</p>
-                <Button render={
-                  <Link href="/dashboard/profile/edit#experience">
-                    <Plus className="w-4 h-4 mr-2" /> Add new Experience
-                  </Link>
-                } variant="outline" className="w-full justify-start" />
-                <Button render={
-                  <Link href="/dashboard/profile/edit#activities">
-                    <Plus className="w-4 h-4 mr-2" /> Add new Activities
-                  </Link>
-                } variant="outline" className="w-full justify-start" />
-                <Button render={
-                  <Link href="/dashboard/profile/edit#achievements">
-                    <Plus className="w-4 h-4 mr-2" /> Add new Achievements
-                  </Link>
-                } variant="outline" className="w-full justify-start" />
-                <Button render={
-                  <Link href="/dashboard/profile/edit#skills">
-                    <Plus className="w-4 h-4 mr-2" /> Add new Interests
-                  </Link>
-                } variant="outline" className="w-full justify-start" />
-                <Button render={
-                  <Link href="/dashboard/profile/edit#skills">
-                    <Plus className="w-4 h-4 mr-2" /> Add new Skills
-                  </Link>
-                } variant="outline" className="w-full justify-start" />
-              </div>
             </div>
           </div>
         </div>
@@ -226,14 +193,6 @@ export default async function ProfilePage() {
   // Non-student layout
   return (
     <div className="w-full">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Your profile</h1>
-        <Button variant="outline" render={
-          <Link href="/dashboard/profile/edit" prefetch={false}>
-            Edit profile details
-          </Link>
-        } />
-      </header>
       {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
       {current.kind === "club" ? <ClubReview row={current.row} /> : null}
       {current.kind === "corporate" ? <CorporateReview row={current.row} /> : null}
@@ -242,84 +201,167 @@ export default async function ProfilePage() {
 }
 
 // Helpers for Club/Corporate
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mb-6">
-      <h2 className="mb-2 text-lg font-medium">{title}</h2>
-      <Separator className="mb-4" />
-      {children}
-    </section>
-  );
-}
-
-function FieldRow({ label, value }: { label: string; value: string | null }) {
-  return (
-    <div className="grid grid-cols-3 gap-2 py-1.5">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="col-span-2 text-sm">{value || <em className="text-muted-foreground">Not provided</em>}</dd>
-    </div>
-  );
-}
-
-function Chips({ values, emptyLabel }: { values: string[]; emptyLabel: string; }) {
-  if (values.length === 0) return <em className="text-sm text-muted-foreground">{emptyLabel}</em>;
-  return (
-    <ul className="flex flex-wrap gap-1.5">
-      {values.map((v, i) => (
-        <li key={`${v}-${i}`}><Badge variant="secondary">{v}</Badge></li>
-      ))}
-    </ul>
-  );
-}
+// Utility functions removed as they are no longer used
 
 function ClubReview({ row }: { row: ClubRowShape }) {
   return (
-    <>
-      <Section title="Identity">
-        <Card><CardContent className="pt-6">
-          <FieldRow label="Club name" value={row.clubName} />
-          <FieldRow label="University" value={row.university} />
-          <FieldRow label="Mission" value={row.mission} />
-          <FieldRow label="Contact role" value={row.contactRole} />
-          <FieldRow label="Audience/reach" value={row.audienceReachLabel} />
-        </CardContent></Card>
-      </Section>
-      <Section title="Match-relevant">
-        <Card><CardContent className="grid gap-4 pt-6">
-          <FieldRow label="Location" value={row.location} />
-          <div><p className="mb-1 text-sm text-muted-foreground">Categories</p><Chips values={row.categories} emptyLabel="None" /></div>
-          <div><p className="mb-1 text-sm text-muted-foreground">Event focus</p><Chips values={row.eventFocus} emptyLabel="None" /></div>
-          <div><p className="mb-1 text-sm text-muted-foreground">Sponsorship needs</p><Chips values={row.sponsorshipNeeds} emptyLabel="None" /></div>
-        </CardContent></Card>
-      </Section>
-    </>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* LEFT COLUMN: Main Information */}
+      <div className="lg:col-span-2 flex flex-col gap-8">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">
+            {row.clubName}
+          </h1>
+          {row.mission ? (
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              {row.mission}
+            </p>
+          ) : (
+            <p className="text-lg text-muted-foreground italic">No mission statement provided.</p>
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">University</p>
+            <p className="font-semibold">{row.university || "Not specified"}</p>
+          </div>
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">Location</p>
+            <p className="font-semibold">{row.location || "Not specified"}</p>
+          </div>
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">Contact Role</p>
+            <p className="font-semibold">{row.contactRole || "Not specified"}</p>
+          </div>
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">Audience Reach</p>
+            <p className="font-semibold">{row.audienceReachLabel || "Not specified"}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Categories</h2>
+          <div className="flex flex-wrap gap-2">
+            {row.categories.length > 0 ? row.categories.map(c => (
+              <Badge key={c} variant="secondary" className="px-3 py-1 text-sm">{c}</Badge>
+            )) : <span className="text-muted-foreground italic">No categories listed.</span>}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Event Focus</h2>
+          <div className="flex flex-wrap gap-2">
+            {row.eventFocus.length > 0 ? row.eventFocus.map(f => (
+              <Badge key={f} variant="outline" className="px-3 py-1 text-sm">{f}</Badge>
+            )) : <span className="text-muted-foreground italic">No event focus listed.</span>}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Sponsorship Needs</h2>
+          <div className="flex flex-wrap gap-2">
+            {row.sponsorshipNeeds.length > 0 ? row.sponsorshipNeeds.map(s => (
+              <Badge key={s} variant="outline" className="px-3 py-1 text-sm">{s}</Badge>
+            )) : <span className="text-muted-foreground italic">No sponsorship needs listed.</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: Actions */}
+      <div className="flex flex-col gap-4">
+        <div className="sticky top-24 space-y-4">
+          <Button render={
+            <Link href="/dashboard/profile/edit">
+              <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+            </Link>
+          } size="lg" className="w-full justify-start text-base font-semibold shadow-md" />
+        </div>
+      </div>
+    </div>
   );
 }
 
 function CorporateReview({ row }: { row: CorporateRowShape }) {
   return (
-    <>
-      <Section title="Identity">
-        <Card><CardContent className="pt-6">
-          <FieldRow label="Organization" value={row.organizationName} />
-          <FieldRow label="Industry" value={row.industry} />
-          <FieldRow label="Description" value={row.description} />
-          <div className="grid grid-cols-3 gap-2 py-1.5">
-            <dt className="text-sm text-muted-foreground">Collaboration intent</dt>
-            <dd className="col-span-2 text-sm"><Badge variant="outline">{row.collaborationIntent}</Badge></dd>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* LEFT COLUMN: Main Information */}
+      <div className="lg:col-span-2 flex flex-col gap-8">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">
+            {row.organizationName}
+          </h1>
+          {row.description ? (
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              {row.description}
+            </p>
+          ) : (
+            <p className="text-lg text-muted-foreground italic">No description provided.</p>
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">Industry</p>
+            <p className="font-semibold">{row.industry || "Not specified"}</p>
           </div>
-        </CardContent></Card>
-      </Section>
-      <Section title="Match-relevant">
-        <Card><CardContent className="grid gap-4 pt-6">
-          <FieldRow label="Location" value={row.location} />
-          <div><p className="mb-1 text-sm text-muted-foreground">Talent needs</p><Chips values={row.talentNeeds} emptyLabel="None" /></div>
-          <div><p className="mb-1 text-sm text-muted-foreground">Sponsorship interests</p><Chips values={row.sponsorshipInterests} emptyLabel="None" /></div>
-          <div><p className="mb-1 text-sm text-muted-foreground">CSR focus</p><Chips values={row.csrFocus} emptyLabel="None" /></div>
-          <FieldRow label="Budget range" value={row.budgetRange === "Undisclosed" ? "" : row.budgetRange} />
-        </CardContent></Card>
-      </Section>
-    </>
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">Location</p>
+            <p className="font-semibold">{row.location || "Not specified"}</p>
+          </div>
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">Collaboration Intent</p>
+            <Badge variant="outline" className="mt-1">{row.collaborationIntent}</Badge>
+          </div>
+          <div className="p-4 rounded-xl border bg-card">
+            <p className="text-sm text-muted-foreground mb-1">Budget Range</p>
+            <p className="font-semibold">{row.budgetRange === "Undisclosed" ? "Undisclosed" : row.budgetRange}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Talent Needs</h2>
+          <div className="flex flex-wrap gap-2">
+            {row.talentNeeds.length > 0 ? row.talentNeeds.map(t => (
+              <Badge key={t} variant="secondary" className="px-3 py-1 text-sm">{t}</Badge>
+            )) : <span className="text-muted-foreground italic">No talent needs listed.</span>}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Sponsorship Interests</h2>
+          <div className="flex flex-wrap gap-2">
+            {row.sponsorshipInterests.length > 0 ? row.sponsorshipInterests.map(s => (
+              <Badge key={s} variant="outline" className="px-3 py-1 text-sm">{s}</Badge>
+            )) : <span className="text-muted-foreground italic">No sponsorship interests listed.</span>}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">CSR Focus</h2>
+          <div className="flex flex-wrap gap-2">
+            {row.csrFocus.length > 0 ? row.csrFocus.map(c => (
+              <Badge key={c} variant="outline" className="px-3 py-1 text-sm">{c}</Badge>
+            )) : <span className="text-muted-foreground italic">No CSR focus listed.</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: Actions */}
+      <div className="flex flex-col gap-4">
+        <div className="sticky top-24 space-y-4">
+          <Button render={
+            <Link href="/dashboard/profile/edit">
+              <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+            </Link>
+          } size="lg" className="w-full justify-start text-base font-semibold shadow-md" />
+        </div>
+      </div>
+    </div>
   );
 }
 

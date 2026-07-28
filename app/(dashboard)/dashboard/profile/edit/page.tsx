@@ -6,9 +6,7 @@ import {
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { Disclaimer } from "@/components/personas/disclaimer";
-import { ExperiencesSection } from "./experiences-section";
-import { AchievementsSection } from "./achievements-section";
-import { ActivitiesSection } from "./activities-section";
+// removed extra sections
 import type {
   StudentFormInput,
   ClubFormInput,
@@ -51,7 +49,7 @@ export default async function EditProfilePage() {
       careerInterests: current.row.careerInterests,
     };
     return (
-      <main className="mx-auto max-w-3xl px-4 py-8">
+      <div className="w-full">
         <h1 className="mb-4 text-2xl font-semibold">Edit profile</h1>
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         <OnboardingForm
@@ -63,12 +61,7 @@ export default async function EditProfilePage() {
           successHref="/dashboard/profile"
           action={updateProfile}
         />
-        <div className="mt-8 grid gap-6">
-          <ExperiencesSection student={current.row} />
-          <AchievementsSection student={current.row} />
-          <ActivitiesSection student={current.row} />
-        </div>
-      </main>
+      </div>
     );
   }
   if (current.kind === "club") {
@@ -84,7 +77,7 @@ export default async function EditProfilePage() {
       contactRole: current.row.contactRole,
     };
     return (
-      <main className="mx-auto max-w-2xl px-4 py-8">
+      <div className="w-full">
         <h1 className="mb-4 text-2xl font-semibold">Edit profile</h1>
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         <OnboardingForm
@@ -96,7 +89,7 @@ export default async function EditProfilePage() {
           successHref="/dashboard/profile"
           action={updateProfile}
         />
-      </main>
+      </div>
     );
   }
   const initial: CorporateFormInput = {
@@ -111,7 +104,7 @@ export default async function EditProfilePage() {
     collaborationIntent: current.row.collaborationIntent as CorporateFormInput["collaborationIntent"],
   };
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <div className="w-full">
       <h1 className="mb-4 text-2xl font-semibold">Edit profile</h1>
       {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
       <OnboardingForm
@@ -123,6 +116,6 @@ export default async function EditProfilePage() {
         successHref="/dashboard/profile"
         action={updateProfile}
       />
-    </main>
+    </div>
   );
 }

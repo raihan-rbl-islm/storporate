@@ -33,10 +33,23 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
     { name: "Profile", href: "/dashboard/profile", icon: User },
   ];
 
-  // (For other roles, keep minimal links for now or their old ones, but the user focused on students)
-  const links = role === "student" ? studentLinks : [
-    { name: "Dashboard", href: "/dashboard", icon: Compass }
+  const clubLinks = [
+    { name: "Dashboard", href: "/dashboard/clubs/dashboard", icon: Compass },
+    { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
+    { name: "Search", href: "/search", icon: Search },
+    { name: "Profile", href: "/dashboard/profile", icon: User },
   ];
+
+  const corporateLinks = [
+    { name: "Dashboard", href: "/dashboard/corporate/dashboard", icon: Compass },
+    { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
+    { name: "Search", href: "/search", icon: Search },
+    { name: "Profile", href: "/dashboard/profile", icon: User },
+  ];
+
+  let links = studentLinks;
+  if (role === "club") links = clubLinks;
+  if (role === "corporate") links = corporateLinks;
 
   return (
     <nav className="flex items-center gap-1 sm:gap-4 flex-wrap">
