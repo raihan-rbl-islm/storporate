@@ -1,9 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { eq } from "drizzle-orm";
-
-import { db } from "@/lib/server/db";
-import { users } from "@/lib/server/db/schema";
 
 /**
  * Canonical Supabase ssr session-refresh shape:
@@ -12,11 +8,19 @@ import { users } from "@/lib/server/db/schema";
  *   - the response continues to NextResponse.next() so the rest of the
  *     pipeline sees the up-to-date auth state.
  *
- * Phase 7 routing: on protected routes we look up the `users` row and
- * decide whether to send the user to /signin (anonymous), /onboarding/role
- * (authenticated, no role), or /onboarding/details (authenticated, has
- * role, not onboarded). `/dashboard` and `/onboarding/*` are the
- * authenticated paths; everything else is public.
+ * Phase 7 routing — middleware-only split:
+ *   Middleware must NOT query the `users` table. It runs on every
+ *   navigation, cold-starts a fresh Postgres connection on serverless
+ *   deploys, and easily hits Vercel's middleware timeout. So we ONLY
+ *   do the cheap auth check here:
+ *
+ *     - anonymous → /signin (preserving ?next=…)
+ *     - authenticated visiting /signin or /signup → /auth/post-signin
+ *
+ *   The role/onboarding redirects (→ /onboarding/role,
+ *   → /onboarding/details, /dashboard) live in the page-level layouts
+ *   (`app/(dashboard)/layout.tsx`, `app/onboarding/layout.tsx`) where
+ *   the route's own server-component render pays for the DB query.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -53,69 +57,13 @@ export async function updateSession(request: NextRequest) {
   const isProtected =
     path.startsWith("/dashboard") || path.startsWith("/onboarding");
 
-  if (isProtected) {
-    if (!user) {
-      // Preserve the requested destination so the auth flow can return.
-      const next = encodeURIComponent(path + request.nextUrl.search);
-      const url = request.nextUrl.clone();
-      url.pathname = "/signin";
-      url.search = `?next=${next}`;
-      return NextResponse.redirect(url);
-    }
-
-    // For authenticated users, ensure they have a `users` row (created
-    // post-OAuth in the callback, but also here as a defense in depth)
-    // and decide whether they need to land on /onboarding/role or
-    // /onboarding/details before continuing.
-    //
-    // The lookup is best-effort. If it fails (transient DB error,
-    // missing table on a fresh deploy, pool exhaustion, etc.) we treat
-    // the user as "in onboarding" and send them to /onboarding/role so
-    // the request never crashes with MIDDLEWARE_INVOCATION_FAILED. The
-    // role-selection page itself does the canonical lookup again with
-    // a fresh DB client and a full UX, so an upstream false positive
-    // is recoverable.
-    let row: typeof users.$inferSelect | undefined;
-    try {
-      const rows = await db
-        .select()
-        .from(users)
-        .where(eq(users.authUserId, user.id))
-        .limit(1);
-      row = rows[0];
-    } catch (err) {
-      console.error("[middleware] users lookup failed, treating as in-onboarding:", err);
-      if (!path.startsWith("/onboarding/role")) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/onboarding/role";
-        url.search = "";
-        return NextResponse.redirect(url);
-      }
-    }
-
-    if (!row || !row.role || !row.personaId) {
-      if (!path.startsWith("/onboarding/role")) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/onboarding/role";
-        url.search = "";
-        return NextResponse.redirect(url);
-      }
-    } else if (!row.onboardedAt) {
-      if (!path.startsWith("/onboarding/details")) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/onboarding/details";
-        url.search = "";
-        return NextResponse.redirect(url);
-      }
-    } else {
-      // User is fully onboarded. Don't allow them onto /onboarding pages.
-      if (path.startsWith("/onboarding")) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/dashboard";
-        url.search = "";
-        return NextResponse.redirect(url);
-      }
-    }
+  if (isProtected && !user) {
+    // Preserve the requested destination so the auth flow can return.
+    const next = encodeURIComponent(path + request.nextUrl.search);
+    const url = request.nextUrl.clone();
+    url.pathname = "/signin";
+    url.search = `?next=${next}`;
+    return NextResponse.redirect(url);
   }
 
   // Authenticated users on /signin or /signup should bounce into the
