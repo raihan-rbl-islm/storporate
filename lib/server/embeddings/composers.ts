@@ -41,6 +41,7 @@ type EventLike = {
   title?: string;
   description?: string;
   tags?: string[];
+  ownerName?: string;
   venue?: string;
   locationLabel?: string;
 };
@@ -102,6 +103,7 @@ export function eventComposer(row: EventLike): string {
   return join([
     row.title,
     row.description,
+    row.ownerName,
     row.tags,
     row.venue,
     row.locationLabel,
