@@ -4,6 +4,7 @@ vi.mock("@/lib/server/db", () => ({
   db: {
     select: vi.fn(),
     update: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -15,6 +16,9 @@ import { PERSONA_FIXTURE } from "@/data/personas";
 describe("resetPersonaToFixture", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    (db.delete as ReturnType<typeof vi.fn>).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
+    });
   });
 
   it("returns changed:false when personaId is not in the fixture", async () => {

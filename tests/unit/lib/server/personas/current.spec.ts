@@ -48,7 +48,7 @@ describe("getCurrentPersona", () => {
     expect(await getCurrentPersona()).toBeNull();
   });
 
-  it("returns the student row when valid cookies are present", async () => {
+  it("returns null when cookies are present (since demo flow is removed)", async () => {
     (cookies as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       get: (name: string) =>
         name === "role"
@@ -57,29 +57,8 @@ describe("getCurrentPersona", () => {
             ? { value: "tasnim" }
             : undefined,
     });
-    const row = {
-      id: "tasnim",
-      fullName: "Tasnim Hossain",
-      university: "BRAC University",
-      bio: "Final-year CS student looking for ML internships in Dhaka.",
-      heroFlag: true,
-      fixtureDisclaimerRequired: true,
-      createdAt: new Date("2025-01-01T00:00:00Z"),
-      updatedAt: new Date("2025-01-01T00:00:00Z"),
-    };
-    const selectMock = db.select as ReturnType<typeof vi.fn>;
-    const fromMock = vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        limit: async () => [row],
-      }),
-    });
-    selectMock.mockReturnValueOnce({ from: fromMock });
+    
     const result = await getCurrentPersona();
-    expect(result).toEqual({ kind: "student", row, role: "student" });
-    expect(selectMock).toHaveBeenCalledTimes(1);
-    // Verify we hit the students table specifically.
-    const fromCall = selectMock.mock.results[0].value.from;
-    expect(fromCall).toHaveBeenCalled();
-    expect(fromCall.mock.calls[0][0]).toBe(students);
+    expect(result).toBeNull();
   });
 });
