@@ -53,6 +53,48 @@ export const healthCheck = pgTable("health_check", {
 });
 
 // ----------------------------------------------------------------------
+// Phase 7: real users
+//
+// One row per Supabase-authenticated account. `authUserId` mirrors
+// `auth.users.id` (a Supabase-managed uuid) so we never store or display
+// the user's email here — the source of truth for email lives in
+// auth.users and we always read it back via `supabase.auth.getUser()`.
+//
+// `role` is nullable until the user completes role-selection onboarding;
+// `personaId` then points at the matching row in `students`, `clubs`,
+// or `corporates`. We use a single text column here (rather than three
+// nullable FKs) so the role is authoritative and we can wire the correct
+// relationship at query time.
+//
+// `onboardedAt` flips to a non-null timestamp the moment the user submits
+// the role-specific minimum-required-fields form. Before that, the user
+// is authenticated but not yet allowed onto the dashboard.
+//
+// All FKs to persona tables are intentionally logical (string ids) rather
+// than declared REFERENCES — the same convention the rest of the schema
+// uses for persona <-> interest tables.
+export const users = pgTable(
+  "users",
+  {
+    id: serial("id").primaryKey(),
+    authUserId: text("auth_user_id").notNull(),
+    role: text("role"),
+    personaId: text("persona_id"),
+    displayName: text("display_name").notNull().default(""),
+    onboardedAt: timestamp("onboarded_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    uniqAuthUser: uniqueIndex("users_auth_user_id_uniq").on(t.authUserId),
+  }),
+);
+
+// ----------------------------------------------------------------------
 // Persona schema (Phase 1.3)
 //
 // Three tables back the Demo personas and the eventual onboarding /
