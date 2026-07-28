@@ -97,39 +97,8 @@ export async function getCurrentPersona(): Promise<CurrentPersona | null> {
   }
 
   // Fall back to the legacy demo cookie flow.
-  const jar = await cookies();
-  const roleCookie = readCookie(jar, "role");
-  const personaIdCookie = readCookie(jar, "personaId");
-  if (
-    !roleCookie ||
-    !personaIdCookie ||
-    !(VALID_ROLES as readonly string[]).includes(roleCookie)
-  ) {
-    return null;
-  }
-  const role = roleCookie as PersonaRole;
-  if (role === "student") {
-    const [row] = await db
-      .select()
-      .from(students)
-      .where(eq(students.id, personaIdCookie))
-      .limit(1);
-    return row ? { kind: "student", row, role } : null;
-  }
-  if (role === "club") {
-    const [row] = await db
-      .select()
-      .from(clubs)
-      .where(eq(clubs.id, personaIdCookie))
-      .limit(1);
-    return row ? { kind: "club", row, role } : null;
-  }
-  const [row] = await db
-    .select()
-    .from(corporates)
-    .where(eq(corporates.id, personaIdCookie))
-    .limit(1);
-  return row ? { kind: "corporate", row, role } : null;
+  // Fall back to null if no valid Supabase user was found.
+  return null;
 }
 
 /**
