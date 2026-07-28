@@ -42,7 +42,7 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
 
   const corporateLinks = [
     { name: "Dashboard", href: "/dashboard/corporate/dashboard", icon: Compass },
-    { name: "Matches", href: "/dashboard/corporate/matches", icon: Sparkles },
+    { name: "Candidates", href: "/dashboard/corporate/candidates/students", icon: Sparkles },
     { name: "Inbox", href: "/inbox", icon: Inbox },
     { name: "Profile", href: "/dashboard/profile", icon: User },
   ];
