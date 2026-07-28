@@ -45,4 +45,6 @@ next-env.d.ts
 # playwright
 /playwright-report/
 /test-results/
-/docs
+# /docs is local-only by default, but top-level setup notes are useful in-repo.
+/docs/*
+!/docs/*.md
