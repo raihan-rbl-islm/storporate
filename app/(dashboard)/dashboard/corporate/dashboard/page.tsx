@@ -225,12 +225,6 @@ export default async function CorporateDashboardPage() {
   const current = await getCurrentPersona();
   if (!current || current.kind !== "corporate") redirect("/dashboard");
   const corporate = current.row;
-  const corporateFixture = getCorporateFixtures().find(
-    (item) => item.id === corporate.id,
-  );
-  if (!corporateFixture) {
-    redirect("/dashboard");
-  }
   const intent = classify(corporate.collaborationIntent);
   const ready = hasOnboarded(corporate);
   const showStudents =

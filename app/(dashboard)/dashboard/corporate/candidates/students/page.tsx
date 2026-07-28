@@ -158,10 +158,7 @@ export default async function CorporateStudentCandidatesPage() {
   const corporate = current.row;
   const corporateFixture = getCorporateFixtures().find(
     (item) => item.id === corporate.id,
-  );
-  if (!corporateFixture) {
-    redirect("/dashboard");
-  }
+  ) ?? (corporate as unknown as CorporateFixture);
 
   return (
     <section
