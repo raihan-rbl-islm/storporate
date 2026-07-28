@@ -4,7 +4,6 @@ import { eq, gt, and, sql, desc } from "drizzle-orm";
 import { db } from "@/lib/server/db";
 import {
   events,
-  jobs,
   posts,
   students,
   clubs,
@@ -41,8 +40,7 @@ import { ensureStudentEmbedding } from "./embed-student";
 
 export type NewsfeedItem =
   | { kind: "event"; item: typeof events.$inferSelect; score: number }
-  | { kind: "post"; item: typeof posts.$inferSelect; score: number }
-  | { kind: "job"; item: typeof jobs.$inferSelect; score: number };
+  | { kind: "post"; item: typeof posts.$inferSelect; score: number };
 
 /**
  * Shape returned by `db.execute` for events. Matches the table column
@@ -85,26 +83,7 @@ type PostExecRow = {
   distance: number;
 };
 
-type JobExecRow = {
-  id: string;
-  corporate_id: string;
-  title: string;
-  slug: string;
-  description: string;
-  employment_type: string;
-  location_label: string;
-  is_remote: boolean;
-  starts_on: string;
-  ends_on: string;
-  apply_url: string;
-  apply_email: string;
-  skills: string[];
-  embedding: string | null;
-  needs_embedding: boolean;
-  is_open: boolean;
-  created_at: Date;
-  distance: number;
-};
+
 
 /**
  * Build a pgvector-safe `[v0,v1,...]` literal from a number[].
@@ -155,27 +134,7 @@ function mapPostRow(r: PostExecRow): typeof posts.$inferSelect {
   };
 }
 
-function mapJobRow(r: JobExecRow): typeof jobs.$inferSelect {
-  return {
-    id: r.id,
-    corporateId: r.corporate_id,
-    title: r.title,
-    slug: r.slug,
-    description: r.description,
-    employmentType: r.employment_type,
-    locationLabel: r.location_label,
-    isRemote: r.is_remote,
-    startsOn: r.starts_on,
-    endsOn: r.ends_on,
-    applyUrl: r.apply_url,
-    applyEmail: r.apply_email,
-    skills: r.skills,
-    embedding: null,
-    needsEmbedding: r.needs_embedding,
-    isOpen: r.is_open,
-    createdAt: r.created_at,
-  };
-}
+
 
 export async function getStudentNewsfeed(
   studentId: string,
@@ -310,84 +269,21 @@ export async function getStudentNewsfeed(
     }));
   }
 
-  // ---- Jobs ----
-  let rankedJobs: NewsfeedItem[] = [];
-  if (studentEmbedding && studentEmbedding.length > 0) {
-    const emb = toVectorLiteral(studentEmbedding);
-    const raw = await db.execute<JobExecRow>(sql`
-      SELECT id,
-             corporate_id,
-             title,
-             slug,
-             description,
-             employment_type,
-             location_label,
-             is_remote,
-             starts_on,
-             ends_on,
-             apply_url,
-             apply_email,
-             skills,
-             embedding,
-             needs_embedding,
-             is_open,
-             created_at,
-             (embedding <=> ${emb}::vector) AS distance
-      FROM jobs
-      WHERE is_open = true
-        AND needs_embedding = false
-        AND embedding IS NOT NULL
-      ORDER BY embedding <=> ${emb}::vector
-      LIMIT 200
-    `);
-    const r = raw as unknown as JobExecRow[];
-    rankedJobs = r.map((x) => ({
-      kind: "job" as const,
-      item: mapJobRow(x),
-      score: 1 - Number(x.distance),
-    }));
-  } else {
-    const rows = await db
-      .select()
-      .from(jobs)
-      .where(
-        and(
-          eq(jobs.isOpen, true),
-          eq(jobs.needsEmbedding, false)
-        )
-      )
-      .orderBy(desc(jobs.createdAt))
-      .limit(200);
-    rankedJobs = rows.map((row) => ({
-      kind: "job" as const,
-      item: row,
-      score: scoreEventForStudent(
-        { tags: row.skills },
-        {
-          skills: student.skills,
-          careerInterests: student.careerInterests,
-        },
-      ),
-    }));
-  }
 
-  const merged = [...rankedEvents, ...rankedPosts, ...rankedJobs].sort((a, b) => {
+
+  const merged = [...rankedEvents, ...rankedPosts].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    // Tie-break: events before jobs before posts, then by time.
-    const priority = { event: 1, job: 2, post: 3 };
+    // Tie-break: events before posts, then by time.
+    const priority = { event: 1, post: 2 };
     if (a.kind !== b.kind) return priority[a.kind] - priority[b.kind];
     const aTime =
       a.kind === "event"
         ? a.item.startsAt.getTime()
-        : a.kind === "job"
-          ? a.item.createdAt.getTime()
-          : a.item.publishedAt.getTime();
+        : a.item.publishedAt.getTime();
     const bTime =
       b.kind === "event"
         ? b.item.startsAt.getTime()
-        : b.kind === "job"
-          ? b.item.createdAt.getTime()
-          : b.item.publishedAt.getTime();
+        : b.item.publishedAt.getTime();
     return bTime - aTime;
   });
 
@@ -417,19 +313,6 @@ export async function resolveOwnerNames(
   // Dedupe owner-kind + owner-id pairs.
   const seen = new Set<string>();
   for (const it of items) {
-    if (it.kind === "job") {
-      const key = `corporate:${it.item.corporateId}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        const [row] = await db
-          .select({ organizationName: corporates.organizationName })
-          .from(corporates)
-          .where(eq(corporates.id, it.item.corporateId))
-          .limit(1);
-        out.set(key, row?.organizationName ?? "Unknown company");
-      }
-      continue;
-    }
     const ownerKind = it.item.ownerKind;
     const ownerId = it.item.ownerId;
     const key = `${ownerKind}:${ownerId}`;
