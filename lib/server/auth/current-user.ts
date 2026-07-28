@@ -209,12 +209,30 @@ export async function bindRoleToPersona(args: {
       })
       .where(eq(users.authUserId, args.authUserId));
   } else {
-    await db.insert(users).values({
-      authUserId: args.authUserId,
-      role: args.role,
-      personaId,
-      displayName: args.displayName,
-    });
+    // Race-safe insert: if another concurrent request already created
+    // the row, swallow the unique-violation and fall through to the
+    // existing-row path on the next call. The action's idempotency
+    // guarantees a correct final state.
+    try {
+      await db.insert(users).values({
+        authUserId: args.authUserId,
+        role: args.role,
+        personaId,
+        displayName: args.displayName,
+      });
+    } catch (err) {
+      // Postgres unique-violation on users_auth_user_id_uniq = 23505.
+      // Anything else bubbles up.
+      const code = (err as { code?: string } | null)?.code;
+      if (code !== "23505") throw err;
+      // Re-fetch and align with the existing row before continuing.
+      const concurrent = await findUserByAuthId(args.authUserId);
+      if (concurrent?.personaId && concurrent.role === args.role) {
+        return concurrent.personaId;
+      }
+      // Different role was inserted by the concurrent request — let the
+      // update path below take over.
+    }
   }
 
   // Ensure a matching row exists in the per-role persona table. We

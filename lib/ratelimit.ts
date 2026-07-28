@@ -86,14 +86,14 @@ export async function withRateLimit(
   const window = options.window ?? DEFAULT_WINDOW;
   const prefix = options.prefix ?? RATE_LIMIT_PREFIX;
 
-  const limiter = new Ratelimit({
-    redis: getRedis(),
-    limiter: Ratelimit.slidingWindow(limit, window),
-    prefix,
-    analytics: false,
-  });
-
   try {
+    const limiter = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.slidingWindow(limit, window),
+      prefix,
+      analytics: false,
+    });
+
     const out = await limiter.limit(options.identifier);
     if (!out.success) {
       const retryAfter = Math.max(
