@@ -1,20 +1,14 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { RoleSwitcher } from "@/components/dashboard/role-switcher";
-import { getPersonaById } from "@/lib/server/personas/lookup";
 import { Disclaimer } from "@/components/personas/disclaimer";
-import type { PersonaRole } from "@/data/personas";
-
-const VALID_ROLES: readonly PersonaRole[] = ["student", "club", "corporate"];
-
-function isPersonaRole(value: string | undefined): value is PersonaRole {
-  return (
-    typeof value === "string" &&
-    (VALID_ROLES as readonly string[]).includes(value)
-  );
-}
+import { UserMenu } from "@/components/dashboard/user-menu";
+import {
+  getCurrentPersona,
+  hasOnboarded,
+} from "@/lib/server/personas/current";
+import { getCurrentUser } from "@/lib/server/auth/current-user";
 
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -25,17 +19,34 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const store = await cookies();
-  const roleCookie = store.get("role")?.value;
-  const personaIdCookie = store.get("personaId")?.value;
-
-  if (!isPersonaRole(roleCookie)) {
-    redirect("/demo");
+  // For real (Supabase-authenticated) users, ensure they're onboarded
+  // before letting them see dashboards. Middleware already enforces this
+  // for /dashboard and /onboarding paths; this is defense in depth and
+  // also covers layouts that bypass the matcher.
+  const u = await getCurrentUser();
+  if (u.kind === "ready" || u.kind === "needs-onboarding") {
+    if (!u.personaId) redirect("/onboarding/role");
+    if (u.kind === "needs-onboarding") redirect("/onboarding/details");
+  } else if (u.kind === "needs-role") {
+    redirect("/onboarding/role");
   }
 
-  const persona = personaIdCookie
-    ? await getPersonaById(personaIdCookie)
-    : null;
+  // Resolve the active persona (real OR demo). Existing dashboard pages
+  // call getCurrentPersona() too — the new fallback in that helper
+  // ensures real users land on the same data path as demo users.
+  const current = await getCurrentPersona();
+  if (!current) {
+    redirect("/signin");
+  }
+
+  const role = current.role;
+  const personaId = current.row.id;
+  const roleCookieValue = role;
+  // For demo users, keep the existing rule that profile pages redirect
+  // to /onboarding when they haven't onboarded yet.
+  if (u.kind === "anonymous" && !hasOnboarded(current.row)) {
+    // Let /onboarding handle the redirect; do nothing here.
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -49,14 +60,15 @@ export default async function DashboardLayout({
             Storporate
           </Link>
           <div className="flex items-center gap-3">
+            <UserMenu />
             <Badge
               variant="secondary"
               data-testid="role-badge"
-              aria-label={`Current role ${capitalize(roleCookie)}`}
+              aria-label={`Current role ${capitalize(roleCookieValue)}`}
             >
-              {capitalize(roleCookie)}
+              {capitalize(roleCookieValue)}
             </Badge>
-            <RoleSwitcher currentRole={roleCookie} />
+            <RoleSwitcher currentRole={role} />
           </div>
         </div>
         <div className="mx-auto max-w-6xl px-6 pb-4">
@@ -64,9 +76,15 @@ export default async function DashboardLayout({
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
-      {persona ? (
-        <span hidden data-persona-id={persona.id} />
-      ) : null}
+      {u.kind === "anonymous" ? (
+        <span hidden data-persona-id={personaId} />
+      ) : (
+        <span
+          hidden
+          data-persona-id={personaId}
+          data-auth-user-id={u.authUserId}
+        />
+      )}
     </div>
   );
 }
