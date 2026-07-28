@@ -19,28 +19,19 @@ export function LandingHero() {
       <div className="mx-auto grid max-w-6xl gap-12 px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pt-28 lg:pb-32">
         {/* Copy column */}
         <div className="flex flex-col items-start gap-6">
-          <Badge variant="outline" className="gap-1.5 border-primary/30 bg-primary/5 text-foreground">
-            <Sparkles aria-hidden="true" className="size-3 text-primary" />
-            AI-Powered Smart Matching · Unified 3-Way Ecosystem
-          </Badge>
-
           <h1
             id="hero-heading"
             className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl"
           >
-            Where{" "}
+            Storporate bridges the{" "}
             <span className="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent">
-              students, clubs,
-            </span>{" "}
-            and{" "}
-            <span className="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent">
-              companies
-            </span>{" "}
-            find each other.
+              academic-industry gap
+            </span>
+            .
           </h1>
 
           <p className="text-muted-foreground max-w-xl text-lg leading-relaxed">
-            Storporate bridges the academic-industry gap. An intelligent, AI-driven networking ecosystem that uses semantic embeddings to dynamically calculate compatibility metrics for hiring, sponsorships, and strategic collaborations.
+            An intelligent, AI-driven networking ecosystem that uses semantic embeddings to dynamically calculate compatibility metrics for hiring, sponsorships, and strategic collaborations.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">

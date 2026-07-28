@@ -60,20 +60,6 @@ export default async function SignupPage() {
               profile later — Storporate never blocks you from exploring
               once the essentials are in.
             </p>
-            <ul className="text-muted-foreground space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                Free to use for students, clubs, and companies.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
-                Please use your institutional or corporate email for verification.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="bg-accent mt-1.5 size-1.5 shrink-0 rounded-full" />
-                Switch between Student, Club, and Company later if your
-                situation changes.
-              </li>
-            </ul>
           </div>
 
           <p className="text-muted-foreground hidden text-xs lg:block">
