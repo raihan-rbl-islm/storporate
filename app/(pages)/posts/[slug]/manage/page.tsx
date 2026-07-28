@@ -8,8 +8,8 @@ import { formatInDhaka } from "@/lib/format/datetime";
 import { db } from "@/lib/server/db";
 import { posts } from "@/lib/server/db/schema";
 import { getCurrentPersona } from "@/lib/server/personas/current";
-import { CreatePostForm } from "@/app/posts/new/create-post-form";
-import { deletePost } from "@/app/posts/actions";
+import { CreatePostForm } from "@/app/(pages)/posts/new/create-post-form";
+import { deletePost } from "@/app/(pages)/posts/actions";
 
 export const dynamic = "force-dynamic";
 

@@ -24,7 +24,7 @@ import {
 import {
   createPost,
   type PostFormState,
-} from "@/app/posts/actions";
+} from "@/app/(pages)/posts/actions";
 
 export interface CreatePostFormProps {
   initialValue?: {
@@ -57,7 +57,7 @@ export function CreatePostForm({
   const [state, formAction] = useActionState<PostFormState, FormData>(
     async (prev, fd) => {
       if (mode === "edit" && postId) {
-        const { updatePost } = await import("@/app/posts/actions");
+        const { updatePost } = await import("@/app/(pages)/posts/actions");
         return updatePost(postId, prev, fd);
       }
       return createPost(prev, fd);

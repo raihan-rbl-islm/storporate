@@ -11,12 +11,12 @@ import { db } from "@/lib/server/db";
 import { events, eventRegistrations, students } from "@/lib/server/db/schema";
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import { dhakaLocalISOString } from "@/lib/datetime/dhaka";
-import { CreateEventForm } from "@/app/events/new/create-event-form";
+import { CreateEventForm } from "@/app/(pages)/events/new/create-event-form";
 import {
   closeEvent,
   deleteEvent,
   reopenEvent,
-} from "@/app/events/actions";
+} from "@/app/(pages)/events/actions";
 import { getRankedSponsorsForEvent } from "@/lib/server/matching/sponsors-for-event";
 import { RequestSponsorshipTrigger } from "@/components/invitations/request-sponsorship-trigger";
 

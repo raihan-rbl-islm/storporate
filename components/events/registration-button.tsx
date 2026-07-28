@@ -9,7 +9,7 @@ import {
   registerForEvent,
   unregisterFromEvent,
   type RegistrationFormState,
-} from "@/app/events/actions";
+} from "@/app/(pages)/events/actions";
 
 export interface RegistrationButtonProps {
   eventId: string;

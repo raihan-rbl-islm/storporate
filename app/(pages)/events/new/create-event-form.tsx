@@ -15,7 +15,7 @@ import { ChipInput } from "@/components/onboarding/chip-input";
 import {
   createEvent,
   type EventFormState,
-} from "@/app/events/actions";
+} from "@/app/(pages)/events/actions";
 import { dhakaLocalISOString } from "@/lib/datetime/dhaka";
 
 export interface CreateEventFormProps {
@@ -79,7 +79,7 @@ export function CreateEventForm({
     async (prev, fd) => {
       if (mode === "edit" && eventId) {
         // Lazy require to avoid pulling the edit path into create-only builds.
-        const { updateEvent } = await import("@/app/events/actions");
+        const { updateEvent } = await import("@/app/(pages)/events/actions");
         return updateEvent(eventId, prev, fd);
       }
       return createEvent(prev, fd);

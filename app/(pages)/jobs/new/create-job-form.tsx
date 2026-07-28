@@ -22,7 +22,7 @@ import { ChipInput } from "@/components/onboarding/chip-input";
 import {
   createJob,
   type JobFormState,
-} from "@/app/jobs/actions";
+} from "@/app/(pages)/jobs/actions";
 
 export interface CreateJobFormProps {
   initialValue?: {
@@ -62,7 +62,7 @@ export function CreateJobForm({
   const [state, formAction] = useActionState<JobFormState, FormData>(
     async (prev, fd) => {
       if (mode === "edit" && jobId) {
-        const { updateJob } = await import("@/app/jobs/actions");
+        const { updateJob } = await import("@/app/(pages)/jobs/actions");
         return updateJob(jobId, prev, fd);
       }
       return createJob(prev, fd);
