@@ -162,3 +162,149 @@
     animation: none !important;
   }
 }
+
+/* ----------------------------------------------------------------------
+   Landing page animations
+   - Orbit drift for the matching-orbit hero visual
+   - Pulse halo around the central score node
+   - Score-ring stroke fill on mount
+   - Scenario card fade-in + reason stagger
+   - Pillar card gentle entrance
+   - Tour-step + tour-tab staggered reveal
+   ---------------------------------------------------------------------- */
+
+@keyframes orbit-drift-a {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(6px, -8px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes orbit-drift-b {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-8px, 6px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes orbit-drift-c {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(8px, 4px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes orbit-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.orbit-node-a { animation: orbit-drift-a 9s ease-in-out infinite; transform-origin: center; }
+.orbit-node-b { animation: orbit-drift-b 11s ease-in-out infinite; transform-origin: center; }
+.orbit-node-c { animation: orbit-drift-c 13s ease-in-out infinite; transform-origin: center; }
+.orbit-chip-a  { animation: orbit-drift-a 14s ease-in-out infinite reverse; transform-origin: center; }
+.orbit-chip-b  { animation: orbit-drift-b 16s ease-in-out infinite reverse; transform-origin: center; }
+.orbit-chip-c  { animation: orbit-drift-c 18s ease-in-out infinite reverse; transform-origin: center; }
+
+.orbit-line-a,
+.orbit-line-b,
+.orbit-line-c {
+  animation: orbit-drift-a 9s ease-in-out infinite;
+}
+.orbit-line-b { animation-name: orbit-drift-b; animation-duration: 11s; }
+.orbit-line-c { animation-name: orbit-drift-c; animation-duration: 13s; }
+
+.orbit-pulse-ring {
+  transform-origin: 200px 200px;
+  animation: orbit-pulse 2.6s ease-out infinite;
+}
+
+@keyframes score-ring-fill {
+  from { stroke-dashoffset: var(--circumference, 163); }
+  to   { stroke-dashoffset: var(--target-offset, 0); }
+}
+.score-ring-progress {
+  animation: score-ring-fill 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scenario-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.scenario-card {
+  animation: scenario-fade-in 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scenario-reason-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.scenario-reason {
+  opacity: 0;
+  animation: scenario-reason-in 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pillar-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pillar-card {
+  opacity: 0;
+  animation: pillar-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tour-step-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.tour-step {
+  opacity: 0;
+  animation: tour-step-in 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tour-tab-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tour-tab {
+  opacity: 0;
+  animation: tour-tab-in 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.tour-tab:nth-child(1) { animation-delay: 80ms; }
+.tour-tab:nth-child(2) { animation-delay: 180ms; }
+.tour-tab:nth-child(3) { animation-delay: 280ms; }
+
+@keyframes tour-mock-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tour-mock {
+  animation: tour-mock-in 500ms cubic-bezier(0.16, 1, 0.3, 1) 240ms backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-node-a,
+  .orbit-node-b,
+  .orbit-node-c,
+  .orbit-chip-a,
+  .orbit-chip-b,
+  .orbit-chip-c,
+  .orbit-line-a,
+  .orbit-line-b,
+  .orbit-line-c,
+  .orbit-pulse-ring,
+  .score-ring-progress,
+  .scenario-card,
+  .scenario-reason,
+  .pillar-card,
+  .tour-step,
+  .tour-tab,
+  .tour-mock {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .score-ring-progress {
+    stroke-dashoffset: var(--target-offset, 0) !important;
+  }
+}
