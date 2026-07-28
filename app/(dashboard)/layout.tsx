@@ -37,19 +37,9 @@ export default async function DashboardLayout({
       <GlobalNavbar />
       
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8 flex-1">
-        {overview && role !== "student" ? (
-          <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
-            <RoleSidebar overview={overview} />
-            <div className="flex min-w-0 flex-1 flex-col gap-5">
-              <MobileSidebarTabs overview={overview} />
-              {children}
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-6">
-            {children}
-          </div>
-        )}
+        <div className="flex flex-col gap-6">
+          {children}
+        </div>
       </main>
 
       <footer className="mt-auto border-t py-6 bg-muted/20">

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { Search, Compass, Briefcase, User, Newspaper } from "lucide-react";
+import { Search, Compass, Briefcase, User, Newspaper, Sparkles, Inbox } from "lucide-react";
 
 interface GlobalNavbarClientProps {
   role: string | null;
@@ -36,14 +36,16 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
   const clubLinks = [
     { name: "Dashboard", href: "/dashboard/clubs/dashboard", icon: Compass },
     { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
-    { name: "Search", href: "/search", icon: Search },
+    { name: "Matches", href: "/dashboard/clubs/matches", icon: Sparkles },
+    { name: "Inbox", href: "/inbox", icon: Inbox },
     { name: "Profile", href: "/dashboard/profile", icon: User },
   ];
 
   const corporateLinks = [
     { name: "Dashboard", href: "/dashboard/corporate/dashboard", icon: Compass },
     { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
-    { name: "Search", href: "/search", icon: Search },
+    { name: "Matches", href: "/dashboard/corporate/matches", icon: Sparkles },
+    { name: "Inbox", href: "/inbox", icon: Inbox },
     { name: "Profile", href: "/dashboard/profile", icon: User },
   ];
 

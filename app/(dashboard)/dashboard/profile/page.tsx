@@ -41,9 +41,9 @@ export default async function ProfilePage() {
       <div className="w-full">
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT COLUMN: Main Information */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
+        <div className="flex flex-col gap-8 max-w-4xl">
+          {/* Main Information */}
+          <div className="flex justify-between items-start gap-4">
             <div className="space-y-4">
               <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">
                 {current.row.fullName}
@@ -56,6 +56,12 @@ export default async function ProfilePage() {
                 <p className="text-lg text-muted-foreground italic">No bio provided.</p>
               )}
             </div>
+            <Button render={
+              <Link href="/dashboard/profile/edit">
+                <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+              </Link>
+            } variant="outline" className="shrink-0" />
+          </div>
 
             <Separator />
 
@@ -137,7 +143,14 @@ export default async function ProfilePage() {
 
             {/* Skills */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">Skills</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold flex items-center gap-2">Skills</h2>
+                <Button render={
+                  <Link href="/dashboard/profile/edit">
+                    <Plus className="w-4 h-4" />
+                  </Link>
+                } variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" aria-label="Edit Skills" />
+              </div>
               <div className="flex flex-wrap gap-2">
                 {current.row.skills.length > 0 ? current.row.skills.map(s => (
                   <Badge key={s} variant="secondary" className="px-3 py-1 text-sm">{s}</Badge>
@@ -147,7 +160,14 @@ export default async function ProfilePage() {
 
             {/* Interests */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">Interests</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold flex items-center gap-2">Interests</h2>
+                <Button render={
+                  <Link href="/dashboard/profile/edit">
+                    <Plus className="w-4 h-4" />
+                  </Link>
+                } variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" aria-label="Edit Interests" />
+              </div>
               <div className="flex flex-wrap gap-2">
                 {current.row.careerInterests.length > 0 ? current.row.careerInterests.map(i => (
                   <Badge key={i} variant="outline" className="px-3 py-1 text-sm">{i}</Badge>
@@ -173,18 +193,6 @@ export default async function ProfilePage() {
                 <p className="text-muted-foreground italic">You haven&apos;t sent any cold emails yet.</p>
               )}
             </div>
-          </div>
-
-          {/* RIGHT COLUMN: Actions */}
-          <div className="flex flex-col gap-4">
-            <div className="sticky top-24 space-y-4">
-              <Button render={
-                <Link href="/dashboard/profile/edit">
-                  <Pencil className="w-4 h-4 mr-2" /> Edit Profile
-                </Link>
-              } size="lg" className="w-full justify-start text-base font-semibold shadow-md" />
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -205,9 +213,9 @@ export default async function ProfilePage() {
 
 function ClubReview({ row }: { row: ClubRowShape }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* LEFT COLUMN: Main Information */}
-      <div className="lg:col-span-2 flex flex-col gap-8">
+    <div className="flex flex-col gap-8 max-w-4xl">
+      {/* Main Information */}
+      <div className="flex justify-between items-start gap-4">
         <div className="space-y-4">
           <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">
             {row.clubName}
@@ -220,6 +228,12 @@ function ClubReview({ row }: { row: ClubRowShape }) {
             <p className="text-lg text-muted-foreground italic">No mission statement provided.</p>
           )}
         </div>
+        <Button render={
+          <Link href="/dashboard/profile/edit">
+            <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+          </Link>
+        } variant="outline" className="shrink-0" />
+      </div>
 
         <Separator />
 
@@ -268,27 +282,15 @@ function ClubReview({ row }: { row: ClubRowShape }) {
             )) : <span className="text-muted-foreground italic">No sponsorship needs listed.</span>}
           </div>
         </div>
-      </div>
-
-      {/* RIGHT COLUMN: Actions */}
-      <div className="flex flex-col gap-4">
-        <div className="sticky top-24 space-y-4">
-          <Button render={
-            <Link href="/dashboard/profile/edit">
-              <Pencil className="w-4 h-4 mr-2" /> Edit Profile
-            </Link>
-          } size="lg" className="w-full justify-start text-base font-semibold shadow-md" />
-        </div>
-      </div>
     </div>
   );
 }
 
 function CorporateReview({ row }: { row: CorporateRowShape }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* LEFT COLUMN: Main Information */}
-      <div className="lg:col-span-2 flex flex-col gap-8">
+    <div className="flex flex-col gap-8 max-w-4xl">
+      {/* Main Information */}
+      <div className="flex justify-between items-start gap-4">
         <div className="space-y-4">
           <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">
             {row.organizationName}
@@ -301,6 +303,12 @@ function CorporateReview({ row }: { row: CorporateRowShape }) {
             <p className="text-lg text-muted-foreground italic">No description provided.</p>
           )}
         </div>
+        <Button render={
+          <Link href="/dashboard/profile/edit">
+            <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+          </Link>
+        } variant="outline" className="shrink-0" />
+      </div>
 
         <Separator />
 
@@ -349,18 +357,6 @@ function CorporateReview({ row }: { row: CorporateRowShape }) {
             )) : <span className="text-muted-foreground italic">No CSR focus listed.</span>}
           </div>
         </div>
-      </div>
-
-      {/* RIGHT COLUMN: Actions */}
-      <div className="flex flex-col gap-4">
-        <div className="sticky top-24 space-y-4">
-          <Button render={
-            <Link href="/dashboard/profile/edit">
-              <Pencil className="w-4 h-4 mr-2" /> Edit Profile
-            </Link>
-          } size="lg" className="w-full justify-start text-base font-semibold shadow-md" />
-        </div>
-      </div>
     </div>
   );
 }
