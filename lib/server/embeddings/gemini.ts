@@ -21,13 +21,23 @@ export async function embedText(text: string): Promise<number[] | null> {
   // network payload bounded.
   const trimmed = text.slice(0, 2048);
 
+  // `gemini-embedding-001` defaults to 3072-dim vectors, but our pgvector
+  // columns are declared `vector(768)` (see lib/server/db/schema.ts).
+  // Without `outputDimensionality: 768` the inserts fail with
+  // "expected 768 dimensions, not 3072". 768 is the standard MRL
+  // truncation size for this model.
+  const outputDimensionality = 768;
+
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:embedContent?key=${apiKey}`;
 
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ content: { parts: [{ text: trimmed }] } }),
+      body: JSON.stringify({
+        content: { parts: [{ text: trimmed }] },
+        outputDimensionality,
+      }),
     });
 
     if (!res.ok) return null;
