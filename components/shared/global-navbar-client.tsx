@@ -35,7 +35,6 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
 
   const clubLinks = [
     { name: "Dashboard", href: "/dashboard/clubs/dashboard", icon: Compass },
-    { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
     { name: "Matches", href: "/dashboard/clubs/matches", icon: Sparkles },
     { name: "Inbox", href: "/inbox", icon: Inbox },
     { name: "Profile", href: "/dashboard/profile", icon: User },
@@ -43,7 +42,6 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
 
   const corporateLinks = [
     { name: "Dashboard", href: "/dashboard/corporate/dashboard", icon: Compass },
-    { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
     { name: "Matches", href: "/dashboard/corporate/matches", icon: Sparkles },
     { name: "Inbox", href: "/inbox", icon: Inbox },
     { name: "Profile", href: "/dashboard/profile", icon: User },
