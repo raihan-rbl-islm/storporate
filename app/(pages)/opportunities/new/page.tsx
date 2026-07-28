@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function NewJobPage() {
   const current = await getCurrentPersona();
   if (!current) {
-    redirect("/signin?next=/jobs/new");
+    redirect("/signin?next=/opportunities/new");
   }
   if (current.kind !== "corporate") {
     redirect("/dashboard");

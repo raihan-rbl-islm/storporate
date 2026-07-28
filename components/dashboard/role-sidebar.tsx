@@ -232,7 +232,7 @@ const CORPORATE_NAV: (overview: AnyOverview) => readonly NavSection[] = (
       heading: "Create",
       links: [
         {
-          href: "/jobs/new",
+          href: "/opportunities/new",
           label: "New job",
           icon: <Briefcase aria-hidden="true" />,
           testId: "sidebar-corporate-new-job",

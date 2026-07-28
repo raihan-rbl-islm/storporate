@@ -27,7 +27,7 @@ export function JobCard({ job }: { job: JobForCard }) {
 
   return (
     <Link
-      href={`/jobs/${job.slug}`}
+      href={`/opportunities/${job.slug}`}
       prefetch={false}
       className="group block relative overflow-hidden rounded-2xl border bg-background/50 backdrop-blur-sm transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >

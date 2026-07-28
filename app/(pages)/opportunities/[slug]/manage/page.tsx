@@ -25,9 +25,9 @@ export default async function ManageJobPage({ params }: Props) {
   const { slug } = await params;
 
   const viewer = await getCurrentPersona();
-  if (!viewer) redirect(`/signin?next=/jobs/${slug}/manage`);
+  if (!viewer) redirect(`/signin?next=/opportunities/${slug}/manage`);
   if (viewer.kind !== "corporate") {
-    redirect(`/jobs/${slug}`);
+    redirect(`/opportunities/${slug}`);
   }
 
   const [jobRow] = await db
@@ -37,11 +37,11 @@ export default async function ManageJobPage({ params }: Props) {
     .limit(1);
   if (!jobRow) notFound();
   if (jobRow.corporateId !== viewer.row.id) {
-    redirect(`/jobs/${slug}`);
+    redirect(`/opportunities/${slug}`);
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const shareUrl = `${baseUrl}/jobs/${jobRow.slug}`;
+  const shareUrl = `${baseUrl}/opportunities/${jobRow.slug}`;
 
   const jobId = jobRow.id;
   async function deleteAction() {
@@ -68,13 +68,13 @@ export default async function ManageJobPage({ params }: Props) {
           <Button
             variant="outline"
             render={
-              <Link href={`/jobs/${jobRow.slug}`}>View public page</Link>
+              <Link href={`/opportunities/${jobRow.slug}`}>View public page</Link>
             }
           />
           <Button
             variant="outline"
             render={
-              <Link href={`/jobs/${jobRow.slug}/candidates`}>
+              <Link href={`/opportunities/${jobRow.slug}/candidates`}>
                 View candidates
               </Link>
             }

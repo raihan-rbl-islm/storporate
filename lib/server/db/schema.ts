@@ -303,7 +303,7 @@ export const outreachEvents = pgTable(
 );
 
 // ----------------------------------------------------------------------
-// Phase 8: profile sub-resources + events/jobs/posts/invitations.
+// Phase 8: profile sub-resources + events/opportunities/posts/invitations.
 //
 // All FKs to persona tables are intentionally logical (string ids) rather
 // than declared REFERENCES — the same convention the rest of the schema

@@ -244,7 +244,7 @@ export default async function CorporateDashboardPage() {
       title: "Post a new job",
       description:
         "Share what you need, what skills matter, and how candidates can reach you.",
-      href: "/jobs/new",
+      href: "/opportunities/new",
       icon: <Briefcase aria-hidden="true" />,
       testId: "corporate-new-job-cta",
     },
@@ -549,7 +549,7 @@ function OwnedJobsPanel({ ownedJobs }: { ownedJobs: OwnedJobRow[] }) {
           My jobs
         </h2>
         <Link
-          href="/jobs/new"
+          href="/opportunities/new"
           prefetch={false}
           className={buttonVariants({
             variant: "outline",
@@ -583,7 +583,7 @@ function OwnedJobsPanel({ ownedJobs }: { ownedJobs: OwnedJobRow[] }) {
                 <CardContent className="flex items-center justify-between gap-3 py-3">
                   <div className="grid min-w-0">
                     <Link
-                      href={`/jobs/${j.slug}/manage`}
+                      href={`/opportunities/${j.slug}/manage`}
                       prefetch={false}
                       className="truncate text-sm font-medium underline-offset-4 hover:underline"
                     >
@@ -595,7 +595,7 @@ function OwnedJobsPanel({ ownedJobs }: { ownedJobs: OwnedJobRow[] }) {
                     </p>
                   </div>
                   <Link
-                    href={`/jobs/${j.slug}/candidates`}
+                    href={`/opportunities/${j.slug}/candidates`}
                     prefetch={false}
                     className={buttonVariants({
                       variant: "secondary",

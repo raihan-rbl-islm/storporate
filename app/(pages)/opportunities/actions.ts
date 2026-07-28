@@ -278,7 +278,7 @@ export async function createJob(
     .returning({ id: jobs.id, slug: jobs.slug });
 
   revalidatePath("/", "layout");
-  redirect(`/jobs/${created.slug}`);
+  redirect(`/opportunities/${created.slug}`);
 }
 
 export async function updateJob(
@@ -416,9 +416,9 @@ export async function updateJob(
     })
     .where(eq(jobs.id, jobId));
 
-  revalidatePath(`/jobs/${slug}`);
-  revalidatePath(`/jobs/${slug}/manage`);
-  revalidatePath(`/jobs/${slug}/candidates`);
+  revalidatePath(`/opportunities/${slug}`);
+  revalidatePath(`/opportunities/${slug}/manage`);
+  revalidatePath(`/opportunities/${slug}/candidates`);
   revalidatePath("/", "layout");
   return { status: "success", message: "Job updated." };
 }
@@ -481,9 +481,9 @@ export async function closeJob(jobId: string): Promise<void> {
     throw new Error("Job not found.");
   }
   await db.update(jobs).set({ isOpen: false }).where(eq(jobs.id, jobId));
-  revalidatePath(`/jobs/${existing.slug}`);
-  revalidatePath(`/jobs/${existing.slug}/manage`);
-  revalidatePath(`/jobs/${existing.slug}/candidates`);
+  revalidatePath(`/opportunities/${existing.slug}`);
+  revalidatePath(`/opportunities/${existing.slug}/manage`);
+  revalidatePath(`/opportunities/${existing.slug}/candidates`);
   revalidatePath("/", "layout");
 }
 
@@ -512,9 +512,9 @@ export async function reopenJob(jobId: string): Promise<void> {
     throw new Error("Job not found.");
   }
   await db.update(jobs).set({ isOpen: true }).where(eq(jobs.id, jobId));
-  revalidatePath(`/jobs/${existing.slug}`);
-  revalidatePath(`/jobs/${existing.slug}/manage`);
-  revalidatePath(`/jobs/${existing.slug}/candidates`);
+  revalidatePath(`/opportunities/${existing.slug}`);
+  revalidatePath(`/opportunities/${existing.slug}/manage`);
+  revalidatePath(`/opportunities/${existing.slug}/candidates`);
   revalidatePath("/", "layout");
 }
 

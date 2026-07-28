@@ -45,7 +45,7 @@ export default async function JobDetailPage({ params }: Props) {
 
   const viewer = await getCurrentPersona();
   if (!viewer) {
-    redirect(`/signin?next=/jobs/${slug}`);
+    redirect(`/signin?next=/opportunities/${slug}`);
   }
 
   const isOwner =
@@ -79,7 +79,7 @@ export default async function JobDetailPage({ params }: Props) {
           <Button
             variant="outline"
             render={
-              <Link href={`/jobs/${jobRow.slug}/manage`}>Manage</Link>
+              <Link href={`/opportunities/${jobRow.slug}/manage`}>Manage</Link>
             }
           />
         ) : null}

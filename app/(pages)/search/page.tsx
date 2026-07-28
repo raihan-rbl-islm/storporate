@@ -3,7 +3,7 @@ import { searchAllEntities, SearchResultItem } from "@/lib/server/search/queries
 import { SearchResultCard } from "@/components/search/search-result-card";
 import { EventCard } from "@/components/events/event-card";
 import { PostCard } from "@/components/posts/post-card";
-import { JobCard } from "@/components/jobs/job-card";
+import { JobCard } from "@/components/opportunities/job-card";
 import { db } from "@/lib/server/db";
 import { corporates, clubs } from "@/lib/server/db/schema";
 import { eq } from "drizzle-orm";

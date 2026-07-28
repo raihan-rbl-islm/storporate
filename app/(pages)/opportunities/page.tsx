@@ -1,6 +1,6 @@
 import { getCurrentPersona } from "@/lib/server/personas/current";
-import { getRankedJobs } from "@/lib/server/jobs/ranked-jobs";
-import { JobCard } from "@/components/jobs/job-card";
+import { getRankedJobs } from "@/lib/server/opportunities/ranked-jobs";
+import { JobCard } from "@/components/opportunities/job-card";
 import { Briefcase } from "lucide-react";
 
 export const metadata = {

@@ -700,7 +700,7 @@ async function CorporateSections({
                 className="flex items-center justify-between gap-2 text-sm"
               >
                 <Link
-                  href={`/jobs/${j.slug}`}
+                  href={`/opportunities/${j.slug}`}
                   className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
                 >
                   {j.title}

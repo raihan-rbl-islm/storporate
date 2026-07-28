@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/server/db";
 import { jobs } from "@/lib/server/db/schema";
 import { getRankedCandidatesForJob } from "@/lib/server/matching/jobs-for-corporate";
-import { SendInvitationTrigger } from "@/components/jobs/send-invitation-trigger";
+import { SendInvitationTrigger } from "@/components/opportunities/send-invitation-trigger";
 
 export interface CandidateTableProps {
   jobId: string;

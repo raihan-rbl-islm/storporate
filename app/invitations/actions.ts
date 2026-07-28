@@ -332,7 +332,7 @@ export async function sendInvitation(
       .limit(1);
     if (job) {
       jobTitle = job.title;
-      linkUrl = `https://storporate.bd/jobs/${job.slug}`;
+      linkUrl = `https://storporate.bd/opportunities/${job.slug}`;
     }
   } else if (eventId) {
     const [ev] = await db
@@ -472,7 +472,7 @@ export async function previewInvitation(
       .limit(1);
     if (job) {
       jobTitle = job.title;
-      linkUrl = `https://storporate.bd/jobs/${job.slug}`;
+      linkUrl = `https://storporate.bd/opportunities/${job.slug}`;
     }
   } else if (eventId) {
     const [ev] = await db

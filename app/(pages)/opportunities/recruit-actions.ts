@@ -165,7 +165,7 @@ export async function sendRecruitmentOutreach(
       .limit(1);
     if (j) {
       jobTitle = j.title;
-      linkUrl = `https://storporate.bd/jobs/${j.slug}`;
+      linkUrl = `https://storporate.bd/opportunities/${j.slug}`;
     }
   }
 

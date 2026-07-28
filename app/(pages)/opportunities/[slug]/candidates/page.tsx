@@ -7,7 +7,7 @@ import { db } from "@/lib/server/db";
 import { jobs } from "@/lib/server/db/schema";
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import { getRankedCandidatesForJob } from "@/lib/server/matching/jobs-for-corporate";
-import { CandidateTable } from "@/components/jobs/candidate-table";
+import { CandidateTable } from "@/components/opportunities/candidate-table";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +19,9 @@ export default async function JobCandidatesPage({ params }: Props) {
   const { slug } = await params;
 
   const viewer = await getCurrentPersona();
-  if (!viewer) redirect(`/signin?next=/jobs/${slug}/candidates`);
+  if (!viewer) redirect(`/signin?next=/opportunities/${slug}/candidates`);
   if (viewer.kind !== "corporate") {
-    redirect(`/jobs/${slug}`);
+    redirect(`/opportunities/${slug}`);
   }
 
   const [jobRow] = await db
@@ -36,7 +36,7 @@ export default async function JobCandidatesPage({ params }: Props) {
     .limit(1);
   if (!jobRow) notFound();
   if (jobRow.corporateId !== viewer.row.id) {
-    redirect(`/jobs/${slug}`);
+    redirect(`/opportunities/${slug}`);
   }
 
   const ranked = await getRankedCandidatesForJob(jobRow.id, 50);
@@ -48,7 +48,7 @@ export default async function JobCandidatesPage({ params }: Props) {
           <p className="text-sm text-muted-foreground">
             Candidates for{" "}
             <Link
-              href={`/jobs/${jobRow.slug}`}
+              href={`/opportunities/${jobRow.slug}`}
               prefetch={false}
               className="underline-offset-4 hover:underline"
             >
@@ -63,7 +63,7 @@ export default async function JobCandidatesPage({ params }: Props) {
         <Button
           variant="outline"
           render={
-            <Link href={`/jobs/${jobRow.slug}/manage`}>Back to manage</Link>
+            <Link href={`/opportunities/${jobRow.slug}/manage`}>Back to manage</Link>
           }
         />
       </header>
