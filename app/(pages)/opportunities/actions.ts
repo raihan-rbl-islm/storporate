@@ -221,7 +221,7 @@ export async function createJob(
       formMessage: "Add a way for candidates to apply.",
     };
   }
-  if (!isUrlOrEmail(parsed.data.applyUrl)) {
+  if (parsed.data.applyUrl && !isUrlOrEmail(parsed.data.applyUrl)) {
     return {
       status: "error",
       fieldErrors: { applyUrl: "Use a full https URL or email address" },
@@ -359,7 +359,7 @@ export async function updateJob(
       formMessage: "Add a way for candidates to apply.",
     };
   }
-  if (!isUrlOrEmail(parsed.data.applyUrl)) {
+  if (parsed.data.applyUrl && !isUrlOrEmail(parsed.data.applyUrl)) {
     return {
       status: "error",
       fieldErrors: { applyUrl: "Use a full https URL or email address" },
