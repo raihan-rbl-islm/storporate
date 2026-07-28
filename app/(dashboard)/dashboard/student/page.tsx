@@ -20,6 +20,7 @@ import { Disclaimer } from "@/components/personas/disclaimer";
 import { HeroCallout } from "@/components/hero/hero-callout";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
+import { ProfileCompletenessMeter } from "@/components/profile/profile-completeness-meter";
 import type { StudentFixture } from "@/data/personas";
 import {
   getCurrentPersona,
@@ -121,6 +122,8 @@ export default async function StudentDashboardPage() {
       <h2 className="text-3xl font-semibold tracking-tight">
         {student.fullName}
       </h2>
+
+      <ProfileCompletenessMeter student={student} />
 
       <Card data-testid="student-profile-readiness">
         <CardHeader>
