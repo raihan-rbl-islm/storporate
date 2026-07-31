@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 import { db } from "@/lib/server/db";
 import {
@@ -22,24 +21,10 @@ import {
 } from "@/lib/server/db/schema";
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import { formatInDhaka } from "@/lib/format/datetime";
+import { InboxClientView, type ClientInvite } from "./inbox-client";
 
 export const dynamic = "force-dynamic";
 
-interface JoinedInvite {
-  id: string;
-  sentAt: Date;
-  kind: string;
-  fromKind: string;
-  toId: string;
-  jobId: string | null;
-  eventId: string | null;
-  subject: string;
-  status: string;
-  recipientName: string;
-  recipientId: string;
-  jobTitle: string | null;
-  eventTitle: string | null;
-}
 
 export default async function InboxPage() {
   const current = await getCurrentPersona();
@@ -139,24 +124,19 @@ export default async function InboxPage() {
   const jobById = new Map(jobRows.map((j) => [j.id, j.title]));
   const eventById = new Map(eventRows.map((e) => [e.id, e.title]));
 
-  const joined: JoinedInvite[] = rawRows.map((r) => ({
+  const clientInvites: ClientInvite[] = rawRows.map((r) => ({
     id: r.id,
-    sentAt: r.sentAt,
+    dateStr: formatInDhaka(r.sentAt),
     kind: r.kind,
-    fromKind: r.fromKind,
-    toId: r.toId,
-    jobId: r.jobId,
-    eventId: r.eventId,
     subject: r.subject,
     status: r.status,
     recipientName: corpById.get(r.toId) ?? "Unknown company",
-    recipientId: r.toId,
     jobTitle: r.jobId ? jobById.get(r.jobId) ?? null : null,
     eventTitle: r.eventId ? eventById.get(r.eventId) ?? null : null,
   }));
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
+    <main className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">Inbox</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -164,49 +144,7 @@ export default async function InboxPage() {
         </p>
       </header>
 
-      <section>
-        <h2 className="mb-2 text-lg font-medium">Outgoing ({joined.length})</h2>
-        <Separator className="mb-4" />
-        <ul className="grid gap-3" data-testid="inbox-list">
-          {joined.map((inv) => (
-            <li key={inv.id}>
-              <Card>
-                <CardContent className="grid gap-2 pt-6">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="grid gap-1">
-                      <p className="text-sm text-muted-foreground">
-                        {formatInDhaka(inv.sentAt)}
-                      </p>
-                      <p className="text-sm font-medium">
-                        {inv.kind === "club_to_company"
-                          ? `To ${inv.recipientName} for event “${inv.eventTitle ?? "Event"}”`
-                          : `To ${inv.recipientName}${
-                              inv.jobTitle
-                                ? ` for job “${inv.jobTitle}”`
-                                : ""
-                            }`}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        inv.status === "sent"
-                          ? "default"
-                          : inv.status === "failed"
-                            ? "destructive"
-                            : "secondary"
-                      }
-                      data-testid={`inbox-status-${inv.status}`}
-                    >
-                      {inv.status === "sent" ? "Sent" : inv.status}
-                    </Badge>
-                  </div>
-                  <p className="text-sm">{inv.subject}</p>
-                </CardContent>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <InboxClientView invites={clientInvites} />
     </main>
   );
 }

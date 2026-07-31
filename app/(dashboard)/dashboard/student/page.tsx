@@ -195,149 +195,119 @@ export default async function StudentDashboardPage() {
       title={student.fullName}
       subtitle={`Student · ${student.studyProgram} · ${student.university}`}
     >
-      <h2 className="text-3xl font-semibold tracking-tight">
-        {student.fullName}
-      </h2>
-      <p className="text-muted-foreground -mt-4 text-sm">
-        {student.studyProgram} · {student.university}
-      </p>
-
-      <Card data-testid="student-profile-readiness">
-        <CardHeader>
-          <CardTitle>
-            <h3 className="flex items-center gap-2 text-lg font-semibold">
-              {ready ? (
-                <Check
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
-              ) : (
-                <AlertTriangle
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
-              )}
-              {ready ? "Profile ready" : "Finish your profile"}
-            </h3>
-          </CardTitle>
-          <CardDescription>
-            {ready
-              ? "Your profile is match-ready. Refine it anytime."
-              : "Add skills and interests so your matches reflect your goals."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <ProfileCompletenessMeter student={student} />
-          <Link
-            href="/dashboard/profile/edit"
-            className={buttonVariants({
-              variant: "outline",
-              size: "sm",
-              className: "mt-3",
-            })}
-            prefetch={false}
-          >
-            {ready ? "Edit profile" : "Finish profile"}
-          </Link>
-        </CardContent>
-      </Card>
-
+      {/* 1. TOP ROW: Core Metrics */}
       <section
         aria-labelledby="stats-heading"
-        className="flex flex-col gap-3"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-3"
       >
-        <h2
-          id="stats-heading"
-          className="sr-only"
-        >
-          Your dashboard at a glance
-        </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <StatTile
-            label="Matched corporates"
-            value={overview.totalMatches}
-            icon={<Building2 aria-hidden="true" />}
-            hint={
-              overview.totalMatches > 0
-                ? "Ranked by skills + career interests"
-                : "Add skills or interests to surface matches"
-            }
-            testId="student-stat-matches"
+        <h2 id="stats-heading" className="sr-only">Your dashboard at a glance</h2>
+        <StatTile
+          label="Matched corporates"
+          value={overview.totalMatches}
+          icon={<Building2 aria-hidden="true" />}
+          hint={
+            overview.totalMatches > 0
+              ? "Ranked by skills + career interests"
+              : "Add skills or interests to surface matches"
+          }
+          testId="student-stat-matches"
+        />
+        <StatTile
+          label="Registered events"
+          value={overview.registeredEvents}
+          icon={<Calendar aria-hidden="true" />}
+          hint="Events you've RSVP'd to"
+          testId="student-stat-events"
+        />
+        <StatTile
+          label="Outreach sent"
+          value={overview.invitationsSent}
+          icon={<Send aria-hidden="true" />}
+          hint="Applications, RSVPs, and pitches"
+          testId="student-stat-invitations"
+        />
+      </section>
+
+      {/* 2. SPLIT LAYOUT: Main Content vs Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* LEFT PANE (2 columns): Active Data & Feeds */}
+        <div className="lg:col-span-2 flex flex-col gap-10">
+          <TopOpportunities
+            student={student}
+            matches={overview.topMatches}
+            usedPreparedFallback={overview.usedPreparedFallback}
           />
-          <StatTile
-            label="Registered events"
-            value={overview.registeredEvents}
-            icon={<Calendar aria-hidden="true" />}
-            hint="Events you've RSVP'd to"
-            testId="student-stat-events"
-          />
-          <StatTile
-            label="Outreach sent"
-            value={overview.invitationsSent}
-            icon={<Send aria-hidden="true" />}
-            hint="Applications, RSVPs, and pitches"
-            testId="student-stat-invitations"
-          />
+          
+          <section id="newsfeed" aria-labelledby="newsfeed-heading" className="flex flex-col gap-4">
+            <div className="flex items-end justify-between gap-2">
+              <h2 id="newsfeed-heading" className="text-xl font-bold tracking-tight">Your Feed</h2>
+              <Link
+                href="/newsfeed"
+                prefetch={false}
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "sm",
+                  className: "gap-1 text-xs",
+                })}
+              >
+                View all
+                <ChevronRight aria-hidden="true" className="size-3" />
+              </Link>
+            </div>
+            <NewsfeedList studentId={student.id} filter="all" />
+          </section>
         </div>
-      </section>
 
-      <TopOpportunities
-        student={student}
-        matches={overview.topMatches}
-        usedPreparedFallback={overview.usedPreparedFallback}
-      />
+        {/* RIGHT PANE (1 column): Utilities & Quick Views */}
+        <div className="flex flex-col gap-8">
+          <Card data-testid="student-profile-readiness" className="bg-muted/30 border-primary/10 shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle>
+                <h3 className="flex items-center gap-2 text-base font-bold">
+                  {ready ? (
+                    <Check aria-hidden="true" className="text-primary size-4" />
+                  ) : (
+                    <AlertTriangle aria-hidden="true" className="text-destructive size-4" />
+                  )}
+                  {ready ? "Profile ready" : "Finish your profile"}
+                </h3>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {ready
+                  ? "Your profile is match-ready. Refine it anytime."
+                  : "Add skills and interests so your matches reflect your goals."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProfileCompletenessMeter student={student} />
+              <Link
+                href="/dashboard/profile/edit"
+                className={buttonVariants({ variant: "outline", size: "sm", className: "mt-4 w-full" })}
+                prefetch={false}
+              >
+                {ready ? "Edit profile" : "Finish profile"}
+              </Link>
+            </CardContent>
+          </Card>
 
-      <QuickActionGrid
-        title="Quick actions"
-        description="Jump straight to the surface you came for."
-        actions={actions}
-        testId="student-quick-actions"
-      />
+          <QuickActionGrid
+            title="Quick actions"
+            description="Jump straight to the surface you came for."
+            actions={actions}
+            testId="student-quick-actions"
+          />
 
-      <section
-        id="registered-events"
-        aria-labelledby="registered-events-heading"
-        className="flex flex-col gap-3"
-      >
-        <h2
-          id="registered-events-heading"
-          className="text-xl font-semibold tracking-tight"
-        >
-          My registered events
-        </h2>
-        <RegisteredEventsList studentId={student.id} />
-      </section>
-
-      <section
-        id="newsfeed"
-        aria-labelledby="newsfeed-heading"
-        className="flex flex-col gap-3"
-      >
-        <div className="flex items-end justify-between gap-2">
-          <h2
-            id="newsfeed-heading"
-            className="text-xl font-semibold tracking-tight"
-          >
-            Your Feed
-          </h2>
-          <Link
-            href="/newsfeed"
-            prefetch={false}
-            className={buttonVariants({
-              variant: "ghost",
-              size: "sm",
-              className: "gap-1 text-xs",
-            })}
-          >
-            View all
-            <ChevronRight aria-hidden="true" className="size-3" />
-          </Link>
+          <section id="registered-events" aria-labelledby="registered-events-heading" className="flex flex-col gap-4">
+            <h2 id="registered-events-heading" className="text-sm font-bold tracking-tight uppercase text-muted-foreground">
+              Registered events
+            </h2>
+            <RegisteredEventsList studentId={student.id} />
+          </section>
         </div>
-        <NewsfeedList studentId={student.id} filter="all" />
-      </section>
+      </div>
 
       <CollaborationSignals role="student" />
-
       <Disclaimer />
     </DashboardLayout>
   );

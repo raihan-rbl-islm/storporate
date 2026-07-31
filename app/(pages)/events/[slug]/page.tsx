@@ -4,8 +4,6 @@ import { and, eq, sql } from "drizzle-orm";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { formatInDhaka } from "@/lib/format/datetime";
 import { db } from "@/lib/server/db";
 import { events, eventRegistrations, clubs, corporates } from "@/lib/server/db/schema";
@@ -91,102 +89,114 @@ export default async function EventDetailPage({ params }: Props) {
     viewer.row.id === eventRow.ownerId;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="grid gap-1">
-          <p className="text-sm text-muted-foreground">
-            from{" "}
-            <span className="font-medium text-foreground">{ownerName}</span>
-            {" · "}
-            <span className="capitalize">{eventRow.ownerKind}</span>
+    <main className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
+      <header className="pb-8 border-b border-border/50 flex flex-wrap items-center justify-between gap-6">
+        <div className="grid gap-3">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+            <span className="bg-muted px-2 py-1 rounded-md text-foreground">{ownerName}</span>
+            <span>·</span>
+            <span>{eventRow.ownerKind} Event</span>
           </p>
-          <h1 className="text-2xl font-semibold">{eventRow.title}</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{eventRow.title}</h1>
         </div>
         {isOwner ? (
           <Button
             variant="outline"
-            render={<Link href={`/events/${eventRow.slug}/manage`}>Manage</Link>}
+            render={<Link href={`/events/${eventRow.slug}/manage`}>Manage Event</Link>}
           />
         ) : null}
       </header>
-      <Card>
-        <CardContent className="grid gap-4 pt-6">
-          <p className="text-sm">
-            <span className="font-medium">When:</span>{" "}
-            {formatInDhaka(eventRow.startsAt)}
-            {eventRow.endsAt
-              ? ` – ${formatInDhaka(eventRow.endsAt)}`
-              : ""}
-          </p>
-          {eventRow.venue || eventRow.locationLabel || eventRow.isVirtual ? (
-            <p className="text-sm">
-              <span className="font-medium">Where:</span>{" "}
-              {eventRow.isVirtual
-                ? "Online"
-                : eventRow.venue || eventRow.locationLabel || "TBA"}
-              {eventRow.venue && eventRow.locationLabel
-                ? ` — ${eventRow.locationLabel}`
-                : ""}
-            </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 mt-8 md:mt-12">
+        
+        {/* Left Pane (Wide): Content & Action */}
+        <div className="md:col-span-2 flex flex-col gap-10">
+          {eventRow.description ? (
+            <section>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">About this event</h2>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <p className="whitespace-pre-wrap text-base leading-relaxed">
+                  {eventRow.description}
+                </p>
+              </div>
+            </section>
           ) : null}
-          {eventRow.capacity !== null ? (
-            <p className="text-sm">
-              <span className="font-medium">Capacity:</span>{" "}
-              {regCount} / {eventRow.capacity} registered
+
+          <section className="bg-muted/30 border border-border/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-4">
+            <h3 className="text-lg font-semibold">Join this event</h3>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Registering will let the host know you are attending and will add the event to your dashboard.
             </p>
-          ) : (
-            <p className="text-sm">
-              <span className="font-medium">Registered:</span> {regCount}{" "}
-              (unlimited capacity)
-            </p>
-          )}
-          {eventRow.tags.length > 0 ? (
-            <ul className="flex flex-wrap gap-1.5">
-              {eventRow.tags.map((tag, i) => (
-                <li key={`${tag}-${i}`}>
-                  <Badge variant="outline">{tag}</Badge>
+            <RegistrationButton
+              eventId={eventRow.id}
+              canRegister={viewer.kind === "student"}
+              isFull={isFull}
+              isRegistered={isRegistered}
+              isPast={isPast}
+            />
+          </section>
+        </div>
+
+        {/* Right Pane (Narrow): Metadata */}
+        <div className="flex flex-col gap-10">
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Details</h2>
+            <ul className="grid gap-4 text-sm">
+              <li className="grid gap-1">
+                <span className="font-semibold">When</span>
+                <span className="text-muted-foreground">
+                  {formatInDhaka(eventRow.startsAt)}
+                  {eventRow.endsAt ? ` – ${formatInDhaka(eventRow.endsAt)}` : ""}
+                </span>
+              </li>
+              {eventRow.venue || eventRow.locationLabel || eventRow.isVirtual ? (
+                <li className="grid gap-1">
+                  <span className="font-semibold">Where</span>
+                  <span className="text-muted-foreground">
+                    {eventRow.isVirtual ? "Online" : eventRow.venue || eventRow.locationLabel || "TBA"}
+                    {eventRow.venue && eventRow.locationLabel ? ` — ${eventRow.locationLabel}` : ""}
+                  </span>
                 </li>
-              ))}
+              ) : null}
+              <li className="grid gap-1">
+                <span className="font-semibold">Registration</span>
+                <span className="text-muted-foreground">
+                  {eventRow.capacity !== null 
+                    ? `${regCount} / ${eventRow.capacity} registered`
+                    : `${regCount} registered (unlimited)`}
+                </span>
+              </li>
             </ul>
+          </section>
+
+          {eventRow.tags.length > 0 ? (
+            <section>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Tags</h2>
+              <ul className="flex flex-wrap gap-2">
+                {eventRow.tags.map((tag, i) => (
+                  <li key={`${tag}-${i}`}>
+                    <Badge variant="secondary" className="font-medium">{tag}</Badge>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ) : null}
-        </CardContent>
-      </Card>
-      {eventRow.description ? (
-        <section className="mt-6">
-          <h2 className="mb-2 text-lg font-medium">About this event</h2>
-          <Separator className="mb-4" />
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">
-            {eventRow.description}
-          </p>
-        </section>
-      ) : null}
 
-      {eventRow.registrationUrl ? (
-        <section className="mt-6">
-          <h2 className="mb-2 text-lg font-medium">External link</h2>
-          <Separator className="mb-4" />
-          <p className="text-sm">
-            <a
-              href={eventRow.registrationUrl}
-              className="text-primary underline underline-offset-4 hover:no-underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {eventRow.registrationUrl}
-            </a>
-          </p>
-        </section>
-      ) : null}
-
-      <section className="mt-8">
-        <RegistrationButton
-          eventId={eventRow.id}
-          canRegister={viewer.kind === "student"}
-          isFull={isFull}
-          isRegistered={isRegistered}
-          isPast={isPast}
-        />
-      </section>
+          {eventRow.registrationUrl ? (
+            <section>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">External link</h2>
+              <a
+                href={eventRow.registrationUrl}
+                className="text-primary font-medium underline underline-offset-4 hover:no-underline break-all text-sm"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {eventRow.registrationUrl}
+              </a>
+            </section>
+          ) : null}
+        </div>
+      </div>
     </main>
   );
 }

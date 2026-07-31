@@ -5,6 +5,7 @@ import {
   getStudentNewsfeed,
   resolveOwnerNames,
 } from "@/lib/server/feed/student-newsfeed";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export async function NewsfeedList({
         );
 
   return (
-    <ul className="grid gap-3">
+    <ul className="grid gap-6 sm:grid-cols-2">
       {filtered.length === 0 ? (
         <li className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
           {filter === "events"
@@ -55,14 +56,14 @@ export async function NewsfeedList({
         </li>
       ) : (
         filtered.map((entry, idx) => {
-
-
+          const isLarge = idx === 0 || idx % 5 === 0;
+          const colSpan = isLarge ? "sm:col-span-2" : "col-span-1";
           const ownerKey = `${entry.item.ownerKind}:${entry.item.ownerId}`;
           const ownerName = ownerNames.get(ownerKey) ?? "Unknown";
           if (entry.kind === "event") {
             const ev = entry.item;
             return (
-              <li key={`event-${ev.id}-${idx}`}>
+              <li key={`event-${ev.id}-${idx}`} className={cn("h-full", colSpan)}>
                 <EventCard
                   event={{
                     slug: ev.slug,
@@ -80,7 +81,7 @@ export async function NewsfeedList({
           }
           const p = entry.item;
           return (
-            <li key={`post-${p.id}-${idx}`}>
+            <li key={`post-${p.id}-${idx}`} className={cn("h-full", colSpan)}>
               <PostCard
                 post={{
                   slug: p.slug,

@@ -300,168 +300,168 @@ export default async function CorporateDashboardPage() {
       title={corporate.organizationName}
       subtitle={`Corporate · ${corporate.industry} · ${corporate.location}`}
     >
-      <h2 className="text-3xl font-semibold tracking-tight">
-        {corporate.organizationName}
-      </h2>
-      <p className="text-muted-foreground -mt-4 text-sm">
-        {corporate.description ? truncate(corporate.description, 160) : "Tell candidates what you stand for."}
-      </p>
-
-      <Card data-testid="corporate-profile-readiness">
-        <CardHeader>
-          <CardTitle>
-            <h3 className="flex items-center gap-2 text-lg font-semibold">
-              {ready ? (
-                <Check
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
-              ) : (
-                <AlertTriangle
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
-              )}
-              {ready ? "Profile ready" : "Finish your profile"}
-            </h3>
-          </CardTitle>
-          <CardDescription>
-            {ready
-              ? "Your profile is match-ready. Refine it anytime."
-              : "Add talent needs and sponsorship interests so your candidates reflect your goals."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <Link
-            href="/dashboard/profile/edit"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-            prefetch={false}
-          >
-            {ready ? "Edit profile" : "Finish profile"}
-          </Link>
-        </CardContent>
-      </Card>
-
+      {/* 1. TOP ROW: Core Metrics */}
       <section
         aria-labelledby="corporate-stats-heading"
-        className="flex flex-col gap-3"
+        className="grid grid-cols-2 gap-4 sm:grid-cols-4"
       >
         <h2 id="corporate-stats-heading" className="sr-only">
           Your dashboard at a glance
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile
-            label="Open jobs"
-            value={overview.openJobs}
-            icon={<Briefcase aria-hidden="true" />}
-            hint={overview.openJobs > 0 ? "Accepting candidates" : "Post a role to attract candidates"}
-            testId="corporate-stat-jobs"
-          />
-          <StatTile
-            label="Events hosted"
-            value={overview.eventsOwned}
-            icon={<Calendar aria-hidden="true" />}
-            hint="Workshops, mixers, panels"
-            testId="corporate-stat-events"
-          />
-          <StatTile
-            label="Posts published"
-            value={overview.postsOwned}
-            icon={<FileText aria-hidden="true" />}
-            hint="Newsfeed updates"
-            testId="corporate-stat-posts"
-          />
-          <StatTile
-            label="Invitations sent"
-            value={overview.invitationsSent}
-            icon={<Send aria-hidden="true" />}
-            hint="Sponsorship + talent pitches"
-            testId="corporate-stat-invitations"
-          />
-        </div>
+        <StatTile
+          label="Open jobs"
+          value={overview.openJobs}
+          icon={<Briefcase aria-hidden="true" />}
+          hint={overview.openJobs > 0 ? "Accepting candidates" : "Post a role to attract candidates"}
+          testId="corporate-stat-jobs"
+        />
+        <StatTile
+          label="Events hosted"
+          value={overview.eventsOwned}
+          icon={<Calendar aria-hidden="true" />}
+          hint="Workshops, mixers, panels"
+          testId="corporate-stat-events"
+        />
+        <StatTile
+          label="Posts published"
+          value={overview.postsOwned}
+          icon={<FileText aria-hidden="true" />}
+          hint="Newsfeed updates"
+          testId="corporate-stat-posts"
+        />
+        <StatTile
+          label="Invitations sent"
+          value={overview.invitationsSent}
+          icon={<Send aria-hidden="true" />}
+          hint="Sponsorship + talent pitches"
+          testId="corporate-stat-invitations"
+        />
       </section>
 
-      {showStudents ? (
-        <section
-          aria-labelledby="top-students-heading"
-          className="flex flex-col gap-3"
-        >
-          <div className="flex items-end justify-between gap-2">
-            <h2
-              id="top-students-heading"
-              className="text-xl font-semibold tracking-tight"
+      {/* 2. SPLIT LAYOUT */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* LEFT PANE (2 columns) */}
+        <div className="lg:col-span-2 flex flex-col gap-10">
+          {showStudents ? (
+            <section
+              aria-labelledby="top-students-heading"
+              className="flex flex-col gap-4"
             >
-              Top student candidates
-            </h2>
-            <Link
-              href="/dashboard/corporate/candidates/students"
-              prefetch={false}
-              className={buttonVariants({
-                variant: "ghost",
-                size: "sm",
-                className: "gap-1 text-xs",
-              })}
-              data-testid="corporate-view-all-students"
+              <div className="flex items-end justify-between gap-2">
+                <h2
+                  id="top-students-heading"
+                  className="text-xl font-bold tracking-tight"
+                >
+                  Top student candidates
+                </h2>
+                <Link
+                  href="/dashboard/corporate/candidates/students"
+                  prefetch={false}
+                  className={buttonVariants({
+                    variant: "ghost",
+                    size: "sm",
+                    className: "gap-1 text-xs",
+                  })}
+                  data-testid="corporate-view-all-students"
+                >
+                  View all
+                  <ChevronRight aria-hidden="true" className="size-3" />
+                </Link>
+              </div>
+              <TopStudents
+                matches={overview.topStudents}
+                usedPreparedFallback={overview.usedPreparedFallbackStudents}
+              />
+              <TopJobCandidates ranked={overview.topJobCandidates} />
+            </section>
+          ) : null}
+
+          {showClubs ? (
+            <section
+              aria-labelledby="top-clubs-heading"
+              className="flex flex-col gap-4"
             >
-              View all
-              <ChevronRight aria-hidden="true" className="size-3" />
-            </Link>
+              <div className="flex items-end justify-between gap-2">
+                <h2
+                  id="top-clubs-heading"
+                  className="text-xl font-bold tracking-tight"
+                >
+                  Top club candidates
+                </h2>
+                <Link
+                  href="/dashboard/corporate/candidates/clubs"
+                  prefetch={false}
+                  className={buttonVariants({
+                    variant: "ghost",
+                    size: "sm",
+                    className: "gap-1 text-xs",
+                  })}
+                  data-testid="corporate-view-all-clubs"
+                >
+                  View all
+                  <ChevronRight aria-hidden="true" className="size-3" />
+                </Link>
+              </div>
+              <TopClubs
+                matches={overview.topClubs}
+                usedPreparedFallback={overview.usedPreparedFallbackClubs}
+              />
+            </section>
+          ) : null}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            {overview.openJobs > 0 || ownedJobs.length > 0 ? (
+              <OwnedJobsPanel ownedJobs={ownedJobs} />
+            ) : null}
+            <OwnedEventsPanel ownedEvents={ownedEvents} />
+            <OwnedPostsPanel ownedPosts={ownedPosts} />
           </div>
-          <TopStudents
-            matches={overview.topStudents}
-            usedPreparedFallback={overview.usedPreparedFallbackStudents}
+        </div>
+
+        {/* RIGHT PANE (1 column) */}
+        <div className="flex flex-col gap-8">
+          <Card data-testid="corporate-profile-readiness" className="bg-muted/30 border-primary/10 shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle>
+                <h3 className="flex items-center gap-2 text-base font-bold">
+                  {ready ? (
+                    <Check aria-hidden="true" className="text-primary size-4" />
+                  ) : (
+                    <AlertTriangle aria-hidden="true" className="text-destructive size-4" />
+                  )}
+                  {ready ? "Profile ready" : "Finish your profile"}
+                </h3>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {ready
+                  ? "Your profile is match-ready. Refine it anytime."
+                  : "Add talent needs and sponsorship interests so your candidates reflect your goals."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link
+                href="/dashboard/profile/edit"
+                className={buttonVariants({ variant: "outline", size: "sm", className: "w-full" })}
+                prefetch={false}
+              >
+                {ready ? "Edit profile" : "Finish profile"}
+              </Link>
+            </CardContent>
+          </Card>
+
+          <QuickActionGrid
+            title="Quick actions"
+            description="Jump straight to the surface you came for."
+            actions={actions}
+            testId="corporate-quick-actions"
           />
-          <TopJobCandidates ranked={overview.topJobCandidates} />
-        </section>
-      ) : null}
 
-      {showClubs ? (
-        <section
-          aria-labelledby="top-clubs-heading"
-          className="flex flex-col gap-3"
-        >
-          <div className="flex items-end justify-between gap-2">
-            <h2
-              id="top-clubs-heading"
-              className="text-xl font-semibold tracking-tight"
-            >
-              Top club candidates
-            </h2>
-            <Link
-              href="/dashboard/corporate/candidates/clubs"
-              prefetch={false}
-              className={buttonVariants({
-                variant: "ghost",
-                size: "sm",
-                className: "gap-1 text-xs",
-              })}
-              data-testid="corporate-view-all-clubs"
-            >
-              View all
-              <ChevronRight aria-hidden="true" className="size-3" />
-            </Link>
-          </div>
-          <TopClubs
-            matches={overview.topClubs}
-            usedPreparedFallback={overview.usedPreparedFallbackClubs}
-          />
-        </section>
-      ) : null}
+          <CollaborationSignals role="corporate" />
+        </div>
+      </div>
 
-      <QuickActionGrid
-        title="Quick actions"
-        description="Jump straight to the surface you came for."
-        actions={actions}
-        testId="corporate-quick-actions"
-      />
 
-      {overview.openJobs > 0 || ownedJobs.length > 0 ? (
-        <OwnedJobsPanel ownedJobs={ownedJobs} />
-      ) : null}
-      <OwnedEventsPanel ownedEvents={ownedEvents} />
-      <OwnedPostsPanel ownedPosts={ownedPosts} />
-
-      <CollaborationSignals role="corporate" />
 
       <Disclaimer />
     </DashboardLayout>

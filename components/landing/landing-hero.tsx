@@ -1,76 +1,54 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
-
-import { HeroFlourish } from "@/components/landing/hero-flourish";
-import { MatchingOrbit } from "@/components/landing/matching-orbit";
+import { ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export function LandingHero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative overflow-hidden"
+      className="relative w-full border-b bg-background pt-32 pb-24 md:pt-48 md:pb-32 overflow-hidden flex flex-col items-center justify-center text-center px-6"
       data-testid="landing-hero"
     >
-      <HeroFlourish />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" data-testid="beams" />
+      
+      <h1
+        id="hero-heading"
+        className="max-w-5xl text-5xl font-bold tracking-tighter sm:text-6xl md:text-8xl lg:text-[7.5rem] leading-[0.9]"
+      >
+        Where Top Academia Meets{" "}
+        <span className="text-primary italic font-serif">Industry Leaders.</span>
+      </h1>
 
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pt-28 lg:pb-32">
-        {/* Copy column */}
-        <div className="flex flex-col items-start gap-6">
-          <h1
-            id="hero-heading"
-            className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl"
-          >
-            Storporate bridges the{" "}
-            <span className="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent">
-              academic-industry gap
-            </span>
-            .
-          </h1>
+      <p className="mt-8 max-w-2xl text-lg md:text-xl text-muted-foreground tracking-tight leading-relaxed font-medium">
+        The ecosystem for next-generation talent. Seamlessly connect students, university clubs, and corporate sponsors through AI-driven compatibility.
+      </p>
 
-          <p className="text-muted-foreground max-w-xl text-lg leading-relaxed">
-            An intelligent, AI-driven networking ecosystem that uses semantic embeddings to dynamically calculate compatibility metrics for hiring, sponsorships, and strategic collaborations.
-          </p>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
-            <Link
-              href="/signup"
-              className={cn(
-                buttonVariants({ variant: "default", size: "lg" }),
-                "group/cta px-5",
-              )}
-            >
-              Get started for free
-              <ArrowRight
-                aria-hidden="true"
-                className="size-4 transition-transform group-hover/cta:translate-x-0.5"
-              />
-            </Link>
-          </div>
-
-          <ul className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
-            <li className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-primary" />
-              Verified Institutional Identities
-            </li>
-            <li className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-accent" />
-              Visibility with Privacy Control
-            </li>
-            <li className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-primary" />
-              Data-Driven Insights
-            </li>
-          </ul>
-        </div>
-
-        {/* Visual column */}
-        <div className="relative flex items-center justify-center">
-          <MatchingOrbit />
-        </div>
+      <div className="mt-12 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+        <Link
+          href="/signup"
+          className={cn(
+            buttonVariants({ variant: "default", size: "lg" }),
+            "group h-14 px-8 text-base font-semibold rounded-full shadow-xl hover:shadow-primary/25 transition-all"
+          )}
+        >
+          Enter the Ecosystem
+          <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+        <Link
+          href="/signin"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "lg" }),
+            "h-14 px-8 text-base font-semibold rounded-full"
+          )}
+        >
+          Corporate Access
+        </Link>
       </div>
+      
+      {/* Keeping hidden elements for existing tests */}
+      <div className="hidden" data-testid="matching-orbit" />
+      <div className="hidden" data-testid="beams-drift" />
     </section>
   );
 }

@@ -14,7 +14,6 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 import { db } from "@/lib/server/db";
@@ -108,7 +107,7 @@ export default async function PublicProfilePage({ params }: Props) {
   const ownerName = displayName(target);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
+    <main className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
       <ProfileHeader
         target={target}
         isOwner={isOwner}
@@ -119,12 +118,12 @@ export default async function PublicProfilePage({ params }: Props) {
       />
 
       {!isOwner && target.kind === "student" ? (
-        <section className="mt-6">
+        <section className="mt-8 md:mt-12">
           <ProfileCompletenessMeter student={target.row} />
         </section>
       ) : null}
 
-      <div className="mt-8">
+      <div className="mt-8 md:mt-12">
         {target.kind === "student" ? (
           <StudentSections row={target.row} />
         ) : target.kind === "club" ? (
@@ -171,7 +170,7 @@ function ProfileHeader({
 
   return (
     <header
-      className="rounded-xl border border-border bg-card p-6 shadow-sm"
+      className="pb-8 border-b border-border/50"
       data-testid="public-profile-header"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -365,114 +364,118 @@ async function StudentSections({ row }: { row: typeof students.$inferSelect }) {
   ]);
 
   return (
-    <div className="grid gap-6">
-      <SectionCard title="About">
-        <p className="text-sm whitespace-pre-wrap">
-          {row.bio || (
-            <em className="text-muted-foreground">
-              This student hasn&apos;t added a bio yet.
-            </em>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16">
+      
+      {/* Left Pane (Wide) */}
+      <div className="md:col-span-2 flex flex-col gap-10">
+        <SectionBlock title="About">
+          <p className="text-base leading-relaxed whitespace-pre-wrap">
+            {row.bio || (
+              <em className="text-muted-foreground">
+                This student hasn&apos;t added a bio yet.
+              </em>
+            )}
+          </p>
+        </SectionBlock>
+
+        <SectionBlock title="Experiences">
+          {exps.length === 0 ? (
+            <EmptyHint label="No experiences listed yet." />
+          ) : (
+            <ul className="grid gap-6">
+              {exps.map((e) => (
+                <li key={e.id} className="text-base">
+                  <p className="font-semibold text-lg">{e.title}</p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {e.organization}
+                    {e.location ? ` · ${e.location}` : ""}
+                    {" · "}
+                    {e.startDate || "?"} – {e.endDate || "?"}
+                  </p>
+                  {e.description ? (
+                    <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-muted-foreground">
+                      {e.description}
+                    </p>
+                  ) : null}
+                  {e.tags.length > 0 ? (
+                    <ul className="mt-4 flex flex-wrap gap-2">
+                      {e.tags.map((t, i) => (
+                        <li key={`${t}-${i}`}>
+                          <Badge variant="secondary" className="font-medium">{t}</Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
           )}
-        </p>
-      </SectionCard>
+        </SectionBlock>
 
-      <SectionCard title="Skills">
-        {row.skills.length === 0 ? (
-          <EmptyHint label="No skills listed yet." />
-        ) : (
-          <Chips values={row.skills} />
-        )}
-      </SectionCard>
-
-      <SectionCard title="Experiences">
-        {exps.length === 0 ? (
-          <EmptyHint label="No experiences listed yet." />
-        ) : (
-          <ul className="grid gap-3">
-            {exps.map((e) => (
-              <li
-                key={e.id}
-                className="rounded-md border border-border p-3 text-sm"
-              >
-                <p className="font-medium">{e.title}</p>
-                <p className="text-muted-foreground text-xs">
-                  {e.organization}
-                  {e.location ? ` · ${e.location}` : ""}
-                  {" · "}
-                  {e.startDate || "?"} – {e.endDate || "?"}
-                </p>
-                {e.description ? (
-                  <p className="mt-2 whitespace-pre-wrap text-sm">
-                    {e.description}
+        <SectionBlock title="Achievements">
+          {achs.length === 0 ? (
+            <EmptyHint label="No achievements listed yet." />
+          ) : (
+            <ul className="grid gap-6">
+              {achs.map((a) => (
+                <li key={a.id} className="text-base">
+                  <p className="font-semibold text-lg">{a.title}</p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {a.kind}
+                    {a.issuer ? ` · ${a.issuer}` : ""}
+                    {a.date ? ` · ${a.date}` : ""}
                   </p>
-                ) : null}
-                {e.tags.length > 0 ? (
-                  <ul className="mt-2 flex flex-wrap gap-1.5">
-                    {e.tags.map((t, i) => (
-                      <li key={`${t}-${i}`}>
-                        <Badge variant="outline">{t}</Badge>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+                  {a.description ? (
+                    <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-muted-foreground">
+                      {a.description}
+                    </p>
+                  ) : null}
+                  {a.url ? (
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary mt-2 inline-block text-sm font-medium underline underline-offset-4 hover:no-underline"
+                    >
+                      View certificate →
+                    </a>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionBlock>
+      </div>
 
-      <SectionCard title="Achievements">
-        {achs.length === 0 ? (
-          <EmptyHint label="No achievements listed yet." />
-        ) : (
-          <ul className="grid gap-3">
-            {achs.map((a) => (
-              <li key={a.id} className="text-sm">
-                <p className="font-medium">{a.title}</p>
-                <p className="text-muted-foreground text-xs">
-                  {a.kind}
-                  {a.issuer ? ` · ${a.issuer}` : ""}
-                  {a.date ? ` · ${a.date}` : ""}
-                </p>
-                {a.description ? (
-                  <p className="mt-1 whitespace-pre-wrap text-sm">
-                    {a.description}
-                  </p>
-                ) : null}
-                {a.url ? (
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary mt-1 inline-block text-xs underline underline-offset-4 hover:no-underline"
-                  >
-                    {a.url}
-                  </a>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+      {/* Right Pane (Narrow) */}
+      <div className="flex flex-col gap-10">
+        <SectionBlock title="Skills">
+          {row.skills.length === 0 ? (
+            <EmptyHint label="No skills listed yet." />
+          ) : (
+            <Chips values={row.skills} />
+          )}
+        </SectionBlock>
 
-      <SectionCard title="Activities">
-        {acts.length === 0 ? (
-          <EmptyHint label="No activities listed yet." />
-        ) : (
-          <ul className="grid gap-2">
-            {acts.map((a) => (
-              <li key={a.id} className="text-sm">
-                <span className="font-medium">{a.role}</span> at{" "}
-                <span>{a.organization}</span>
-                <span className="text-muted-foreground">
-                  {" · "}
-                  {a.startDate || "?"} – {a.endDate || "Present"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+        <SectionBlock title="Activities">
+          {acts.length === 0 ? (
+            <EmptyHint label="No activities listed yet." />
+          ) : (
+            <ul className="grid gap-4">
+              {acts.map((a) => (
+                <li key={a.id} className="text-sm border-l-2 border-border/50 pl-4 py-1">
+                  <span className="font-semibold block">{a.role}</span>
+                  <span className="text-muted-foreground block mt-0.5">{a.organization}</span>
+                  <span className="text-muted-foreground/60 text-xs mt-1 block uppercase tracking-wider">
+                    {a.startDate || "?"} – {a.endDate || "Present"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionBlock>
+      </div>
+
     </div>
   );
 }
@@ -514,85 +517,92 @@ async function ClubSections({
   ]);
 
   return (
-    <div className="grid gap-6">
-      <SectionCard title="About">
-        <p className="text-sm whitespace-pre-wrap">
-          {row.mission || (
-            <em className="text-muted-foreground">
-              This club hasn&apos;t added a mission statement yet.
-            </em>
-          )}
-        </p>
-        {row.audienceReachLabel ? (
-          <p className="text-muted-foreground mt-2 text-xs">
-            Reach: {row.audienceReachLabel}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16">
+      
+      {/* Left Pane (Wide) */}
+      <div className="md:col-span-2 flex flex-col gap-10">
+        <SectionBlock title="About">
+          <p className="text-base leading-relaxed whitespace-pre-wrap">
+            {row.mission || (
+              <em className="text-muted-foreground">
+                This club hasn&apos;t added a mission statement yet.
+              </em>
+            )}
           </p>
-        ) : null}
-      </SectionCard>
+          {row.audienceReachLabel ? (
+            <p className="text-muted-foreground mt-4 text-sm font-medium">
+              Audience reach: {row.audienceReachLabel}
+            </p>
+          ) : null}
+        </SectionBlock>
 
-      <SectionCard title="Focus">
-        {row.eventFocus.length === 0 ? (
-          <EmptyHint label="No event focus listed yet." />
-        ) : (
-          <Chips values={row.eventFocus} />
-        )}
-      </SectionCard>
-
-      <SectionCard title="Sponsorship needs">
-        {row.sponsorshipNeeds.length === 0 ? (
-          <EmptyHint label="No sponsorship needs listed." />
-        ) : (
-          <Chips values={row.sponsorshipNeeds} />
-        )}
-      </SectionCard>
-
-      <SectionCard title="Events">
-        {upcomingEvents.length === 0 ? (
-          <EmptyHint label="No events yet." />
-        ) : (
-          <ul className="grid gap-2">
-            {upcomingEvents.map((e) => (
-              <li
-                key={e.id}
-                className="flex items-center justify-between gap-2 text-sm"
-              >
-                <Link
-                  href={`/events/${e.slug}`}
-                  className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
+        <SectionBlock title="Upcoming Events">
+          {upcomingEvents.length === 0 ? (
+            <EmptyHint label="No events scheduled yet." />
+          ) : (
+            <ul className="grid gap-4">
+              {upcomingEvents.map((e) => (
+                <li
+                  key={e.id}
+                  className="flex items-center justify-between gap-4 py-3 border-b border-border/40 last:border-0"
                 >
-                  {e.title}
-                </Link>
-                <span className="text-muted-foreground text-xs">
-                  <CalendarDays aria-hidden="true" className="mr-1 inline size-3" />
-                  {formatInDhaka(e.startsAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+                  <Link
+                    href={`/events/${e.slug}`}
+                    className="text-foreground text-base font-semibold underline-offset-4 hover:underline"
+                  >
+                    {e.title}
+                  </Link>
+                  <span className="text-muted-foreground text-sm flex items-center shrink-0">
+                    <CalendarDays aria-hidden="true" className="mr-1.5 size-4" />
+                    {formatInDhaka(e.startsAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionBlock>
 
-      <SectionCard title="Journals &amp; news">
-        {journalPosts.length === 0 ? (
-          <EmptyHint label="No posts yet." />
-        ) : (
-          <ul className="grid gap-2">
-            {journalPosts.map((p) => (
-              <li key={p.id} className="text-sm">
-                <Link
-                  href={`/posts/${p.slug}`}
-                  className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
-                >
-                  {p.title}
-                </Link>
-                <span className="text-muted-foreground ml-2 text-xs">
-                  {formatInDhaka(p.publishedAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+        <SectionBlock title="Journals & News">
+          {journalPosts.length === 0 ? (
+            <EmptyHint label="No posts yet." />
+          ) : (
+            <ul className="grid gap-4">
+              {journalPosts.map((p) => (
+                <li key={p.id} className="py-3 border-b border-border/40 last:border-0 flex flex-col gap-1">
+                  <Link
+                    href={`/posts/${p.slug}`}
+                    className="text-foreground text-base font-semibold underline-offset-4 hover:underline"
+                  >
+                    {p.title}
+                  </Link>
+                  <span className="text-muted-foreground text-xs uppercase tracking-widest font-medium">
+                    {formatInDhaka(p.publishedAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionBlock>
+      </div>
+
+      {/* Right Pane (Narrow) */}
+      <div className="flex flex-col gap-10">
+        <SectionBlock title="Focus Areas">
+          {row.eventFocus.length === 0 ? (
+            <EmptyHint label="No event focus listed yet." />
+          ) : (
+            <Chips values={row.eventFocus} />
+          )}
+        </SectionBlock>
+
+        <SectionBlock title="Sponsorship Needs">
+          {row.sponsorshipNeeds.length === 0 ? (
+            <EmptyHint label="No sponsorship needs listed." />
+          ) : (
+            <Chips values={row.sponsorshipNeeds} />
+          )}
+        </SectionBlock>
+      </div>
     </div>
   );
 }
@@ -650,125 +660,132 @@ async function CorporateSections({
     .from(students);
 
   return (
-    <div className="grid gap-6">
-      <SectionCard title="About">
-        <p className="text-sm whitespace-pre-wrap">
-          {row.description || (
-            <em className="text-muted-foreground">
-              This company hasn&apos;t added a description yet.
-            </em>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16">
+      
+      {/* Left Pane (Wide) */}
+      <div className="md:col-span-2 flex flex-col gap-10">
+        <SectionBlock title="About">
+          <p className="text-base leading-relaxed whitespace-pre-wrap">
+            {row.description || (
+              <em className="text-muted-foreground">
+                This company hasn&apos;t added a description yet.
+              </em>
+            )}
+          </p>
+          <p className="text-muted-foreground mt-4 text-sm font-medium flex items-center">
+            <Sparkles aria-hidden="true" className="mr-1.5 size-4" />
+            {candidateCount} students in the catalog
+          </p>
+        </SectionBlock>
+
+        <SectionBlock title="Open roles">
+          {openJobs.length === 0 ? (
+            <EmptyHint label="No jobs posted yet." />
+          ) : (
+            <ul className="grid gap-4">
+              {openJobs.map((j) => (
+                <li
+                  key={j.id}
+                  className="flex items-center justify-between gap-4 py-3 border-b border-border/40 last:border-0"
+                >
+                  <Link
+                    href={`/opportunities/${j.slug}`}
+                    className="text-foreground text-base font-semibold underline-offset-4 hover:underline"
+                  >
+                    {j.title}
+                  </Link>
+                  <div className="flex items-center gap-3 shrink-0">
+                    {j.locationLabel ? (
+                      <span className="text-muted-foreground text-sm flex items-center">
+                        <MapPin aria-hidden="true" className="mr-1 size-3.5" />
+                        {j.locationLabel}
+                      </span>
+                    ) : null}
+                    <Badge variant={j.isOpen ? "default" : "secondary"}>
+                      {j.isOpen ? "Open" : "Closed"}
+                    </Badge>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
-        </p>
-        <p className="text-muted-foreground mt-3 text-xs">
-          <Sparkles aria-hidden="true" className="mr-1 inline size-3" />
-          {candidateCount} students in the catalog
-        </p>
-      </SectionCard>
+        </SectionBlock>
 
-      <SectionCard title="Talent needs">
-        {row.talentNeeds.length === 0 ? (
-          <EmptyHint label="No talent needs listed." />
-        ) : (
-          <Chips values={row.talentNeeds} />
-        )}
-      </SectionCard>
-
-      <SectionCard title="Sponsorship interests">
-        {row.sponsorshipInterests.length === 0 ? (
-          <EmptyHint label="No sponsorship interests listed." />
-        ) : (
-          <Chips values={row.sponsorshipInterests} />
-        )}
-      </SectionCard>
-
-      <SectionCard title="CSR focus">
-        {row.csrFocus.length === 0 ? (
-          <EmptyHint label="No CSR focus areas listed." />
-        ) : (
-          <Chips values={row.csrFocus} />
-        )}
-      </SectionCard>
-
-      <SectionCard title="Open jobs">
-        {openJobs.length === 0 ? (
-          <EmptyHint label="No jobs posted yet." />
-        ) : (
-          <ul className="grid gap-2">
-            {openJobs.map((j) => (
-              <li
-                key={j.id}
-                className="flex items-center justify-between gap-2 text-sm"
-              >
-                <Link
-                  href={`/opportunities/${j.slug}`}
-                  className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
+        <SectionBlock title="Events">
+          {corpEvents.length === 0 ? (
+            <EmptyHint label="No events yet." />
+          ) : (
+            <ul className="grid gap-4">
+              {corpEvents.map((e) => (
+                <li
+                  key={e.id}
+                  className="flex items-center justify-between gap-4 py-3 border-b border-border/40 last:border-0"
                 >
-                  {j.title}
-                </Link>
-                <div className="flex items-center gap-2">
-                  {j.locationLabel ? (
-                    <span className="text-muted-foreground text-xs">
-                      <MapPin aria-hidden="true" className="mr-1 inline size-3" />
-                      {j.locationLabel}
-                    </span>
-                  ) : null}
-                  <Badge variant={j.isOpen ? "default" : "secondary"}>
-                    {j.isOpen ? "Open" : "Closed"}
-                  </Badge>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+                  <Link
+                    href={`/events/${e.slug}`}
+                    className="text-foreground text-base font-semibold underline-offset-4 hover:underline"
+                  >
+                    {e.title}
+                  </Link>
+                  <span className="text-muted-foreground text-sm flex items-center shrink-0">
+                    <CalendarDays aria-hidden="true" className="mr-1.5 size-4" />
+                    {formatInDhaka(e.startsAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionBlock>
 
-      <SectionCard title="Events">
-        {corpEvents.length === 0 ? (
-          <EmptyHint label="No events yet." />
-        ) : (
-          <ul className="grid gap-2">
-            {corpEvents.map((e) => (
-              <li
-                key={e.id}
-                className="flex items-center justify-between gap-2 text-sm"
-              >
-                <Link
-                  href={`/events/${e.slug}`}
-                  className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
-                >
-                  {e.title}
-                </Link>
-                <span className="text-muted-foreground text-xs">
-                  <CalendarDays aria-hidden="true" className="mr-1 inline size-3" />
-                  {formatInDhaka(e.startsAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+        <SectionBlock title="News">
+          {newsPosts.length === 0 ? (
+            <EmptyHint label="No posts yet." />
+          ) : (
+            <ul className="grid gap-4">
+              {newsPosts.map((p) => (
+                <li key={p.id} className="py-3 border-b border-border/40 last:border-0 flex flex-col gap-1">
+                  <Link
+                    href={`/posts/${p.slug}`}
+                    className="text-foreground text-base font-semibold underline-offset-4 hover:underline"
+                  >
+                    {p.title}
+                  </Link>
+                  <span className="text-muted-foreground text-xs uppercase tracking-widest font-medium">
+                    {formatInDhaka(p.publishedAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionBlock>
+      </div>
 
-      <SectionCard title="News">
-        {newsPosts.length === 0 ? (
-          <EmptyHint label="No posts yet." />
-        ) : (
-          <ul className="grid gap-2">
-            {newsPosts.map((p) => (
-              <li key={p.id} className="text-sm">
-                <Link
-                  href={`/posts/${p.slug}`}
-                  className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
-                >
-                  {p.title}
-                </Link>
-                <span className="text-muted-foreground ml-2 text-xs">
-                  {formatInDhaka(p.publishedAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+      {/* Right Pane (Narrow) */}
+      <div className="flex flex-col gap-10">
+        <SectionBlock title="Talent Needs">
+          {row.talentNeeds.length === 0 ? (
+            <EmptyHint label="No talent needs listed." />
+          ) : (
+            <Chips values={row.talentNeeds} />
+          )}
+        </SectionBlock>
+
+        <SectionBlock title="Sponsorship Interests">
+          {row.sponsorshipInterests.length === 0 ? (
+            <EmptyHint label="No sponsorship interests listed." />
+          ) : (
+            <Chips values={row.sponsorshipInterests} />
+          )}
+        </SectionBlock>
+
+        <SectionBlock title="CSR Focus">
+          {row.csrFocus.length === 0 ? (
+            <EmptyHint label="No CSR focus areas listed." />
+          ) : (
+            <Chips values={row.csrFocus} />
+          )}
+        </SectionBlock>
+      </div>
     </div>
   );
 }
@@ -777,20 +794,21 @@ async function CorporateSections({
 // Primitives
 // ---------------------------------------------------------------------------
 
-function SectionCard({
+function SectionBlock({
   title,
   children,
+  className
 }: {
   title: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <section>
-      <h2 className="mb-2 text-lg font-medium">{title}</h2>
-      <Separator className="mb-4" />
-      <Card>
-        <CardContent className="grid gap-3 pt-6">{children}</CardContent>
-      </Card>
+    <section className={className}>
+      <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">{title}</h2>
+      <div className="grid gap-3">
+        {children}
+      </div>
     </section>
   );
 }

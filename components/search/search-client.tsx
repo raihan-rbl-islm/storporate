@@ -50,46 +50,51 @@ export function SearchClient() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
+    <div className="w-full space-y-8 sticky top-24">
       <div className="relative group">
-        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-          <SearchIcon className="w-5 h-5" />
+        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-foreground transition-colors">
+          <SearchIcon className="w-4 h-4" />
         </div>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for clubs, companies, jobs, events..."
-          className="w-full h-14 pl-12 pr-12 rounded-2xl border-2 bg-background/50 backdrop-blur-sm text-lg shadow-sm transition-all duration-300 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 placeholder:text-muted-foreground/60"
+          placeholder="Search..."
+          className="w-full h-11 pl-11 pr-11 rounded-lg border bg-background text-sm shadow-sm transition-all focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground placeholder:text-muted-foreground/60"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
             className="absolute inset-y-0 right-4 flex items-center text-muted-foreground hover:text-foreground transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 justify-center">
-        {FILTERS.map((f) => {
-          const isActive = currentFilter === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-md scale-105"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-105"
-              )}
-            >
-              {f.label}
-            </button>
-          );
-        })}
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+          Filters
+        </h3>
+        <div className="flex flex-col gap-1.5">
+          {FILTERS.map((f) => {
+            const isActive = currentFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={cn(
+                  "text-left px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

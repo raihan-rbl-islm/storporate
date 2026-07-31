@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import {
   NewsfeedList,
@@ -34,40 +34,40 @@ export default async function NewsfeedPage({ searchParams }: Props) {
   const filter = normalizeFilter(params.filter);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Newsfeed</h1>
-          <p className="text-sm text-muted-foreground">
-            Personalized updates from clubs and companies that match your
-            profile.
-          </p>
+    <div className="flex flex-col gap-8">
+      <header className="sticky top-0 z-10 -mx-6 px-6 py-4 bg-background/80 backdrop-blur-xl border-b border-border/50">
+        <div className="flex flex-col gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tighter">Your Industry Pulse</h1>
+            <p className="text-base text-muted-foreground">
+              Curated events and news based on your career interests and skills.
+            </p>
+          </div>
+          
+          <nav aria-label="Newsfeed filters" className="flex items-center gap-2 p-1.5 bg-muted/40 rounded-full border border-border/50 backdrop-blur-sm w-fit">
+            <Link
+              href="/newsfeed?filter=all"
+              className={cn("px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300", filter === "all" ? "bg-background shadow-sm text-foreground ring-1 ring-border" : "text-muted-foreground hover:text-foreground hover:bg-muted")}
+            >
+              All Activity
+            </Link>
+            <Link
+              href="/newsfeed?filter=events"
+              className={cn("px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300", filter === "events" ? "bg-background shadow-sm text-foreground ring-1 ring-border" : "text-muted-foreground hover:text-foreground hover:bg-muted")}
+            >
+              Events
+            </Link>
+            <Link
+              href="/newsfeed?filter=posts"
+              className={cn("px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300", filter === "posts" ? "bg-background shadow-sm text-foreground ring-1 ring-border" : "text-muted-foreground hover:text-foreground hover:bg-muted")}
+            >
+              News & Journals
+            </Link>
+          </nav>
         </div>
-        <form
-          method="get"
-          action="/newsfeed"
-          className="flex items-center gap-2 text-sm"
-        >
-          <label htmlFor="filter" className="text-muted-foreground">
-            Filter:
-          </label>
-          <Select name="filter" defaultValue={filter}>
-            <SelectTrigger id="filter" className="w-[180px] h-8">
-              <SelectValue placeholder="Select filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="events">Events</SelectItem>
-              <SelectItem value="posts">News & journals</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button type="submit" variant="outline" size="sm">
-            Apply
-          </Button>
-        </form>
       </header>
 
       <NewsfeedList studentId={viewer.row.id} filter={filter} />
-    </main>
+    </div>
   );
 }

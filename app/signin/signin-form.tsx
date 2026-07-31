@@ -127,8 +127,8 @@ export function SigninForm({ error }: SigninFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" disabled={pending} className="group/btn">
-          <Mail className="size-4" aria-hidden="true" />
+        <Button type="submit" disabled={pending} className="group/btn w-full rounded-full h-12 text-base font-semibold mt-2">
+          <Mail className="size-5 mr-2" aria-hidden="true" />
           {pending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
@@ -140,7 +140,7 @@ export function SigninForm({ error }: SigninFormProps) {
       </div>
 
       <form action={signInWithGoogle}>
-        <Button type="submit" variant="outline" className="w-full">
+        <Button type="submit" variant="outline" className="w-full rounded-full h-12 text-base font-medium">
           <GoogleMark />
           Continue with Google
         </Button>

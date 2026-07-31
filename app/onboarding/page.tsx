@@ -23,6 +23,24 @@ export default async function OnboardingPage() {
   if (hasOnboarded(current.row)) {
     redirect("/dashboard");
   }
+  
+  const renderHeader = (roleTitle: string) => (
+    <>
+      <div className="mb-12 flex items-center gap-4">
+        <div className="h-1.5 flex-1 bg-primary/20 rounded-full overflow-hidden">
+          <div className="h-full bg-primary w-full" />
+        </div>
+        <span className="text-sm font-bold tracking-tight text-primary">Final Step</span>
+      </div>
+      <div className="mb-12 space-y-4">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">Let's build your profile.</h1>
+        <p className="text-xl text-muted-foreground leading-relaxed">
+          Tell us about your {roleTitle} focus so we can start curating your matches.
+        </p>
+      </div>
+    </>
+  );
+
   if (current.kind === "student") {
     const initial: StudentFormInput = {
       fullName: current.row.fullName,
@@ -35,18 +53,14 @@ export default async function OnboardingPage() {
       careerInterests: current.row.careerInterests,
     };
     return (
-      <main className="mx-auto max-w-2xl px-4 py-8">
-        <div className="mb-8 flex flex-col gap-1.5">
-          <p className="text-sm font-medium text-muted-foreground">Step 2 of 2 · Profile details</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Student onboarding</h1>
-          <p className="text-base text-muted-foreground">Complete your profile to get personalized updates and matches.</p>
-        </div>
+      <main className="mx-auto max-w-3xl px-6 py-12 md:py-24">
+        {renderHeader("academic and career")}
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         <OnboardingForm
           role="student"
           mode="create"
           initialValue={initial}
-          submitLabel="Save profile"
+          submitLabel="Complete Setup"
           successHref="/dashboard"
           action={submitProfile}
         />
@@ -66,18 +80,14 @@ export default async function OnboardingPage() {
       contactRole: current.row.contactRole,
     };
     return (
-      <main className="mx-auto max-w-2xl px-4 py-8">
-        <div className="mb-8 flex flex-col gap-1.5">
-          <p className="text-sm font-medium text-muted-foreground">Step 2 of 2 · Profile details</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Club onboarding</h1>
-          <p className="text-base text-muted-foreground">Complete your profile to get personalized updates and matches.</p>
-        </div>
+      <main className="mx-auto max-w-3xl px-6 py-12 md:py-24">
+        {renderHeader("club's mission and sponsorship")}
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         <OnboardingForm
           role="club"
           mode="create"
           initialValue={initial}
-          submitLabel="Save profile"
+          submitLabel="Complete Setup"
           successHref="/dashboard"
           action={submitProfile}
         />
@@ -96,18 +106,14 @@ export default async function OnboardingPage() {
     collaborationIntent: current.row.collaborationIntent as CorporateFormInput["collaborationIntent"],
   };
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-8 flex flex-col gap-1.5">
-        <p className="text-sm font-medium text-muted-foreground">Step 2 of 2 · Profile details</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Corporate onboarding</h1>
-        <p className="text-base text-muted-foreground">Complete your profile to get personalized updates and matches.</p>
-      </div>
+    <main className="mx-auto max-w-3xl px-6 py-12 md:py-24">
+      {renderHeader("hiring and CSR")}
       {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
       <OnboardingForm
         role="corporate"
         mode="create"
         initialValue={initial}
-        submitLabel="Save profile"
+        submitLabel="Complete Setup"
         successHref="/dashboard"
         action={submitProfile}
       />

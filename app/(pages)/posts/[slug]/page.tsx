@@ -4,8 +4,6 @@ import { eq } from "drizzle-orm";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { formatInDhaka } from "@/lib/format/datetime";
 import { db } from "@/lib/server/db";
 import { posts, clubs, corporates } from "@/lib/server/db/schema";
@@ -70,60 +68,76 @@ export default async function PostDetailPage({ params }: Props) {
     viewer.row.id === postRow.ownerId;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="grid gap-1">
-          <p className="text-sm text-muted-foreground">
-            from{" "}
-            <span className="font-medium text-foreground">{ownerName}</span>
-            {" · "}
-            <span className="capitalize">{postRow.ownerKind}</span>
+    <main className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
+      <header className="pb-8 border-b border-border/50 flex flex-wrap items-center justify-between gap-6">
+        <div className="grid gap-3">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+            <span className="bg-muted px-2 py-1 rounded-md text-foreground">{ownerName}</span>
+            <span>·</span>
+            <span>{postRow.ownerKind}</span>
           </p>
-          <h1 className="text-2xl font-semibold">{postRow.title}</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{postRow.title}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge className={kindBadgeClass(postRow.kind)} variant="outline">
+              {kindLabel(postRow.kind)}
+            </Badge>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge className={kindBadgeClass(postRow.kind)} variant="outline">
-            {kindLabel(postRow.kind)}
-          </Badge>
-          {isOwner ? (
-            <Button
-              variant="outline"
-              render={<Link href={`/posts/${postRow.slug}/manage`}>Manage</Link>}
-            />
-          ) : null}
-        </div>
+        {isOwner ? (
+          <Button
+            variant="outline"
+            render={<Link href={`/posts/${postRow.slug}/manage`}>Manage Post</Link>}
+          />
+        ) : null}
       </header>
 
-      <Card>
-        <CardContent className="grid gap-3 pt-6 text-sm text-muted-foreground">
-          <p>
-            <span className="font-medium">Posted:</span>{" "}
-            {formatInDhaka(postRow.publishedAt)} (Dhaka time)
-          </p>
-          {postRow.tags.length > 0 ? (
-            <ul className="flex flex-wrap gap-1.5">
-              {postRow.tags.map((tag, i) => (
-                <li key={`${tag}-${i}`}>
-                  <Badge variant="outline">{tag}</Badge>
-                </li>
-              ))}
-            </ul>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 mt-8 md:mt-12">
+        
+        {/* Left Pane (Wide): Content */}
+        <div className="md:col-span-2 flex flex-col gap-10">
+          {postRow.body ? (
+            <section>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-foreground">
+                  {postRow.body}
+                </pre>
+              </div>
+            </section>
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
 
-      {postRow.body ? (
-        <section className="mt-6">
-          <Separator className="mb-4" />
-          <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed">
-            {postRow.body}
-          </pre>
-        </section>
-      ) : null}
+        {/* Right Pane (Narrow): Metadata */}
+        <div className="flex flex-col gap-10">
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Details</h2>
+            <ul className="grid gap-4 text-sm">
+              <li className="grid gap-1">
+                <span className="font-semibold">Posted</span>
+                <span className="text-muted-foreground">
+                  {formatInDhaka(postRow.publishedAt)} (Dhaka time)
+                </span>
+              </li>
+              <li className="grid gap-1">
+                <span className="font-semibold">Author</span>
+                <span className="text-muted-foreground">{ownerName}</span>
+              </li>
+            </ul>
+          </section>
 
-      <footer className="mt-10 border-t pt-4 text-sm text-muted-foreground">
-        From {ownerName}
-      </footer>
+          {postRow.tags.length > 0 ? (
+            <section>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Tags</h2>
+              <ul className="flex flex-wrap gap-2">
+                {postRow.tags.map((tag, i) => (
+                  <li key={`${tag}-${i}`}>
+                    <Badge variant="secondary" className="font-medium">{tag}</Badge>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+      </div>
     </main>
   );
 }

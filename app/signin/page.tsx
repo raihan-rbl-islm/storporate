@@ -27,70 +27,54 @@ export default async function SigninPage({ searchParams }: PageProps) {
   }
 
   return (
-    <main className="bg-background text-foreground min-h-screen">
-      <div className="mx-auto grid min-h-screen max-w-5xl gap-12 px-6 py-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
-        {/* Left — context panel */}
-        <section className="flex flex-col justify-between gap-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight"
-            aria-label="Storporate home"
-          >
-            <span
-              aria-hidden="true"
-              className="grid size-7 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm"
-            >
-              <span className="text-xs font-bold">S</span>
-            </span>
-            <span className="text-base">Storporate</span>
+    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-background">
+      {/* Left Ambient Context */}
+      <section className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-primary text-primary-foreground">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/40 via-primary to-primary" />
+        <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-black/20 to-transparent" />
+        
+        <Link href="/" className="relative z-10 flex items-center tracking-tighter select-none">
+          <span className="text-3xl font-bold text-primary-foreground">Stor</span>
+          <span className="text-3xl font-medium text-accent">porate</span>
+        </Link>
+
+        <div className="relative z-10 max-w-md">
+          <h1 className="text-4xl font-bold tracking-tighter leading-[1.1] mb-6">
+            The ecosystem for next-generation talent.
+          </h1>
+          <p className="text-primary-foreground/80 text-lg font-medium">
+            Connect securely with top-tier candidates, exclusive events, and corporate sponsors.
+          </p>
+        </div>
+        
+        <div className="relative z-10 flex gap-6 text-sm font-medium text-primary-foreground/60">
+          <span>&copy; {new Date().getFullYear()} Storporate</span>
+          <Link href="/privacy" className="hover:text-primary-foreground transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-primary-foreground transition-colors">Terms</Link>
+        </div>
+      </section>
+
+      {/* Right Form Container */}
+      <section className="flex items-center justify-center p-6 sm:p-12 relative overflow-hidden">
+        {/* Subtle mobile background */}
+        <div className="absolute top-[-20%] right-[-10%] size-[500px] rounded-full bg-accent/5 blur-3xl lg:hidden" />
+        
+        <div className="w-full max-w-md space-y-8 relative z-10">
+          <Link href="/" className="lg:hidden flex items-center tracking-tighter select-none mb-12">
+            <span className="text-3xl font-bold text-primary">Stor</span>
+            <span className="text-3xl font-medium text-accent">porate</span>
           </Link>
 
-          <div className="hidden flex-col gap-6 lg:flex">
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-              Welcome back to{" "}
-              <span className="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent">
-                Storporate
-              </span>
-              .
-            </h1>
-            <p className="text-muted-foreground text-base leading-relaxed">
-              Pick up where you left off — your matches, drafts, and outreach
-              signals are waiting.
-            </p>
-            <ul className="text-muted-foreground space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
-                Use the email and password you signed up with.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
-                Check your inbox for invitations, outreach, and matches.
-              </li>
-            </ul>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold tracking-tighter">Access Your Ecosystem</h2>
+            <p className="text-muted-foreground text-sm">Enter your credentials to continue.</p>
           </div>
-
-          <p className="text-muted-foreground hidden text-xs lg:block">
-            New to Storporate?{" "}
-            <Link href="/signup" className="text-foreground underline underline-offset-4">
-              Create an account
-            </Link>
-            .
-          </p>
-        </section>
-
-        {/* Right — form card */}
-        <section className="flex items-center">
-          <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-md sm:p-8">
-            <div className="mb-6 flex flex-col gap-1.5">
-              <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
-              <p className="text-muted-foreground text-sm">
-                Use your institutional email. We&apos;ll pick up your dashboard right where you left it.
-              </p>
-            </div>
+          
+          <div className="bg-card/40 backdrop-blur-xl border border-border/50 p-8 rounded-3xl shadow-xl shadow-primary/5">
             <SigninForm error={error} />
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

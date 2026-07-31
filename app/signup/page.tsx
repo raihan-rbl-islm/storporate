@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { redirect } from "next/navigation";
 
 import { SignupForm } from "./signup-form";
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/server/auth/current-user";
 
 export const metadata: Metadata = {
@@ -15,7 +14,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SignupPage() {
-  // If already signed in, bounce them past signup.
   const current = await getCurrentUser();
   if (current.kind !== "anonymous") {
     if (current.kind === "needs-role") redirect("/onboarding/role");
@@ -24,69 +22,53 @@ export default async function SignupPage() {
   }
 
   return (
-    <main className="bg-background text-foreground min-h-screen">
-      <div className="mx-auto grid min-h-screen max-w-5xl gap-12 px-6 py-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
-        {/* Left — context panel */}
-        <section className="flex flex-col justify-between gap-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight"
-            aria-label="Storporate home"
-          >
-            <span
-              aria-hidden="true"
-              className="grid size-7 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm"
-            >
-              <span className="text-xs font-bold">S</span>
-            </span>
-            <span className="text-base">Storporate</span>
+    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-background">
+      {/* Left Ambient Context */}
+      <section className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-primary text-primary-foreground">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-accent/40 via-primary to-primary" />
+        
+        <Link href="/" className="relative z-10 flex items-center tracking-tighter select-none">
+          <span className="text-3xl font-bold text-primary-foreground">Stor</span>
+          <span className="text-3xl font-medium text-accent">porate</span>
+        </Link>
+
+        <div className="relative z-10 max-w-md">
+          <h1 className="text-4xl font-bold tracking-tighter leading-[1.1] mb-6">
+            Join the marketplace built for industry leaders.
+          </h1>
+          <p className="text-primary-foreground/80 text-lg font-medium">
+            Create an account to discover verified institutional identities, match with top talent, and build your network.
+          </p>
+        </div>
+        
+        <div className="relative z-10 flex gap-6 text-sm font-medium text-primary-foreground/60">
+          <span>&copy; {new Date().getFullYear()} Storporate</span>
+          <Link href="/privacy" className="hover:text-primary-foreground transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-primary-foreground transition-colors">Terms</Link>
+        </div>
+      </section>
+
+      {/* Right Form Container */}
+      <section className="flex items-center justify-center p-6 sm:p-12 relative overflow-hidden">
+        {/* Subtle mobile background */}
+        <div className="absolute top-[-20%] right-[-10%] size-[500px] rounded-full bg-accent/5 blur-3xl lg:hidden" />
+        
+        <div className="w-full max-w-md space-y-8 relative z-10">
+          <Link href="/" className="lg:hidden flex items-center tracking-tighter select-none mb-12">
+            <span className="text-3xl font-bold text-primary">Stor</span>
+            <span className="text-3xl font-medium text-accent">porate</span>
           </Link>
 
-          <div className="hidden flex-col gap-6 lg:flex">
-            <p className="text-primary text-sm font-medium">
-              <Sparkles aria-hidden="true" className="mr-1.5 inline size-3.5" />
-              Two minutes from here to your dashboard
-            </p>
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-              Join the marketplace built for{" "}
-              <span className="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent">
-                Bangladesh
-              </span>
-              .
-            </h1>
-            <p className="text-muted-foreground text-base leading-relaxed">
-              Create your account, verify your email, pick your role, and
-              tell us a few basics about you. You can fill the rest of your
-              profile later — Storporate never blocks you from exploring
-              once the essentials are in.
-            </p>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold tracking-tighter">Create Your Account</h2>
+            <p className="text-muted-foreground text-sm">Two minutes from here to your command center.</p>
           </div>
-
-          <p className="text-muted-foreground hidden text-xs lg:block">
-            Already have an account?{" "}
-            <Link href="/signin" className="text-foreground underline underline-offset-4">
-              Sign in here
-            </Link>
-            .
-          </p>
-        </section>
-
-        {/* Right — form card */}
-        <section className="flex items-center">
-          <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-md sm:p-8">
-            <div className="mb-6 flex flex-col gap-1.5">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Create your account
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                Sign up with your institutional email. We&apos;ll send a verification
-                link to your inbox.
-              </p>
-            </div>
+          
+          <div className="bg-card/40 backdrop-blur-xl border border-border/50 p-8 rounded-3xl shadow-xl shadow-primary/5">
             <SignupForm />
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

@@ -2,7 +2,6 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoleFieldsStudent } from "@/components/onboarding/role-fields-student";
 import { RoleFieldsClub } from "@/components/onboarding/role-fields-club";
 import { RoleFieldsCorporate } from "@/components/onboarding/role-fields-corporate";
@@ -98,20 +97,15 @@ export function OnboardingForm(props: OnboardingFormProps) {
     state.status === "error" ? state.errors : ({} as Record<string, string>);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {props.mode === "create" ? "Complete your profile" : "Edit profile"}
-        </CardTitle>
-      </CardHeader>
-      <form action={formAction} noValidate>
-        <CardContent className="grid gap-6">
+    <div className="w-full">
+      <form action={formAction} noValidate className="space-y-12 mt-8">
+        <div className="grid gap-10">
           {state.status === "error" && state.formMessage ? (
             <div
               ref={errorBannerRef}
               role="alert"
               tabIndex={-1}
-              className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+              className="rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive font-medium"
             >
               {state.formMessage}
             </div>
@@ -177,12 +171,14 @@ export function OnboardingForm(props: OnboardingFormProps) {
               }
             />
           ) : null}
-        </CardContent>
-        <CardFooter>
-          <Button type="submit">{props.submitLabel}</Button>
-        </CardFooter>
+        </div>
+        <div className="pt-8 border-t border-border flex justify-end">
+          <Button type="submit" size="lg" className="rounded-full px-10 h-14 text-lg font-semibold shadow-xl hover:shadow-primary/25 transition-all w-full sm:w-auto">
+            {props.submitLabel}
+          </Button>
+        </div>
       </form>
-    </Card>
+    </div>
   );
 }
 

@@ -218,131 +218,131 @@ export default async function ClubDashboardPage() {
       title={club.clubName}
       subtitle={`Club · ${club.university} · ${club.location}`}
     >
-      <h2 className="text-3xl font-semibold tracking-tight">
-        {club.clubName}
-      </h2>
-      <p className="text-muted-foreground -mt-4 text-sm">
-        {club.mission ? truncate(club.mission, 140) : "Add a mission so your sponsors reflect your events."}
-      </p>
-
-      <Card data-testid="club-profile-readiness">
-        <CardHeader>
-          <CardTitle>
-            <h3 className="flex items-center gap-2 text-lg font-semibold">
-              {ready ? (
-                <Check
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
-              ) : (
-                <AlertTriangle
-                  aria-hidden="true"
-                  className="text-muted-foreground size-4"
-                />
-              )}
-              {ready ? "Profile ready" : "Finish your profile"}
-            </h3>
-          </CardTitle>
-          <CardDescription>
-            {ready
-              ? "Your profile is match-ready. Refine it anytime."
-              : "Add categories and a mission so your sponsors reflect your events."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <Link
-            href="/dashboard/profile/edit"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-            prefetch={false}
-          >
-            {ready ? "Edit profile" : "Finish profile"}
-          </Link>
-        </CardContent>
-      </Card>
-
+      {/* 1. TOP ROW: Core Metrics */}
       <section
         aria-labelledby="club-stats-heading"
-        className="flex flex-col gap-3"
+        className="grid grid-cols-2 gap-4 sm:grid-cols-4"
       >
         <h2 id="club-stats-heading" className="sr-only">
           Your dashboard at a glance
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile
-            label="Sponsored matches"
-            value={overview.totalMatches}
-            icon={<Handshake aria-hidden="true" />}
-            hint="Ranked by categories + mission"
-            testId="club-stat-matches"
-          />
-          <StatTile
-            label="Events hosted"
-            value={overview.eventsOwned}
-            icon={<Calendar aria-hidden="true" />}
-            hint="Published on the platform"
-            testId="club-stat-events"
-          />
-          <StatTile
-            label="Posts published"
-            value={overview.postsOwned}
-            icon={<FileText aria-hidden="true" />}
-            hint="Journals and news updates"
-            testId="club-stat-posts"
-          />
-          <StatTile
-            label="Pitches sent"
-            value={overview.invitationsSent}
-            icon={<Send aria-hidden="true" />}
-            hint="Sponsorship outreach"
-            testId="club-stat-invitations"
-          />
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="top-sponsors-heading"
-        className="flex flex-col gap-3"
-      >
-        <div className="flex items-end justify-between gap-2">
-          <h2
-            id="top-sponsors-heading"
-            className="text-xl font-semibold tracking-tight"
-          >
-            Top sponsors
-          </h2>
-          <Link
-            href="/dashboard/clubs/matches"
-            prefetch={false}
-            className={buttonVariants({
-              variant: "ghost",
-              size: "sm",
-              className: "gap-1 text-xs",
-            })}
-            data-testid="club-view-all-sponsors"
-          >
-            View all
-            <ChevronRight aria-hidden="true" className="size-3" />
-          </Link>
-        </div>
-        <TopSponsors
-          matches={overview.topMatches}
-          usedPreparedFallback={overview.usedPreparedFallback}
+        <StatTile
+          label="Sponsored matches"
+          value={overview.totalMatches}
+          icon={<Handshake aria-hidden="true" />}
+          hint="Ranked by categories + mission"
+          testId="club-stat-matches"
+        />
+        <StatTile
+          label="Events hosted"
+          value={overview.eventsOwned}
+          icon={<Calendar aria-hidden="true" />}
+          hint="Published on the platform"
+          testId="club-stat-events"
+        />
+        <StatTile
+          label="Posts published"
+          value={overview.postsOwned}
+          icon={<FileText aria-hidden="true" />}
+          hint="Journals and news updates"
+          testId="club-stat-posts"
+        />
+        <StatTile
+          label="Pitches sent"
+          value={overview.invitationsSent}
+          icon={<Send aria-hidden="true" />}
+          hint="Sponsorship outreach"
+          testId="club-stat-invitations"
         />
       </section>
 
-      <SponsorsForEventsPanels ranked={overview.sponsorsForEvents} />
+      {/* 2. SPLIT LAYOUT */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* LEFT PANE (2 columns) */}
+        <div className="lg:col-span-2 flex flex-col gap-10">
+          <section
+            aria-labelledby="top-sponsors-heading"
+            className="flex flex-col gap-4"
+          >
+            <div className="flex items-end justify-between gap-2">
+              <h2
+                id="top-sponsors-heading"
+                className="text-xl font-bold tracking-tight"
+              >
+                Top sponsors
+              </h2>
+              <Link
+                href="/dashboard/clubs/matches"
+                prefetch={false}
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "sm",
+                  className: "gap-1 text-xs",
+                })}
+                data-testid="club-view-all-sponsors"
+              >
+                View all
+                <ChevronRight aria-hidden="true" className="size-3" />
+              </Link>
+            </div>
+            <TopSponsors
+              matches={overview.topMatches}
+              usedPreparedFallback={overview.usedPreparedFallback}
+            />
+          </section>
 
-      <QuickActionGrid
-        title="Quick actions"
-        description="Jump straight to the surface you came for."
-        actions={actions}
-        testId="club-quick-actions"
-      />
+          <SponsorsForEventsPanels ranked={overview.sponsorsForEvents} />
 
-      <OwnedEventsPanel ownedEvents={ownedEvents} />
-      <OwnedPostsPanel ownedPosts={ownedPosts} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <OwnedEventsPanel ownedEvents={ownedEvents} />
+            <OwnedPostsPanel ownedPosts={ownedPosts} />
+          </div>
+        </div>
 
-      <CollaborationSignals role="club" />
+        {/* RIGHT PANE (1 column) */}
+        <div className="flex flex-col gap-8">
+          <Card data-testid="club-profile-readiness" className="bg-muted/30 border-primary/10 shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle>
+                <h3 className="flex items-center gap-2 text-base font-bold">
+                  {ready ? (
+                    <Check aria-hidden="true" className="text-primary size-4" />
+                  ) : (
+                    <AlertTriangle aria-hidden="true" className="text-destructive size-4" />
+                  )}
+                  {ready ? "Profile ready" : "Finish your profile"}
+                </h3>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {ready
+                  ? "Your profile is match-ready. Refine it anytime."
+                  : "Add categories and a mission so your sponsors reflect your events."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link
+                href="/dashboard/profile/edit"
+                className={buttonVariants({ variant: "outline", size: "sm", className: "w-full" })}
+                prefetch={false}
+              >
+                {ready ? "Edit profile" : "Finish profile"}
+              </Link>
+            </CardContent>
+          </Card>
+
+          <QuickActionGrid
+            title="Quick actions"
+            description="Jump straight to the surface you came for."
+            actions={actions}
+            testId="club-quick-actions"
+          />
+
+          <CollaborationSignals role="club" />
+        </div>
+      </div>
+
+
 
       <Disclaimer />
     </DashboardLayout>
