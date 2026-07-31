@@ -17,7 +17,12 @@ export async function GlobalNavbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 shadow-sm transition-all duration-300">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link
-          href={role === "student" ? "/newsfeed" : "/"}
+          href={
+            role === "student" ? "/newsfeed" :
+            role === "club" ? "/dashboard/clubs/dashboard" :
+            role === "corporate" ? "/dashboard/corporate/dashboard" :
+            "/"
+          }
           aria-label="Storporate home"
           className="group flex items-center tracking-tighter select-none"
         >

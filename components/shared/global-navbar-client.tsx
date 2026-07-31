@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { Search, Compass, Briefcase, User, Newspaper, Sparkles, Inbox } from "lucide-react";
+import { Newspaper, Briefcase, MessageSquare } from "lucide-react";
 
 interface GlobalNavbarClientProps {
   role: string | null;
@@ -25,25 +25,22 @@ export function GlobalNavbarClient({ role, email, isAnonymous }: GlobalNavbarCli
     );
   }
 
+  // We keep only the global app routes here that don't belong in the sidebar
+  // or are primary global hubs (like Messages).
+  // Redundant links (Profile, Inbox, Dashboard, Matches) have been removed
+  // to avoid duplication with the RoleSidebar.
   const studentLinks = [
     { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
-    { name: "Search", href: "/search", icon: Search },
     { name: "Opportunities", href: "/opportunities", icon: Briefcase },
-    { name: "Profile", href: "/dashboard/profile", icon: User },
+    { name: "Messages", href: "/messages", icon: MessageSquare },
   ];
 
   const clubLinks = [
-    { name: "Dashboard", href: "/dashboard/clubs/dashboard", icon: Compass },
-    { name: "Matches", href: "/dashboard/clubs/matches", icon: Sparkles },
-    { name: "Inbox", href: "/inbox", icon: Inbox },
-    { name: "Profile", href: "/dashboard/profile", icon: User },
+    { name: "Messages", href: "/messages", icon: MessageSquare },
   ];
 
   const corporateLinks = [
-    { name: "Dashboard", href: "/dashboard/corporate/dashboard", icon: Compass },
-    { name: "Candidates", href: "/dashboard/corporate/candidates/students", icon: Sparkles },
-    { name: "Inbox", href: "/inbox", icon: Inbox },
-    { name: "Profile", href: "/dashboard/profile", icon: User },
+    { name: "Messages", href: "/messages", icon: MessageSquare },
   ];
 
   let links = studentLinks;
