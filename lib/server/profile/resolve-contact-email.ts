@@ -2,9 +2,8 @@
  * Phase 8.6: contact-email resolver.
  *
  * Source-of-truth rules:
- *   - Students  → use `auth.users.email` (via `authEmail` parameter).
- *     Students never persist an email on their persona row; privacy is
- *     enforced at the auth.users layer.
+ *   - Students  → use `auth.users.email` (via `authEmail` parameter) if owner,
+ *     otherwise fall back to `contact_email` column.
  *   - Clubs / Corporates → use the persona row's `contact_email`
  *     column, captured at onboarding, editable from profile.
  *
@@ -39,8 +38,8 @@ export async function resolveContactEmail(
   // schema guarantees students don't have `contact_email` as an
   // authoritative source — we never read it from a student row.
   if ("fullName" in persona) {
-    // Student row — always fall back to the auth email.
-    return (authEmail ?? "").trim();
+    // Student row — prioritize auth email (owner view), fallback to DB column (recruiter view).
+    return (authEmail ?? (persona as any).contactEmail ?? "").trim();
   }
   if ("clubName" in persona) {
     // Club row.

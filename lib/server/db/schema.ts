@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   boolean,
@@ -7,6 +8,7 @@ import {
   timestamp,
   customType,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -119,6 +121,7 @@ export const students = pgTable("students", {
   expectedGraduation: text("expected_graduation").notNull(),
   location: text("location").notNull(),
   bio: text("bio").notNull().default(""),
+  contactEmail: text("contact_email").notNull().default(""),
   skills: text("skills").array().notNull(),
   careerInterests: text("career_interests").array().notNull(),
   heroFlag: boolean("hero_flag").notNull().default(false),
@@ -133,7 +136,9 @@ export const students = pgTable("students", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}, (t) => ({
+  embeddingIndex: index("students_embedding_idx").using("hnsw", sql`${t.embedding} vector_cosine_ops`),
+}));
 
 export const clubs = pgTable("clubs", {
   id: text("id").primaryKey(),
@@ -159,7 +164,9 @@ export const clubs = pgTable("clubs", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}, (t) => ({
+  embeddingIndex: index("clubs_embedding_idx").using("hnsw", sql`${t.embedding} vector_cosine_ops`),
+}));
 
 export const corporates = pgTable("corporates", {
   id: text("id").primaryKey(),
@@ -185,7 +192,9 @@ export const corporates = pgTable("corporates", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}, (t) => ({
+  embeddingIndex: index("corporates_embedding_idx").using("hnsw", sql`${t.embedding} vector_cosine_ops`),
+}));
 
 // ----------------------------------------------------------------------
 // Phase 4: student apply (a student expresses interest in a specific
@@ -410,6 +419,7 @@ export const events = pgTable(
   },
   (t) => ({
     uniqEventSlug: uniqueIndex("events_slug_uniq").on(t.slug),
+    embeddingIndex: index("events_embedding_idx").using("hnsw", sql`${t.embedding} vector_cosine_ops`),
   }),
 );
 
@@ -482,6 +492,7 @@ export const jobs = pgTable(
   },
   (t) => ({
     uniqJobSlug: uniqueIndex("jobs_slug_uniq").on(t.slug),
+    embeddingIndex: index("jobs_embedding_idx").using("hnsw", sql`${t.embedding} vector_cosine_ops`),
   }),
 );
 
@@ -512,6 +523,7 @@ export const posts = pgTable(
   },
   (t) => ({
     uniqPostSlug: uniqueIndex("posts_slug_uniq").on(t.slug),
+    embeddingIndex: index("posts_embedding_idx").using("hnsw", sql`${t.embedding} vector_cosine_ops`),
   }),
 );
 
@@ -551,6 +563,53 @@ export const invitations = pgTable("invitations", {
     .notNull(),
 });
 
+// ----------------------------------------------------------------------
+// Phase 4: In-App Messaging
+// 1:1 threads between any two personas. participant1Id < participant2Id alphabetically
+// is enforced at the app layer to prevent duplicate threads, and backed by a unique index.
+export const conversations = pgTable("conversations", {
+  id: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  participant1Id: text("participant1_id").notNull(),
+  participant2Id: text("participant2_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+}, (t) => ({
+  uniqParticipants: uniqueIndex("conversations_p1_p2_uniq").on(t.participant1Id, t.participant2Id),
+}));
+
+export const messages = pgTable("messages", {
+  id: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  conversationId: customType<{ data: string; driverData: string }>({
+    dataType: () => "uuid",
+    toDriver: (v: string) => v,
+    fromDriver: (s: string) => s,
+  })("conversation_id")
+    .notNull()
+    .references(() => conversations.id, { onDelete: "cascade" }),
+  senderId: text("sender_id").notNull(),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 // Aggregated export so tests, seed scripts, and admin tooling can iterate
 // every table without re-listing the named exports above.
 export const schema = {
@@ -571,4 +630,6 @@ export const schema = {
   jobs,
   posts,
   invitations,
+  conversations,
+  messages,
 };

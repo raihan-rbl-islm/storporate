@@ -88,12 +88,17 @@ export async function submitProfile(
         errors: projectZodErrors(parsed.error.issues),
       };
     }
-    await db
-      .update(students)
-      .set({ ...parsed.data, updatedAt: new Date() })
-      .where(eq(students.id, current.row.id));
-    revalidatePath("/", "layout");
-    return { status: "success", message: "Profile saved." };
+    try {
+      await db
+        .update(students)
+        .set({ ...parsed.data, updatedAt: new Date() })
+        .where(eq(students.id, current.row.id));
+      revalidatePath("/", "layout");
+      return { status: "success", message: "Profile saved." };
+    } catch (err) {
+      console.error("[submitProfile] student update failed:", err);
+      return { status: "error", formMessage: "An unexpected error occurred while saving your profile. Please try again.", errors: {} };
+    }
   }
   if (current.kind === "club") {
     const payload: ClubFormInput = {
@@ -118,12 +123,17 @@ export async function submitProfile(
         errors: projectZodErrors(parsed.error.issues),
       };
     }
-    await db
-      .update(clubs)
-      .set({ ...parsed.data, updatedAt: new Date() })
-      .where(eq(clubs.id, current.row.id));
-    revalidatePath("/", "layout");
-    return { status: "success", message: "Profile saved." };
+    try {
+      await db
+        .update(clubs)
+        .set({ ...parsed.data, updatedAt: new Date() })
+        .where(eq(clubs.id, current.row.id));
+      revalidatePath("/", "layout");
+      return { status: "success", message: "Profile saved." };
+    } catch (err) {
+      console.error("[submitProfile] club update failed:", err);
+      return { status: "error", formMessage: "An unexpected error occurred while saving your profile. Please try again.", errors: {} };
+    }
   }
   const payload: CorporateFormInput = {
     organizationName: getString(formData, "organizationName"),
@@ -151,10 +161,15 @@ export async function submitProfile(
       errors: projectZodErrors(parsed.error.issues),
     };
   }
-  await db
-    .update(corporates)
-    .set({ ...parsed.data, updatedAt: new Date() })
-    .where(eq(corporates.id, current.row.id));
-  revalidatePath("/", "layout");
-  return { status: "success", message: "Profile saved." };
+  try {
+    await db
+      .update(corporates)
+      .set({ ...parsed.data, updatedAt: new Date() })
+      .where(eq(corporates.id, current.row.id));
+    revalidatePath("/", "layout");
+    return { status: "success", message: "Profile saved." };
+  } catch (err) {
+    console.error("[submitProfile] corporate update failed:", err);
+    return { status: "error", formMessage: "An unexpected error occurred while saving your profile. Please try again.", errors: {} };
+  }
 }

@@ -168,24 +168,33 @@ export async function createPost(
     ownerName,
   });
 
-  const [created] = await db
-    .insert(posts)
-    .values({
-      ownerKind,
-      ownerId: current.row.id,
-      kind: parsed.data.kind,
-      title: parsed.data.title,
-      slug,
-      body: parsed.data.body,
-      tags: parsed.data.tags,
-      embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needsEmbedding,
-    })
-    .returning({ id: posts.id, slug: posts.slug });
+  try {
+    const [created] = await db
+      .insert(posts)
+      .values({
+        ownerKind,
+        ownerId: current.row.id,
+        kind: parsed.data.kind,
+        title: parsed.data.title,
+        slug,
+        body: parsed.data.body,
+        tags: parsed.data.tags,
+        embedding: withEmb.embedding,
+        needsEmbedding: withEmb.needsEmbedding,
+      })
+      .returning({ id: posts.id, slug: posts.slug });
 
-  revalidatePath("/", "layout");
-  revalidatePath("/newsfeed");
-  redirect(`/posts/${created.slug}`);
+    revalidatePath("/", "layout");
+    revalidatePath("/newsfeed");
+    redirect(`/posts/${created.slug}`);
+  } catch (err) {
+    console.error("[createPost] insert failed:", err);
+    return {
+      status: "error",
+      fieldErrors: {},
+      formMessage: "An unexpected error occurred while creating the post.",
+    };
+  }
 }
 
 /**
@@ -277,24 +286,33 @@ export async function updatePost(
     ownerName,
   });
 
-  await db
-    .update(posts)
-    .set({
-      kind: parsed.data.kind,
-      title: parsed.data.title,
-      slug,
-      body: parsed.data.body,
-      tags: parsed.data.tags,
-      embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needsEmbedding,
-    })
-    .where(eq(posts.id, postId));
+  try {
+    await db
+      .update(posts)
+      .set({
+        kind: parsed.data.kind,
+        title: parsed.data.title,
+        slug,
+        body: parsed.data.body,
+        tags: parsed.data.tags,
+        embedding: withEmb.embedding,
+        needsEmbedding: withEmb.needsEmbedding,
+      })
+      .where(eq(posts.id, postId));
 
-  revalidatePath(`/posts/${slug}`);
-  revalidatePath(`/posts/${slug}/manage`);
-  revalidatePath("/", "layout");
-  revalidatePath("/newsfeed");
-  return { status: "success", message: "Post updated." };
+    revalidatePath(`/posts/${slug}`);
+    revalidatePath(`/posts/${slug}/manage`);
+    revalidatePath("/", "layout");
+    revalidatePath("/newsfeed");
+    return { status: "success", message: "Post updated." };
+  } catch (err) {
+    console.error("[updatePost] update failed:", err);
+    return {
+      status: "error",
+      fieldErrors: {},
+      formMessage: "An unexpected error occurred while updating the post.",
+    };
+  }
 }
 
 /**

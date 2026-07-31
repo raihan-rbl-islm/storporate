@@ -223,18 +223,21 @@ const experienceSchema = z.object({
     .transform((s) => s.trim())
     .pipe(z.string().min(1, "Required")),
   location: z.string(),
-  startDate: z.string(),
-  endDate: z.string(),
+  startDate: z.string().min(1, "Required").regex(/^\d{4}-\d{2}$/, "Must be YYYY-MM"),
+  endDate: z.string().min(1, "Required").regex(/^\d{4}-\d{2}$/, "Must be YYYY-MM"),
   description: z.string(),
   tags: z.array(z.string()),
+}).refine((data) => data.endDate >= data.startDate, {
+  message: "End date must be after start date",
+  path: ["end_date"],
 });
 
 const achievementSchema = z.object({
   kind: z.enum(["award", "publication", "talk", "certification", "competition"]),
   title: z.string().transform((s) => s.trim()).pipe(z.string().min(1, "Required")),
   issuer: z.string(),
-  date: z.string(),
-  url: z.string(),
+  date: z.string().min(1, "Required").regex(/^\d{4}-\d{2}$/, "Must be YYYY-MM"),
+  url: z.string().url("Must be a valid URL").or(z.literal("")),
   description: z.string(),
 });
 
@@ -245,8 +248,11 @@ const activitySchema = z.object({
     .string()
     .transform((s) => s.trim())
     .pipe(z.string().min(1, "Required")),
-  startDate: z.string(),
-  endDate: z.string(),
+  startDate: z.string().min(1, "Required").regex(/^\d{4}-\d{2}$/, "Must be YYYY-MM"),
+  endDate: z.string().min(1, "Required").regex(/^\d{4}-\d{2}$/, "Must be YYYY-MM"),
+}).refine((data) => data.endDate >= data.startDate, {
+  message: "End date must be after start date",
+  path: ["end_date"],
 });
 
 // ---- Experiences ----

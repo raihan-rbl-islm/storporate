@@ -107,6 +107,7 @@ export async function getRankedCandidatesForJob(
       expected_graduation: string;
       location: string;
       bio: string;
+      contact_email: string;
       skills: string[];
       career_interests: string[];
       hero_flag: boolean;
@@ -128,6 +129,7 @@ export async function getRankedCandidatesForJob(
           expectedGraduation: r.expected_graduation,
           location: r.location,
           bio: r.bio,
+          contactEmail: r.contact_email,
           skills: r.skills,
           careerInterests: r.career_interests,
           heroFlag: r.hero_flag,

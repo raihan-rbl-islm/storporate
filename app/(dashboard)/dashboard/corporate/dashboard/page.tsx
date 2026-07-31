@@ -28,7 +28,6 @@ import {
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { MatchCard } from "@/components/matches/match-card";
 import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
-import { Disclaimer } from "@/components/personas/disclaimer";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import {
@@ -303,7 +302,7 @@ export default async function CorporateDashboardPage() {
       {/* 1. TOP ROW: Core Metrics */}
       <section
         aria-labelledby="corporate-stats-heading"
-        className="grid grid-cols-2 gap-4 sm:grid-cols-4"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <h2 id="corporate-stats-heading" className="sr-only">
           Your dashboard at a glance
@@ -461,9 +460,6 @@ export default async function CorporateDashboardPage() {
         </div>
       </div>
 
-
-
-      <Disclaimer />
     </DashboardLayout>
   );
 }

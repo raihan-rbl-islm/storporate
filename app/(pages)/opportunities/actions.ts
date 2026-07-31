@@ -256,29 +256,38 @@ export async function createJob(
     employerName,
   );
 
-  const [created] = await db
-    .insert(jobs)
-    .values({
-      corporateId: current.row.id,
-      title: parsed.data.title,
-      slug,
-      description: parsed.data.description,
-      employmentType: parsed.data.employmentType,
-      locationLabel: parsed.data.locationLabel,
-      isRemote: parsed.data.isRemote,
-      startsOn: parsed.data.startsOn,
-      endsOn: parsed.data.endsOn,
-      applyUrl: parsed.data.applyUrl,
-      applyEmail: parsed.data.applyEmail,
-      skills: parsed.data.skills,
-      embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needsEmbedding,
-      isOpen: true,
-    })
-    .returning({ id: jobs.id, slug: jobs.slug });
+  try {
+    const [created] = await db
+      .insert(jobs)
+      .values({
+        corporateId: current.row.id,
+        title: parsed.data.title,
+        slug,
+        description: parsed.data.description,
+        employmentType: parsed.data.employmentType,
+        locationLabel: parsed.data.locationLabel,
+        isRemote: parsed.data.isRemote,
+        startsOn: parsed.data.startsOn,
+        endsOn: parsed.data.endsOn,
+        applyUrl: parsed.data.applyUrl,
+        applyEmail: parsed.data.applyEmail,
+        skills: parsed.data.skills,
+        embedding: withEmb.embedding,
+        needsEmbedding: withEmb.needsEmbedding,
+        isOpen: true,
+      })
+      .returning({ id: jobs.id, slug: jobs.slug });
 
-  revalidatePath("/", "layout");
-  redirect(`/opportunities/${created.slug}`);
+    revalidatePath("/", "layout");
+    redirect(`/opportunities/${created.slug}`);
+  } catch (err) {
+    console.error("[createJob] insert failed:", err);
+    return {
+      status: "error",
+      fieldErrors: {},
+      formMessage: "An unexpected error occurred while creating the job.",
+    };
+  }
 }
 
 export async function updateJob(
@@ -397,30 +406,39 @@ export async function updateJob(
     employerName,
   );
 
-  await db
-    .update(jobs)
-    .set({
-      title: parsed.data.title,
-      slug,
-      description: parsed.data.description,
-      employmentType: parsed.data.employmentType,
-      locationLabel: parsed.data.locationLabel,
-      isRemote: parsed.data.isRemote,
-      startsOn: parsed.data.startsOn,
-      endsOn: parsed.data.endsOn,
-      applyUrl: parsed.data.applyUrl,
-      applyEmail: parsed.data.applyEmail,
-      skills: parsed.data.skills,
-      embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needsEmbedding,
-    })
-    .where(eq(jobs.id, jobId));
+  try {
+    await db
+      .update(jobs)
+      .set({
+        title: parsed.data.title,
+        slug,
+        description: parsed.data.description,
+        employmentType: parsed.data.employmentType,
+        locationLabel: parsed.data.locationLabel,
+        isRemote: parsed.data.isRemote,
+        startsOn: parsed.data.startsOn,
+        endsOn: parsed.data.endsOn,
+        applyUrl: parsed.data.applyUrl,
+        applyEmail: parsed.data.applyEmail,
+        skills: parsed.data.skills,
+        embedding: withEmb.embedding,
+        needsEmbedding: withEmb.needsEmbedding,
+      })
+      .where(eq(jobs.id, jobId));
 
-  revalidatePath(`/opportunities/${slug}`);
-  revalidatePath(`/opportunities/${slug}/manage`);
-  revalidatePath(`/opportunities/${slug}/candidates`);
-  revalidatePath("/", "layout");
-  return { status: "success", message: "Job updated." };
+    revalidatePath(`/opportunities/${slug}`);
+    revalidatePath(`/opportunities/${slug}/manage`);
+    revalidatePath(`/opportunities/${slug}/candidates`);
+    revalidatePath("/", "layout");
+    return { status: "success", message: "Job updated." };
+  } catch (err) {
+    console.error("[updateJob] update failed:", err);
+    return {
+      status: "error",
+      fieldErrors: {},
+      formMessage: "An unexpected error occurred while updating the job.",
+    };
+  }
 }
 
 export async function deleteJob(jobId: string): Promise<void> {

@@ -28,7 +28,6 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { MatchCard } from "@/components/matches/match-card";
 import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
-import { Disclaimer } from "@/components/personas/disclaimer";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import {
@@ -342,9 +341,6 @@ export default async function ClubDashboardPage() {
         </div>
       </div>
 
-
-
-      <Disclaimer />
     </DashboardLayout>
   );
 }

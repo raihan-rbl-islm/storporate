@@ -26,7 +26,6 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyFixtureState } from "@/components/matches/empty-fixture-state";
 import { MatchCard } from "@/components/matches/match-card";
 import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
-import { Disclaimer } from "@/components/personas/disclaimer";
 import { HeroCallout } from "@/components/hero/hero-callout";
 import { CollaborationSignals } from "@/components/dashboard/collaboration-signals";
 import { ProfileCompletenessMeter } from "@/components/profile/profile-completeness-meter";
@@ -37,9 +36,9 @@ import {
 } from "@/components/dashboard/quick-actions";
 import { getStudentOverview } from "@/lib/server/dashboard/overview";
 import {
-  getCurrentPersona,
   hasOnboarded,
 } from "@/lib/server/personas/current";
+import { requirePersona } from "@/lib/server/personas/guard";
 import {
   rankCorporateMatchesFor,
   toDisplayMatchPercent,
@@ -142,8 +141,7 @@ function TopOpportunities({
 }
 
 export default async function StudentDashboardPage() {
-  const current = await getCurrentPersona();
-  if (!current || current.kind !== "student") redirect("/dashboard");
+  const current = await requirePersona("student");
   const student = current.row;
   const ready = hasOnboarded(student);
 
@@ -308,7 +306,6 @@ export default async function StudentDashboardPage() {
       </div>
 
       <CollaborationSignals role="student" />
-      <Disclaimer />
     </DashboardLayout>
   );
 }

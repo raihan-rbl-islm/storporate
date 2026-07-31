@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Disclaimer } from "@/components/personas/disclaimer";
 
 interface FooterColumn {
   heading: string;
@@ -61,7 +60,6 @@ export function LandingFooter() {
             Bangladesh-first marketplace connecting students, university clubs,
             and companies through transparent compatibility scoring.
           </p>
-          <Disclaimer className="max-w-xs" />
         </div>
 
         {COLUMNS.map((col) => (
@@ -90,7 +88,6 @@ export function LandingFooter() {
           <p>
             © {new Date().getFullYear()} Storporate. Built for Bangladesh.
           </p>
-          <p>Compatibility scores are guidance, not guarantees.</p>
         </div>
       </div>
     </footer>

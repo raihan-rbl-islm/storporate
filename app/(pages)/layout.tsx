@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Disclaimer } from "@/components/personas/disclaimer";
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import { getCurrentUser } from "@/lib/server/auth/current-user";
 import { GlobalNavbar } from "@/components/shared/global-navbar";
@@ -31,12 +30,6 @@ export default async function PagesLayout({
       <main className="mx-auto w-full max-w-6xl px-6 py-6 lg:py-8 flex-1">
         {children}
       </main>
-
-      <footer className="mt-auto border-t py-6 bg-muted/20">
-        <div className="mx-auto max-w-6xl px-6 flex justify-center">
-          <Disclaimer />
-        </div>
-      </footer>
 
       {u.kind === "anonymous" ? (
         <span hidden data-persona-id={personaId} />

@@ -245,29 +245,38 @@ export async function createEvent(
     locationLabel: parsed.data.locationLabel,
   });
 
-  const [created] = await db
-    .insert(events)
-    .values({
-      ownerKind,
-      ownerId: current.row.id,
-      title: parsed.data.title,
-      slug,
-      description: parsed.data.description,
-      startsAt: startsAtUtc,
-      endsAt: endsAtUtc,
-      venue: parsed.data.venue,
-      locationLabel: parsed.data.locationLabel,
-      isVirtual: parsed.data.isVirtual,
-      registrationUrl: parsed.data.registrationUrl,
-      capacity: parsed.data.capacity,
-      tags: parsed.data.tags,
-      embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needsEmbedding,
-    })
-    .returning({ id: events.id, slug: events.slug });
+  try {
+    const [created] = await db
+      .insert(events)
+      .values({
+        ownerKind,
+        ownerId: current.row.id,
+        title: parsed.data.title,
+        slug,
+        description: parsed.data.description,
+        startsAt: startsAtUtc,
+        endsAt: endsAtUtc,
+        venue: parsed.data.venue,
+        locationLabel: parsed.data.locationLabel,
+        isVirtual: parsed.data.isVirtual,
+        registrationUrl: parsed.data.registrationUrl,
+        capacity: parsed.data.capacity,
+        tags: parsed.data.tags,
+        embedding: withEmb.embedding,
+        needsEmbedding: withEmb.needsEmbedding,
+      })
+      .returning({ id: events.id, slug: events.slug });
 
-  revalidatePath("/", "layout");
-  redirect(`/events/${created.slug}`);
+    revalidatePath("/", "layout");
+    redirect(`/events/${created.slug}`);
+  } catch (err) {
+    console.error("[createEvent] insert failed:", err);
+    return {
+      status: "error",
+      fieldErrors: {},
+      formMessage: "An unexpected error occurred while creating the event.",
+    };
+  }
 }
 
 /**
@@ -387,29 +396,38 @@ export async function updateEvent(
     locationLabel: parsed.data.locationLabel,
   });
 
-  await db
-    .update(events)
-    .set({
-      title: parsed.data.title,
-      slug,
-      description: parsed.data.description,
-      startsAt: startsAtUtc,
-      endsAt: endsAtUtc,
-      venue: parsed.data.venue,
-      locationLabel: parsed.data.locationLabel,
-      isVirtual: parsed.data.isVirtual,
-      registrationUrl: parsed.data.registrationUrl,
-      capacity: parsed.data.capacity,
-      tags: parsed.data.tags,
-      embedding: withEmb.embedding,
-      needsEmbedding: withEmb.needsEmbedding,
-    })
-    .where(eq(events.id, eventId));
+  try {
+    await db
+      .update(events)
+      .set({
+        title: parsed.data.title,
+        slug,
+        description: parsed.data.description,
+        startsAt: startsAtUtc,
+        endsAt: endsAtUtc,
+        venue: parsed.data.venue,
+        locationLabel: parsed.data.locationLabel,
+        isVirtual: parsed.data.isVirtual,
+        registrationUrl: parsed.data.registrationUrl,
+        capacity: parsed.data.capacity,
+        tags: parsed.data.tags,
+        embedding: withEmb.embedding,
+        needsEmbedding: withEmb.needsEmbedding,
+      })
+      .where(eq(events.id, eventId));
 
-  revalidatePath(`/events/${slug}`);
-  revalidatePath(`/events/${slug}/manage`);
-  revalidatePath("/", "layout");
-  return { status: "success", message: "Event updated." };
+    revalidatePath(`/events/${slug}`);
+    revalidatePath(`/events/${slug}/manage`);
+    revalidatePath("/", "layout");
+    return { status: "success", message: "Event updated." };
+  } catch (err) {
+    console.error("[updateEvent] update failed:", err);
+    return {
+      status: "error",
+      fieldErrors: {},
+      formMessage: "An unexpected error occurred while updating the event.",
+    };
+  }
 }
 
 /**
@@ -559,70 +577,78 @@ export async function registerForEvent(
     };
   }
 
-  return await db.transaction(async (tx) => {
-    const [eventRow] = await tx
-      .select({
-        id: events.id,
-        slug: events.slug,
-        capacity: events.capacity,
-        startsAt: events.startsAt,
-      })
-      .from(events)
-      .where(eq(events.id, eventId))
-      .for("update")
-      .limit(1);
-    if (!eventRow) {
-      return { status: "error", formMessage: "Event not found." } as const;
-    }
-    if (eventRow.startsAt.getTime() <= Date.now()) {
-      return {
-        status: "error",
-        formMessage: "This event has already started or passed.",
-      } as const;
-    }
+  try {
+    return await db.transaction(async (tx) => {
+      const [eventRow] = await tx
+        .select({
+          id: events.id,
+          slug: events.slug,
+          capacity: events.capacity,
+          startsAt: events.startsAt,
+        })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .for("update")
+        .limit(1);
+      if (!eventRow) {
+        return { status: "error", formMessage: "Event not found." } as const;
+      }
+      if (eventRow.startsAt.getTime() <= Date.now()) {
+        return {
+          status: "error",
+          formMessage: "This event has already started or passed.",
+        } as const;
+      }
 
-    if (eventRow.capacity !== null && eventRow.capacity <= 0) {
-      return {
-        status: "error",
-        formMessage: "Registration for this event is closed.",
-      } as const;
-    }
+      if (eventRow.capacity !== null && eventRow.capacity <= 0) {
+        return {
+          status: "error",
+          formMessage: "Registration for this event is closed.",
+        } as const;
+      }
 
-    const [{ count }] = (await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(eventRegistrations)
-      .where(eq(eventRegistrations.eventId, eventId))) as Array<{ count: number }>;
+      const [{ count }] = (await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(eventRegistrations)
+        .where(eq(eventRegistrations.eventId, eventId))) as Array<{ count: number }>;
 
-    if (eventRow.capacity !== null && count >= eventRow.capacity) {
-      return {
-        status: "error",
-        formMessage: "This event is full.",
-      } as const;
-    }
+      if (eventRow.capacity !== null && count >= eventRow.capacity) {
+        return {
+          status: "error",
+          formMessage: "This event is full.",
+        } as const;
+      }
 
-    await tx
-      .insert(eventRegistrations)
-      .values({
-        eventId,
-        studentId: current.row.id,
-        motivation: parsedMotivation.data ?? "",
-      })
-      .onConflictDoUpdate({
-        target: [eventRegistrations.eventId, eventRegistrations.studentId],
-        set: {
+      await tx
+        .insert(eventRegistrations)
+        .values({
+          eventId,
+          studentId: current.row.id,
           motivation: parsedMotivation.data ?? "",
-          registeredAt: new Date(),
-        },
-      });
+        })
+        .onConflictDoUpdate({
+          target: [eventRegistrations.eventId, eventRegistrations.studentId],
+          set: {
+            motivation: parsedMotivation.data ?? "",
+            registeredAt: new Date(),
+          },
+        });
 
-    revalidatePath(`/events/${eventRow.slug}`);
-    revalidatePath(`/events/${eventRow.slug}/manage`);
-    revalidatePath("/", "layout");
+      revalidatePath(`/events/${eventRow.slug}`);
+      revalidatePath(`/events/${eventRow.slug}/manage`);
+      revalidatePath("/", "layout");
+      return {
+        status: "success",
+        message: "You're registered.",
+      } as const;
+    });
+  } catch (err) {
+    console.error("[registerForEvent] registration failed:", err);
     return {
-      status: "success",
-      message: "You're registered.",
-    } as const;
-  });
+      status: "error",
+      formMessage: "An unexpected error occurred. Please try again.",
+    };
+  }
 }
 
 /**

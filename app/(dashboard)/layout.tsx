@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Disclaimer } from "@/components/personas/disclaimer";
 import {
   MobileSidebarTabs,
   RoleSidebar,
@@ -8,10 +7,15 @@ import {
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import { getCurrentUser } from "@/lib/server/auth/current-user";
 import { getOverviewForCurrentPersona, AnyOverview } from "@/lib/server/dashboard/overview";
+import { getGlobalUnreadCount } from "@/lib/server/actions/messaging";
 import { GlobalNavbar } from "@/components/shared/global-navbar";
 
-function PriorityStrip({ overview }: { overview: AnyOverview }) {
+function PriorityStrip({ overview, unreadCount }: { overview: AnyOverview; unreadCount: number }) {
   const alerts: Array<{ label: string; count: number; href: string }> = [];
+
+  if (unreadCount > 0) {
+    alerts.push({ label: "Unread Messages", count: unreadCount, href: "/messages" });
+  }
 
   if (overview.kind === "student") {
     if (overview.totalMatches > 0) alerts.push({ label: "New Matches", count: overview.totalMatches, href: "/dashboard/matches" });
@@ -65,6 +69,7 @@ export default async function DashboardLayout({
 
   const personaId = current.row.id;
   const overview = await getOverviewForCurrentPersona();
+  const unreadCount = await getGlobalUnreadCount();
 
   if (!overview) {
     return (
@@ -87,19 +92,13 @@ export default async function DashboardLayout({
 
         {/* Main Canvas */}
         <main className="flex-1 flex flex-col gap-8 min-w-0">
-          <PriorityStrip overview={overview} />
+          <PriorityStrip overview={overview} unreadCount={unreadCount} />
           
           <div className="bg-card/30 rounded-3xl border border-border/50 shadow-sm p-6 sm:p-8 lg:p-10">
             {children}
           </div>
         </main>
       </div>
-
-      <footer className="mt-auto border-t py-8 bg-muted/20">
-        <div className="mx-auto max-w-[1400px] px-6 flex justify-center">
-          <Disclaimer />
-        </div>
-      </footer>
 
       {u.kind === "anonymous" ? (
         <span hidden data-persona-id={personaId} />

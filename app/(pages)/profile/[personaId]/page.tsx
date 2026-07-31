@@ -10,6 +10,7 @@ import {
   MapPin,
   Sparkles,
   Users,
+  MessageCircle,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,7 @@ import { resolveContactEmail } from "@/lib/server/profile/resolve-contact-email"
 import { formatInDhaka } from "@/lib/format/datetime";
 import { SendInvitationTrigger } from "@/components/invitations/send-invitation-trigger";
 import { ProfileCompletenessMeter } from "@/components/profile/profile-completeness-meter";
+import { startConversationAndRedirect } from "@/lib/server/actions/messaging";
 
 export const dynamic = "force-dynamic";
 
@@ -211,7 +213,13 @@ function ProfileHeader({
               variant="outline"
               render={<Link href="/dashboard/profile/edit">Edit profile</Link>}
             />
-          ) : null}
+          ) : (
+            <form action={startConversationAndRedirect.bind(null, target.row.id)}>
+              <Button type="submit" variant="default" className="gap-2">
+                <MessageCircle className="size-4" /> Message
+              </Button>
+            </form>
+          )}
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import {
   Building2,
   Check,
   Sparkles,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { and, desc, eq } from "drizzle-orm";
@@ -11,7 +12,7 @@ import { notFound, redirect } from "next/navigation";
 import { SponsorshipInterestButton } from "@/components/matches/sponsorship-interest-button";
 import { OutreachDraftPanel } from "@/components/outreach/outreach-draft-panel";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -28,6 +29,7 @@ import {
   hasOnboarded,
 } from "@/lib/server/personas/current";
 import { getCorporateFixtures } from "@/lib/server/personas/lookup";
+import { startConversationAndRedirect } from "@/lib/server/actions/messaging";
 import { db } from "@/lib/server/db";
 import { outreachEvents, corporates as corporatesSchema } from "@/lib/server/db/schema";
 import type { CorporateFixture } from "@/data/personas";
@@ -121,10 +123,17 @@ export default async function ClubMatchRationalePage({ params }: PageProps) {
             </p>
           </div>
           {current.kind === "club" ? (
-            <SponsorshipInterestButton
-              corporateId={corporate.id}
-              initialStatus={interestStatus.recorded ? "recorded" : "idle"}
-            />
+            <div className="flex items-center gap-2">
+              <SponsorshipInterestButton
+                corporateId={corporate.id}
+                initialStatus={interestStatus.recorded ? "recorded" : "idle"}
+              />
+              <form action={startConversationAndRedirect.bind(null, corporate.id)}>
+                <Button type="submit" variant="outline" className="gap-2">
+                  <MessageCircle className="size-4" /> Message
+                </Button>
+              </form>
+            </div>
           ) : null}
         </div>
         <Badge

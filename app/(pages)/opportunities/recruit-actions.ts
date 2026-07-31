@@ -188,45 +188,54 @@ export async function sendRecruitmentOutreach(
     ? parsed.data.subject
     : `Storporate · ${parsed.data.subject}`;
 
-  const [row] = await db
-    .insert(invitations)
-    .values({
-      kind: "student_to_company",
-      fromKind: "corporate",
-      fromId: viewer.row.id,
-      toKind: "student",
-      toId: parsed.data.studentId,
-      jobId: parsed.data.jobId || null,
-      eventId: null,
-      subject: fullSubject,
-      body: parsed.data.body,
-      senderEmail: corp.contactEmail,
-      recipientEmail,
-      status: "sent",
-    })
-    .returning({ id: invitations.id });
-
-  // Best-effort transport. If the env isn't configured we still want
-  // the audit row, so we log + continue.
   try {
-    await sendTransactionalEmail({
-      to: recipientEmail,
-      from: `${process.env.EMAIL_FROM_NAME ?? "Storporate"} <${process.env.EMAIL_FROM_ADDRESS ?? "noreply@storporate.bd"}>`,
-      subject: fullSubject,
-      html,
-      text: parsed.data.body,
-      replyTo: corp.contactEmail,
-    });
-  } catch (err) {
-    console.error(
-      "[sendRecruitmentOutreach] transport failed (row still persisted):",
-      err,
-    );
-  }
+    const [row] = await db
+      .insert(invitations)
+      .values({
+        kind: "student_to_company",
+        fromKind: "corporate",
+        fromId: viewer.row.id,
+        toKind: "student",
+        toId: parsed.data.studentId,
+        jobId: parsed.data.jobId || null,
+        eventId: null,
+        subject: fullSubject,
+        body: parsed.data.body,
+        senderEmail: corp.contactEmail,
+        recipientEmail,
+        status: "sent",
+      })
+      .returning({ id: invitations.id });
 
-  return {
-    status: "success",
-    message: `Sent to ${student.fullName}.`,
-    invitationId: row?.id ?? "",
-  };
+    // Best-effort transport. If the env isn't configured we still want
+    // the audit row, so we log + continue.
+    try {
+      await sendTransactionalEmail({
+        to: recipientEmail,
+        from: `${process.env.EMAIL_FROM_NAME ?? "Storporate"} <${process.env.EMAIL_FROM_ADDRESS ?? "noreply@storporate.bd"}>`,
+        subject: fullSubject,
+        html,
+        text: parsed.data.body,
+        replyTo: corp.contactEmail,
+      });
+    } catch (err) {
+      console.error(
+        "[sendRecruitmentOutreach] transport failed (row still persisted):",
+        err,
+      );
+    }
+
+    return {
+      status: "success",
+      message: `Sent to ${student.fullName}.`,
+      invitationId: row?.id ?? "",
+    };
+  } catch (err) {
+    console.error("[sendRecruitmentOutreach] insert failed:", err);
+    return {
+      status: "error",
+      fieldErrors: {},
+      formMessage: "An unexpected error occurred while sending the outreach.",
+    };
+  }
 }
