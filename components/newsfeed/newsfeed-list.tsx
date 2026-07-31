@@ -6,6 +6,7 @@ import {
   resolveOwnerNames,
 } from "@/lib/server/feed/student-newsfeed";
 import { cn } from "@/lib/utils";
+import { MotionWrapper } from "@/components/ui/motion-wrapper";
 
 export const dynamic = "force-dynamic";
 
@@ -64,8 +65,9 @@ export async function NewsfeedList({
             const ev = entry.item;
             return (
               <li key={`event-${ev.id}-${idx}`} className={cn("h-full", colSpan)}>
-                <EventCard
-                  event={{
+                <MotionWrapper index={idx}>
+                  <EventCard
+                    event={{
                     slug: ev.slug,
                     title: ev.title,
                     startsAt: ev.startsAt,
@@ -76,14 +78,16 @@ export async function NewsfeedList({
                     isVirtual: ev.isVirtual,
                   }}
                 />
+                </MotionWrapper>
               </li>
             );
           }
           const p = entry.item;
           return (
             <li key={`post-${p.id}-${idx}`} className={cn("h-full", colSpan)}>
-              <PostCard
-                post={{
+              <MotionWrapper index={idx}>
+                <PostCard
+                  post={{
                   slug: p.slug,
                   title: p.title,
                   body: p.body,
@@ -93,8 +97,9 @@ export async function NewsfeedList({
                   tags: p.tags,
                   publishedAt: p.publishedAt,
                   matchScore: entry.score,
-                }}
-              />
+                  }}
+                />
+              </MotionWrapper>
             </li>
           );
         })

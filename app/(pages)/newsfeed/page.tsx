@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { cn } from "@/lib/utils";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import {
@@ -67,7 +69,9 @@ export default async function NewsfeedPage({ searchParams }: Props) {
         </div>
       </header>
 
-      <NewsfeedList studentId={viewer.row.id} filter={filter} />
+      <Suspense fallback={<LoadingPanel label="Curating your industry pulse..." rows={5} />}>
+        <NewsfeedList studentId={viewer.row.id} filter={filter} />
+      </Suspense>
     </div>
   );
 }
