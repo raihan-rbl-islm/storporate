@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LoadingPanel } from "@/components/ui/loading-panel";
+import { MotionWrapper } from "@/components/ui/motion-wrapper";
 import { PreparedResultsBanner } from "@/components/matches/prepared-results-banner";
 
 import {
@@ -81,70 +82,72 @@ async function CandidatesList({ corporate }: { corporate: CorporateFixture }) {
     <>
       {usedPreparedFallback ? <PreparedResultsBanner /> : null}
       <ul className="grid gap-6">
-      {matches.map(({ student, score, topReasons }) => (
+      {matches.map(({ student, score, topReasons }, index) => (
         <li key={student.id}>
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <CardTitle>
-                    <h2 className="flex items-center gap-2 text-lg font-semibold">
-                      <GraduationCap
-                        aria-hidden="true"
-                        className="text-muted-foreground size-4"
-                      />
-                      {student.fullName}
-                    </h2>
-                  </CardTitle>
-                  <CardDescription>
-                    {student.studyProgram} · {student.university}
-                  </CardDescription>
+          <MotionWrapper index={index}>
+            <Card className="shadow-md hover:shadow-lg transition-shadow bg-background/60 backdrop-blur-xl border-primary/10">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <CardTitle>
+                      <h2 className="flex items-center gap-2 text-lg font-semibold">
+                        <GraduationCap
+                          aria-hidden="true"
+                          className="text-muted-foreground size-4"
+                        />
+                        {student.fullName}
+                      </h2>
+                    </CardTitle>
+                    <CardDescription>
+                      {student.studyProgram} · {student.university}
+                    </CardDescription>
+                  </div>
+                  <Badge
+                    variant="default"
+                    data-testid="candidate-score"
+                    className="shrink-0 self-start whitespace-nowrap bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+                  >
+                    <Sparkles
+                      aria-hidden="true"
+                      className="mr-1 size-3"
+                    />
+                    Score {score}
+                  </Badge>
                 </div>
-                <Badge
-                  variant="default"
-                  data-testid="candidate-score"
-                  className="shrink-0 self-start whitespace-nowrap"
-                >
-                  <Sparkles
-                    aria-hidden="true"
-                    className="mr-1 size-3"
-                  />
-                  Score {score}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {topReasons.length > 0 ? (
-                <ul className="flex flex-wrap gap-2">
-                  {topReasons.map((reason) => (
-                    <li key={reason}>
-                      <Badge variant="secondary">{reason}</Badge>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  Review the match signals above when shortlisting
-                  candidates.
-                </p>
-              )}
-              <div className="pt-2">
-                <Link
-                  href={`/dashboard/corporate/candidates/${student.id}`}
-                  prefetch={false}
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "sm",
-                  })}
-                >
-                  View rationale
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {topReasons.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2">
+                    {topReasons.map((reason) => (
+                      <li key={reason}>
+                        <Badge variant="secondary" className="bg-muted/50">{reason}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    Review the match signals above when shortlisting
+                    candidates.
+                  </p>
+                )}
+                <div className="pt-2">
+                  <Link
+                    href={`/dashboard/corporate/candidates/${student.id}`}
+                    prefetch={false}
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                    })}
+                  >
+                    View rationale
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </MotionWrapper>
         </li>
       ))}
-    </ul>
+      </ul>
     </>
   );
 }
