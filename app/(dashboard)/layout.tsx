@@ -62,7 +62,7 @@ export default async function DashboardLayout({
     redirect("/signin");
   }
 
-  const role = current.role;
+
   const personaId = current.row.id;
   const overview = await getOverviewForCurrentPersona();
 

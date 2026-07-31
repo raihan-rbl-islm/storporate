@@ -1,5 +1,5 @@
 import { Database, FileText, BrainCircuit, Activity, Target, MessageSquare } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 
 const PIPELINE_STEPS = [
   {

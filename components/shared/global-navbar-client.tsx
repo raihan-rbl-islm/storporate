@@ -14,7 +14,7 @@ interface GlobalNavbarClientProps {
   isAnonymous: boolean;
 }
 
-export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: GlobalNavbarClientProps) {
+export function GlobalNavbarClient({ role, email, isAnonymous }: GlobalNavbarClientProps) {
   const pathname = usePathname();
 
   if (!role) {

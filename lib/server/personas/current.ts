@@ -23,15 +23,7 @@ export type CurrentPersona =
       role: "corporate";
     };
 
-function readCookie(
-  jar: Awaited<ReturnType<typeof cookies>>,
-  name: string,
-): string | null {
-  const c = jar.get(name);
-  return c && typeof c.value === "string" && c.value.length > 0
-    ? c.value
-    : null;
-}
+
 
 export async function getCurrentPersona(): Promise<CurrentPersona | null> {
   // Phase 7: real Supabase-authenticated users take precedence. If the

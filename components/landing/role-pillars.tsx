@@ -95,7 +95,7 @@ export function RolePillars() {
         </div>
 
         {/* Dynamic Feature Boxes */}
-        {content.features.map((feature, i) => {
+        {content.features.map((feature) => {
           const Icon = feature.icon;
           return (
             <div 

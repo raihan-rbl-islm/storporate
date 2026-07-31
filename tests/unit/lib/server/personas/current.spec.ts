@@ -11,8 +11,7 @@ vi.mock("@/lib/server/db", () => ({
 }));
 
 import { cookies } from "next/headers";
-import { db } from "@/lib/server/db";
-import { students } from "@/lib/server/db/schema";
+
 import { getCurrentPersona } from "@/lib/server/personas/current";
 
 describe("getCurrentPersona", () => {

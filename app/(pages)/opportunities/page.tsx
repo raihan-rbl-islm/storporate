@@ -7,6 +7,8 @@ export const metadata = {
   title: "Opportunities",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function OpportunitiesPage() {
   const persona = await getCurrentPersona();
   const studentId = persona?.kind === "student" ? persona.row.id : undefined;

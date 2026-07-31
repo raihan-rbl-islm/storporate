@@ -33,7 +33,7 @@ export default async function OnboardingPage() {
         <span className="text-sm font-bold tracking-tight text-primary">Final Step</span>
       </div>
       <div className="mb-12 space-y-4">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">Let's build your profile.</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">Let&apos;s build your profile.</h1>
         <p className="text-xl text-muted-foreground leading-relaxed">
           Tell us about your {roleTitle} focus so we can start curating your matches.
         </p>

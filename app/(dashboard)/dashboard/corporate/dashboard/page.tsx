@@ -40,7 +40,7 @@ import { getCorporateOverview } from "@/lib/server/dashboard/overview";
 import { db } from "@/lib/server/db";
 import { events, jobs, posts } from "@/lib/server/db/schema";
 import {
-  getCorporateFixtures,
+
 } from "@/lib/server/personas/lookup";
 import {
   getCurrentPersona,
@@ -784,9 +784,4 @@ function OwnedPostsPanel({ ownedPosts }: { ownedPosts: OwnedPostRow[] }) {
       )}
     </section>
   );
-}
-
-function truncate(s: string, n: number): string {
-  if (s.length <= n) return s;
-  return `${s.slice(0, n - 1).trimEnd()}\u2026`;
 }

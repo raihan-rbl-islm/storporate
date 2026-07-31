@@ -1,4 +1,4 @@
-import { AlertTriangle, Lightbulb, Users, Network, Shield, ShieldCheck, UserCheck } from "lucide-react";
+import { AlertTriangle, Lightbulb, Users, Network, ShieldCheck, UserCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function ProblemSolutionSection() {
