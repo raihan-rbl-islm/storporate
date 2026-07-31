@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { Newspaper, Briefcase, MessageSquare } from "lucide-react";
+import { Newspaper, Briefcase, MessageSquare, Search } from "lucide-react";
 
 interface GlobalNavbarClientProps {
   role: string | null;
@@ -68,6 +68,18 @@ export function GlobalNavbarClient({ role, email, isAnonymous }: GlobalNavbarCli
           </Link>
         );
       })}
+
+      {/* CmdK Trigger */}
+      <button 
+        onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+        className="hidden md:flex items-center gap-2 px-3 py-1.5 ml-2 rounded-lg text-sm font-medium text-muted-foreground bg-muted/30 hover:bg-muted/60 hover:text-foreground transition-all duration-200 border border-border/50 shadow-sm"
+      >
+        <Search className="size-4" />
+        <span className="opacity-70">Search</span>
+        <kbd className="ml-2 hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          <span className="text-xs">⌘</span>K
+        </kbd>
+      </button>
       
       {!isAnonymous && (
         <div className="ml-2 flex items-center gap-3 border-l pl-4">

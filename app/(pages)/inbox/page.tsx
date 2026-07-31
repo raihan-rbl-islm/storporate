@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { desc, eq, inArray, or } from "drizzle-orm";
 
+import { MessageSquare, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -57,11 +58,28 @@ export default async function InboxPage() {
   if (rawRows.length === 0) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold">Inbox</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Outgoing invitations and sponsorship pitches you&apos;ve sent.
-          </p>
+        <header className="mb-6 flex flex-col gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Communications Hub</h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage your active chats and outgoing proposals.</p>
+          </div>
+          
+          <div className="flex items-center gap-6 border-b border-border/50">
+            <Link 
+              href="/messages" 
+              className="flex items-center gap-2 pb-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <MessageSquare className="size-4" />
+              Active Chats
+            </Link>
+            <Link 
+              href="/inbox" 
+              className="flex items-center gap-2 pb-3 text-sm font-medium text-primary border-b-2 border-primary"
+            >
+              <Send className="size-4" />
+              Sent Proposals
+            </Link>
+          </div>
         </header>
         <Card>
           <CardHeader>
@@ -137,11 +155,28 @@ export default async function InboxPage() {
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold">Inbox</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Outgoing invitations and sponsorship pitches you&apos;ve sent.
-        </p>
+      <header className="mb-6 flex flex-col gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Communications Hub</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage your active chats and outgoing proposals.</p>
+        </div>
+        
+        <div className="flex items-center gap-6 border-b border-border/50">
+          <Link 
+            href="/messages" 
+            className="flex items-center gap-2 pb-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <MessageSquare className="size-4" />
+            Active Chats
+          </Link>
+          <Link 
+            href="/inbox" 
+            className="flex items-center gap-2 pb-3 text-sm font-medium text-primary border-b-2 border-primary"
+          >
+            <Send className="size-4" />
+            Sent Proposals
+          </Link>
+        </div>
       </header>
 
       <InboxClientView invites={clientInvites} />
