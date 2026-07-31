@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { getMessages, sendMessage, markConversationRead, type ConversationItem } from "@/lib/server/actions/messaging";
 import { Button } from "@/components/ui/button";
 import { Send, Loader2, ArrowLeft } from "lucide-react";
