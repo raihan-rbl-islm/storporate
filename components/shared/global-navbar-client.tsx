@@ -25,7 +25,6 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
     );
   }
 
-  // Define links for students
   const studentLinks = [
     { name: "Newsfeed", href: "/newsfeed", icon: Newspaper },
     { name: "Search", href: "/search", icon: Search },
@@ -61,13 +60,13 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
             key={link.name}
             href={link.href}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-300",
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
               isActive 
-                ? "bg-primary text-primary-foreground shadow-md" 
-                : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"
+                ? "bg-primary/10 text-primary font-semibold" 
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:shadow-sm"
             )}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className="size-4" />
             <span className="hidden sm:inline">{link.name}</span>
           </Link>
         );
@@ -75,7 +74,7 @@ export function GlobalNavbarClient({ role, personaId, email, isAnonymous }: Glob
       
       {!isAnonymous && (
         <div className="ml-2 flex items-center gap-3 border-l pl-4">
-          <span className="hidden md:inline text-xs text-muted-foreground opacity-70 truncate max-w-[120px]">
+          <span className="hidden md:inline text-xs text-muted-foreground truncate max-w-[120px]">
             {email}
           </span>
           <SignOutButton />

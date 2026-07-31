@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getCurrentPersona } from "@/lib/server/personas/current";
 import {
   NewsfeedList,
@@ -50,16 +51,16 @@ export default async function NewsfeedPage({ searchParams }: Props) {
           <label htmlFor="filter" className="text-muted-foreground">
             Filter:
           </label>
-          <select
-            id="filter"
-            name="filter"
-            defaultValue={filter}
-            className="rounded-md border border-input bg-background px-2 py-1 text-sm"
-          >
-            <option value="all">All</option>
-            <option value="events">Events</option>
-            <option value="posts">News &amp; journals</option>
-          </select>
+          <Select name="filter" defaultValue={filter}>
+            <SelectTrigger id="filter" className="w-[180px] h-8">
+              <SelectValue placeholder="Select filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="events">Events</SelectItem>
+              <SelectItem value="posts">News & journals</SelectItem>
+            </SelectContent>
+          </Select>
           <Button type="submit" variant="outline" size="sm">
             Apply
           </Button>

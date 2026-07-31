@@ -36,7 +36,11 @@ export default async function OnboardingPage() {
     };
     return (
       <main className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="mb-4 text-2xl font-semibold">Student onboarding</h1>
+        <div className="mb-8 flex flex-col gap-1.5">
+          <p className="text-sm font-medium text-muted-foreground">Step 2 of 2 · Profile details</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Student onboarding</h1>
+          <p className="text-base text-muted-foreground">Complete your profile to get personalized updates and matches.</p>
+        </div>
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         <OnboardingForm
           role="student"
@@ -63,7 +67,11 @@ export default async function OnboardingPage() {
     };
     return (
       <main className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="mb-4 text-2xl font-semibold">Club onboarding</h1>
+        <div className="mb-8 flex flex-col gap-1.5">
+          <p className="text-sm font-medium text-muted-foreground">Step 2 of 2 · Profile details</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Club onboarding</h1>
+          <p className="text-base text-muted-foreground">Complete your profile to get personalized updates and matches.</p>
+        </div>
         {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
         <OnboardingForm
           role="club"
@@ -89,7 +97,11 @@ export default async function OnboardingPage() {
   };
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-4 text-2xl font-semibold">Corporate onboarding</h1>
+      <div className="mb-8 flex flex-col gap-1.5">
+        <p className="text-sm font-medium text-muted-foreground">Step 2 of 2 · Profile details</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Corporate onboarding</h1>
+        <p className="text-base text-muted-foreground">Complete your profile to get personalized updates and matches.</p>
+      </div>
       {current.row.fixtureDisclaimerRequired ? <Disclaimer /> : null}
       <OnboardingForm
         role="corporate"

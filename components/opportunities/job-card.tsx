@@ -31,7 +31,7 @@ export function JobCard({ job }: { job: JobForCard }) {
       prefetch={false}
       className="group block relative overflow-hidden rounded-2xl border bg-background/50 backdrop-blur-sm transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
       
       <div className="relative p-6 flex flex-col h-full gap-4">
         <div className="flex items-start justify-between gap-4">

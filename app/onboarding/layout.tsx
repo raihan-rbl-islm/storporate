@@ -29,10 +29,13 @@ export default async function OnboardingLayout({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <Link
             href="/"
-            className="text-base font-semibold tracking-tight"
+            className="flex items-center gap-2 group"
             aria-label="Storporate home"
           >
-            Storporate
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold transition-transform group-hover:scale-105">
+              S
+            </div>
+            <span className="text-lg font-semibold tracking-tight">Storporate</span>
           </Link>
           <UserMenu />
         </div>

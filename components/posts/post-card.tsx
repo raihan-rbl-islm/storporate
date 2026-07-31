@@ -54,7 +54,7 @@ export function PostCard({ post }: { post: PostForCard }) {
     >
       <div className={cn(
         "absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none bg-gradient-to-r",
-        isJournal ? "from-violet-500/10 via-transparent to-violet-500/10" : "from-amber-500/10 via-transparent to-amber-500/10"
+        isJournal ? "from-primary/10 via-transparent to-primary/10" : "from-accent/10 via-transparent to-accent/10"
       )} />
       
       <div className="relative p-6 flex flex-col h-full gap-4">
@@ -66,8 +66,8 @@ export function PostCard({ post }: { post: PostForCard }) {
                 className={cn(
                   "px-2 py-0.5 font-medium border-transparent",
                   isJournal 
-                    ? "bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-100"
-                    : "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100"
+                    ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary"
+                    : "bg-accent/10 text-accent-foreground dark:bg-accent/20 dark:text-accent"
                 )}
               >
                 {kindLabel(post.kind)}

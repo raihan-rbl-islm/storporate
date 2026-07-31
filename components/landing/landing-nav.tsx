@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import { buttonVariants } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/server/auth/current-user";
 import { cn } from "@/lib/utils";
@@ -18,9 +17,6 @@ const NAV_LINKS: readonly NavLink[] = [
 
 export async function LandingNav() {
   const u = await getCurrentUser();
-
-  // Authenticated users see a "Continue to dashboard" CTA instead of
-  // the sign-up/sign-in pair.
   const authed = u.kind !== "anonymous";
 
   return (
@@ -32,15 +28,10 @@ export async function LandingNav() {
         <Link
           href="/"
           aria-label="Storporate home"
-          className="flex items-center gap-2 font-semibold tracking-tight"
+          className="group flex items-center tracking-tighter select-none"
         >
-          <span
-            aria-hidden="true"
-            className="grid size-7 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm"
-          >
-            <span className="text-xs font-bold">S</span>
-          </span>
-          <span className="text-base">Storporate</span>
+          <span className="text-xl font-bold text-primary">Stor</span>
+          <span className="text-xl font-medium text-accent transition-colors duration-300 group-hover:text-primary">porate</span>
         </Link>
 
         <nav

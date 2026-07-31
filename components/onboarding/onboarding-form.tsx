@@ -111,7 +111,7 @@ export function OnboardingForm(props: OnboardingFormProps) {
               ref={errorBannerRef}
               role="alert"
               tabIndex={-1}
-              className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+              className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
             >
               {state.formMessage}
             </div>

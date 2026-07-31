@@ -28,7 +28,7 @@ export default async function SigninPage({ searchParams }: PageProps) {
 
   return (
     <main className="bg-background text-foreground min-h-screen">
-      <div className="mx-auto grid min-h-screen max-w-6xl gap-12 px-6 py-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+      <div className="mx-auto grid min-h-screen max-w-5xl gap-12 px-6 py-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
         {/* Left — context panel */}
         <section className="flex flex-col justify-between gap-8">
           <Link
@@ -80,7 +80,7 @@ export default async function SigninPage({ searchParams }: PageProps) {
 
         {/* Right — form card */}
         <section className="flex items-center">
-          <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-md sm:p-8">
             <div className="mb-6 flex flex-col gap-1.5">
               <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
               <p className="text-muted-foreground text-sm">
