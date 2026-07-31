@@ -1,7 +1,8 @@
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingNav } from "@/components/landing/landing-nav";
-import { RolePillars } from "@/components/landing/role-pillars";
+import { ScenarioPlayground } from "@/components/landing/scenario-playground";
+import { DemoTour } from "@/components/landing/demo-tour";
 
 export default async function Home() {
   const nav = await LandingNav();
@@ -10,7 +11,8 @@ export default async function Home() {
       {nav}
       <main className="bg-background text-foreground">
         <LandingHero />
-        <RolePillars />
+        <ScenarioPlayground />
+        <DemoTour />
       </main>
       <LandingFooter />
     </>
