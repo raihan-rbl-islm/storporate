@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Newspaper, Briefcase, MessageSquare, Search } from "lucide-react";
 
 interface GlobalNavbarClientProps {
@@ -82,10 +83,11 @@ export function GlobalNavbarClient({ role, email, isAnonymous }: GlobalNavbarCli
       </button>
       
       {!isAnonymous && (
-        <div className="ml-2 flex items-center gap-3 border-l pl-4">
+        <div className="ml-2 flex items-center gap-3 border-l pl-4 border-border/50">
           <span className="hidden md:inline text-xs text-muted-foreground truncate max-w-[120px]">
             {email}
           </span>
+          <ThemeToggle />
           <SignOutButton />
         </div>
       )}

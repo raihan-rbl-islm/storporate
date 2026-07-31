@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, SearchX } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -47,25 +47,24 @@ export function EmptyFixtureState({
   reloadHref,
 }: EmptyFixtureStateProps) {
   return (
-    <Card data-testid="empty-fixture-state">
-      <CardHeader>
-        <CardTitle>
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <AlertCircle
-              aria-hidden="true"
-              className="text-muted-foreground size-4"
-            />
-            {title}
-          </h2>
+    <Card data-testid="empty-fixture-state" className="flex flex-col items-center justify-center p-12 text-center border-dashed border-2 bg-muted/20">
+      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-6">
+        <SearchX className="size-8 text-muted-foreground/70" />
+      </div>
+      <CardHeader className="p-0 mb-2">
+        <CardTitle className="text-xl font-bold tracking-tight">
+          {title}
         </CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardDescription className="max-w-md mx-auto text-base">
+          {description}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="p-0 mt-6">
         <Link
           href={reloadHref}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
+          className={buttonVariants({ variant: "default", size: "lg", className: "rounded-full shadow-sm" })}
         >
-          Reload
+          Refresh Data
         </Link>
       </CardContent>
     </Card>
