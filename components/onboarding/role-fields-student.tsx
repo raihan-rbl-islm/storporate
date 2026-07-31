@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ChipInput } from "@/components/onboarding/chip-input";
 import { FieldError } from "@/components/onboarding/field-error";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { User, GraduationCap, Sparkles } from "lucide-react";
 import type { StudentFormInput } from "@/lib/server/personas/schemas";
 
 type Errors = Partial<Record<keyof StudentFormInput, string>>;
@@ -40,118 +42,121 @@ export function RoleFieldsStudent({
   const isEditable = (k: keyof StudentFormInput) =>
     (editable as ReadonlyArray<string>).includes(k as string);
   return (
-    <div className="grid gap-4">
-      <FieldWithError
-        id="fullName"
-        label="Full name"
-        error={errors?.fullName}
-      >
-        <Input
-          id="fullName"
-          name="fullName"
-          defaultValue={value.fullName}
-          readOnly={!isEditable("fullName")}
-          aria-invalid={errors?.fullName ? true : undefined}
-          aria-describedby={errors?.fullName ? "fullName-err" : undefined}
-        />
-      </FieldWithError>
-      <FieldWithError
-        id="university"
-        label="University"
-        error={errors?.university}
-      >
-        <Input
-          id="university"
-          name="university"
-          defaultValue={value.university}
-          readOnly={!isEditable("university")}
-          aria-invalid={errors?.university ? true : undefined}
-          aria-describedby={errors?.university ? "university-err" : undefined}
-        />
-      </FieldWithError>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FieldWithError
-          id="studyProgram"
-          label="Study program"
-          error={errors?.studyProgram}
-        >
-          <Input
-            id="studyProgram"
-            name="studyProgram"
-            defaultValue={value.studyProgram}
-            readOnly={!isEditable("studyProgram")}
-            aria-invalid={errors?.studyProgram ? true : undefined}
-            aria-describedby={
-              errors?.studyProgram ? "studyProgram-err" : undefined
-            }
-          />
-        </FieldWithError>
-        <FieldWithError
-          id="expectedGraduation"
-          label="Expected graduation"
-          error={errors?.expectedGraduation}
-        >
-          <Input
-            id="expectedGraduation"
-            name="expectedGraduation"
-            defaultValue={value.expectedGraduation}
-            readOnly={!isEditable("expectedGraduation")}
-            aria-invalid={errors?.expectedGraduation ? true : undefined}
-            aria-describedby={
-              errors?.expectedGraduation
-                ? "expectedGraduation-err"
-                : undefined
-            }
-            placeholder="e.g. '26 or Spring 2026"
-          />
-        </FieldWithError>
-      </div>
-      <FieldWithError
-        id="location"
-        label="Location"
-        error={errors?.location}
-      >
-        <Input
-          id="location"
-          name="location"
-          defaultValue={value.location}
-          readOnly={!isEditable("location")}
-          aria-invalid={errors?.location ? true : undefined}
-          aria-describedby={errors?.location ? "location-err" : undefined}
-        />
-      </FieldWithError>
-      <FieldWithError id="bio" label="Short bio">
-        <Textarea
-          id="bio"
-          name="bio"
-          defaultValue={value.bio}
-          readOnly={!isEditable("bio")}
-        />
-      </FieldWithError>
-      <FieldWithError id="skills" label="" error={errors?.skills}>
-        <ChipInput
-          name="skills"
-          label="Skills"
-          value={chipValues.skills}
-          onChange={(v) => onChipChange("skills", v)}
-          invalid={Boolean(errors?.skills)}
-          describedById="skills-err"
-        />
-      </FieldWithError>
-      <FieldWithError
-        id="careerInterests"
-        label=""
-        error={errors?.careerInterests}
-      >
-        <ChipInput
-          name="careerInterests"
-          label="Career interests"
-          value={chipValues.careerInterests}
-          onChange={(v) => onChipChange("careerInterests", v)}
-          invalid={Boolean(errors?.careerInterests)}
-          describedById="careerInterests-err"
-        />
-      </FieldWithError>
+    <div className="grid gap-8">
+      <Card className="border-primary/10 shadow-sm overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <User className="size-5 text-primary" /> Basic Identity
+          </CardTitle>
+          <CardDescription>Let us know who you are.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6 pt-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <FieldWithError id="fullName" label="Full name" error={errors?.fullName}>
+              <Input
+                id="fullName"
+                name="fullName"
+                defaultValue={value.fullName}
+                readOnly={!isEditable("fullName")}
+                aria-invalid={errors?.fullName ? true : undefined}
+                aria-describedby={errors?.fullName ? "fullName-err" : undefined}
+              />
+            </FieldWithError>
+            <FieldWithError id="university" label="University" error={errors?.university}>
+              <Input
+                id="university"
+                name="university"
+                defaultValue={value.university}
+                readOnly={!isEditable("university")}
+                aria-invalid={errors?.university ? true : undefined}
+                aria-describedby={errors?.university ? "university-err" : undefined}
+              />
+            </FieldWithError>
+          </div>
+          <FieldWithError id="location" label="Location" error={errors?.location}>
+            <Input
+              id="location"
+              name="location"
+              defaultValue={value.location}
+              readOnly={!isEditable("location")}
+              aria-invalid={errors?.location ? true : undefined}
+              aria-describedby={errors?.location ? "location-err" : undefined}
+            />
+          </FieldWithError>
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/10 shadow-sm overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <GraduationCap className="size-5 text-primary" /> Academic Details
+          </CardTitle>
+          <CardDescription>Your current studies and graduation timeline.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6 pt-6 sm:grid-cols-2">
+          <FieldWithError id="studyProgram" label="Study program" error={errors?.studyProgram}>
+            <Input
+              id="studyProgram"
+              name="studyProgram"
+              defaultValue={value.studyProgram}
+              readOnly={!isEditable("studyProgram")}
+              aria-invalid={errors?.studyProgram ? true : undefined}
+              aria-describedby={errors?.studyProgram ? "studyProgram-err" : undefined}
+            />
+          </FieldWithError>
+          <FieldWithError id="expectedGraduation" label="Expected graduation" error={errors?.expectedGraduation}>
+            <Input
+              id="expectedGraduation"
+              name="expectedGraduation"
+              defaultValue={value.expectedGraduation}
+              readOnly={!isEditable("expectedGraduation")}
+              aria-invalid={errors?.expectedGraduation ? true : undefined}
+              aria-describedby={errors?.expectedGraduation ? "expectedGraduation-err" : undefined}
+              placeholder="e.g. '26 or Spring 2026"
+            />
+          </FieldWithError>
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/10 shadow-sm overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Sparkles className="size-5 text-primary" /> Taxonomy & Biography
+          </CardTitle>
+          <CardDescription>These details are used by our AI matching engine.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6 pt-6">
+          <FieldWithError id="bio" label="Short bio">
+            <Textarea
+              id="bio"
+              name="bio"
+              defaultValue={value.bio}
+              readOnly={!isEditable("bio")}
+              className="min-h-[100px]"
+            />
+          </FieldWithError>
+          <FieldWithError id="skills" label="" error={errors?.skills}>
+            <ChipInput
+              name="skills"
+              label="Skills"
+              value={chipValues.skills}
+              onChange={(v) => onChipChange("skills", v)}
+              invalid={Boolean(errors?.skills)}
+              describedById="skills-err"
+            />
+          </FieldWithError>
+          <FieldWithError id="careerInterests" label="" error={errors?.careerInterests}>
+            <ChipInput
+              name="careerInterests"
+              label="Career interests"
+              value={chipValues.careerInterests}
+              onChange={(v) => onChipChange("careerInterests", v)}
+              invalid={Boolean(errors?.careerInterests)}
+              describedById="careerInterests-err"
+            />
+          </FieldWithError>
+        </CardContent>
+      </Card>
     </div>
   );
 }
