@@ -5,7 +5,7 @@ import { getMessages, sendMessage, markConversationRead, type ConversationItem }
 import { Button } from "@/components/ui/button";
 import { Send, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 type Message = {
@@ -24,7 +24,6 @@ export function ChatView({
   conversations: ConversationItem[];
   currentUserId: string;
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const activeId = searchParams.get("c");
 
@@ -124,7 +123,7 @@ function ActiveChat({
   const [text, setText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const msgs = await getMessages(conversation.id);
       setMessages(msgs as Message[]);
@@ -136,11 +135,14 @@ function ActiveChat({
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversation.id, currentUserId]);
 
   useEffect(() => {
-    setLoading(true);
-    fetchMessages();
+    const init = async () => {
+      setLoading(true);
+      await fetchMessages();
+    };
+    init();
     
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
@@ -149,7 +151,7 @@ function ActiveChat({
     }, 3000);
     
     return () => clearInterval(interval);
-  }, [conversation.id]);
+  }, [fetchMessages]);
 
   useEffect(() => {
     if (scrollRef.current) {

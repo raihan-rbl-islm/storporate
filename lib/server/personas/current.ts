@@ -1,6 +1,5 @@
 import "server-only";
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { db } from "@/lib/server/db";
 import { students, clubs, corporates } from "@/lib/server/db/schema";
 import { users } from "@/lib/server/db/schema";

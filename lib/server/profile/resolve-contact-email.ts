@@ -39,7 +39,7 @@ export async function resolveContactEmail(
   // authoritative source — we never read it from a student row.
   if ("fullName" in persona) {
     // Student row — prioritize auth email (owner view), fallback to DB column (recruiter view).
-    return (authEmail ?? (persona as any).contactEmail ?? "").trim();
+    return (authEmail ?? (persona as unknown as { contactEmail?: string }).contactEmail ?? "").trim();
   }
   if ("clubName" in persona) {
     // Club row.

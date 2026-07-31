@@ -48,8 +48,8 @@ export async function getOrCreateConversation(otherPersonaId: string) {
         .insert(conversations)
         .values({ participant1Id: p1, participant2Id: p2 })
         .returning();
-    } catch (err: any) {
-      if (err.code === "23505") { // Unique constraint violation
+    } catch (err: unknown) {
+      if (err instanceof Error && (err as { code?: string }).code === "23505") { // Unique constraint violation
         [conversation] = await db
           .select()
           .from(conversations)
